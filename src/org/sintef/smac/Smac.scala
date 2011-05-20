@@ -1,20 +1,3 @@
-/**
- * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.gnu.org/licenses/lgpl-3.0.txt
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Author: Brice Morin
- * Company: SINTEF IKT, Oslo, Norway
- * Date: 2011
- */
 package org.sintef.smac
 
 import scala.actors.Actor
@@ -119,17 +102,57 @@ abstract class StateMachineBuilder(master : Orchestrator) {
 /**
  * Transitions between two states
  */
-abstract class Transition(previous : State, next : State, master : Orchestrator) extends Actor {
+abstract class Transition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Actor {
   
-  def checkGuard : Boolean
+  def checkGuard : Boolean = true
+  
+  var checkEvents : Boolean = false
+
+  var eventsMap = scala.collection.mutable.Map[Event, Boolean]()
+  
+  final def evaluateEvent() = {
+    var eval = true
+    eventsMap.values.foreach{v => eval = v && eval}
+    checkEvents = eval
+  }
   
   def executeActions()  
   
-  def execute() = {
-    if (previous.isCurrent && checkGuard) {
+  final override def start() : Actor = {
+    super.start
+    clearEvents
+    return this
+  }
+  
+  final def clearEvents() = {
+    var newCheckEvents = scala.collection.mutable.Map[Event, Boolean]()
+    events.foreach{ k => newCheckEvents.put(k,false)}
+    eventsMap = newCheckEvents
+  }
+  
+  final def execute() = {
+    evaluateEvent
+    if (previous.isCurrent && checkEvents && checkGuard) {
+      clearEvents
       previous.executeOnExit
       executeActions()
       next.executeOnEntry
+    }
+  }
+  
+  final def act() = {
+    loop {
+      react {
+        case e : Event =>
+          if (events.contains(e)) {
+            //println("OK "+e)
+            eventsMap.put(e, true)
+            execute
+          }
+          /*else {
+            println("NOK "+e)
+          }*/
+      }
     }
   }
 }

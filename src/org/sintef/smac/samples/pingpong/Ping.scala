@@ -1,20 +1,3 @@
-/**
- * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * 	http://www.gnu.org/licenses/lgpl-3.0.txt
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Author: Brice Morin
- * Company: SINTEF IKT, Oslo, Norway
- * Date: 2011
- */
 package org.sintef.smac.samples.pingpong
 
 import java.awt.GridBagConstraints
@@ -34,25 +17,15 @@ class PingMachineBuilder(master : Orchestrator) extends StateMachineBuilder(mast
   def createStateMachine() : StateMachine = {
     //create sub-states
     val ping = Ping(master)
-    val stop = Stop(master)
-
-    var substates = List[State]()
-    substates ::= ping
-    substates ::= stop
-    
+    val stop = Stop(master)    
     
     //create transitions among sub-states
-    val pongTransition = PongTransition(ping, ping, master)
-    val stopTransition = StopTransition(ping, stop, master)
-    val startTransition = StartTransition(stop, ping, master)
-  
-    var outGoingTransitions = List[Transition]()
-    outGoingTransitions ::= pongTransition
-    outGoingTransitions ::= stopTransition
-    outGoingTransitions ::= startTransition
+    val pongTransition = PongTransition(ping, ping, master, List(PongEvent))
+    val stopTransition = StopTransition(ping, stop, master, List(StopEvent))
+    val startTransition = StartTransition(stop, ping, master, List(StartEvent))
   
     //finally, create the state machine
-    val pingSM : StateMachine = new PingStateMachine(master, substates, stop, outGoingTransitions)
+    val pingSM : StateMachine = new PingStateMachine(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition))
   
     return pingSM
   }
@@ -204,59 +177,26 @@ case class Stop(master : Orchestrator) extends State(master) {
   override def onExit() = {
     println("Stop.onExit")
   } 
-  
+
 }
 
 
 //Messages defined in the state machine
-case class PongTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
-  def act() = {
-    loop {
-      react {
-        case PongEvent =>
-          execute
-      }
-    }
-  }
-  
+case class PongTransition(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) {
   def executeActions() = {
     println("PongTransition")
   }
-  
-  def checkGuard : Boolean = true
 }
 
-case class StopTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
-  def act() = {
-    loop {
-      react {
-        case StopEvent =>
-          execute
-      }
-    }
-  }
-  
+case class StopTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
   def executeActions() = {
     println("StopTransition")
   }
-  
-  def checkGuard : Boolean = true 
 }
 
 
-case class StartTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
-  def act() = {
-    loop {
-      react {
-        case StartEvent =>
-          execute
-      }
-    }
-  }
-  
+case class StartTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) {
   def executeActions() = {
     println("StartTransition")
   }
-  
-  def checkGuard : Boolean = true 
 }
