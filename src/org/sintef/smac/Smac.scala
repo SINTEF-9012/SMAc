@@ -27,6 +27,10 @@ abstract class State(master : Orchestrator) extends Actor {
   def onEntry
   
   def onExit  
+  
+  def initState() : Unit = {
+    start
+  }
  
 }
 
@@ -40,39 +44,48 @@ abstract class State(master : Orchestrator) extends Actor {
 abstract class CompositeState(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends State(master) {
   
   override def act() = {
+    //if (isCurrent){
     loop {
       react {
         case e : Event =>
-          //println("Dispatching: "+e)
-          substates.foreach{s => 
-            //println("  to "+s)
-            s ! e
-          }
-          outGoingTransitions.foreach{t => 
-            //println("  to "+t)
-            t ! e
+          if (isCurrent) {
+            //println("Dispatching: "+e)
+            substates.filter{s => s.isCurrent}.foreach{s => 
+              //println("  to "+s)
+              s ! e
+            }
+            outGoingTransitions.foreach{t => 
+              //println("  to "+t)
+              t ! e
+            }
           }
         case e : Any => 
           println("Discarded: "+e)
       }
     }
+    //}
   }
   
-  def init() = {
+  override def initState() : Unit = {
+    //println("Composite.initState "+this.isCurrent+" "+this)
+    initial.isCurrent = this.isCurrent
     this.start
     outGoingTransitions.foreach{t => t.start}
-    substates.foreach{s => s.start}
-    initial.isCurrent = true
+    substates.foreach{s => 
+      //println("  debug "+s)
+      s.initState}
   }
   
   override def executeOnEntry(){
     super.executeOnEntry
-    initial.onEntry
+    //println(this.isCurrent)
+    initial.executeOnEntry
+    //println(initial.isCurrent)
   }
   
   override def executeOnExit(){
+    substates.filter{case s : State => s.isCurrent}.foreach{s : State => s.executeOnExit}
     super.executeOnExit
-    substates.filter{case s : State => s.isCurrent}.foreach{s : State => s.onExit}
   }
   
 }
@@ -86,9 +99,16 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
  * the list of transitions among these sub-states and an initial state
  */
 abstract class StateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
-  override def init() = {
+  override def initState() : Unit = {
+    // println("StateMachine.initState "+this)
     master.register(this)
-    super.init
+    this.isCurrent = true
+    initial.isCurrent = true
+    this.start
+    outGoingTransitions.foreach{t => t.start}
+    substates.foreach{s => 
+      //println("  debug "+s)
+      s.initState}
   }
 }
 
@@ -150,15 +170,17 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
             execute
           }
           /*else {
-            println("NOK "+e)
-          }*/
+           println("NOK "+e)
+           }*/
       }
     }
   }
 }
 
 
-abstract class Event {}
+abstract case class Event {}
+
+abstract case class InternalEvent(sm : StateMachine) extends Event {}
 
 
 /**
@@ -178,6 +200,10 @@ class Orchestrator() extends Actor {
   override def act() = {
     loop {
       react {
+        case i : InternalEvent =>
+          stateMachines.filter{sm => sm == i.sm}.foreach{sm => 
+            sm ! i
+          }
         case e : Event =>
           stateMachines.foreach{sm => 
             sm ! e

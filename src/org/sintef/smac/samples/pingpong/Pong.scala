@@ -29,7 +29,6 @@ class PongStateMachine(master : Orchestrator, substates : List[State], initial :
 
 case class Pong(master : Orchestrator) extends State(master) {
   override def onEntry() = {
-    Thread.sleep(25)
     println("Pong.onEntry")
     master ! PongEvent
   }

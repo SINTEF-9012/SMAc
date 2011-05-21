@@ -1,4 +1,4 @@
-package org.sintef.smac.samples.pingpong
+package org.sintef.smac.samples.pingpong.composite
 
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -13,19 +13,33 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingMachineBuilder(master : Orchestrator) extends StateMachineBuilder(master) {
+class CompositePingMachineBuilder(master : Orchestrator) extends StateMachineBuilder(master) {
   def createStateMachine() : StateMachine = {
+    
     //create sub-states
-    val ping = Ping(master)
+    val ping = Ping(master, 25)
     val stop = Stop(master)    
+    
+    val ping2 = Ping(master, 1000)
+    val stop2 = Stop(master)
     
     //create transitions among sub-states
     val pongTransition = PongTransition(ping, ping, master, List(PongEvent))
     val stopTransition = StopTransition(ping, stop, master, List(StopEvent))
     val startTransition = StartTransition(stop, ping, master, List(StartEvent))
+    
+    val pongTransition2 = PongTransition(ping2, ping2, master, List(PongEvent))
+    val stopTransition2 = StopTransition(ping2, stop2, master, List(StopEvent))
+    val startTransition2 = StartTransition(stop2, ping2, master, List(StartEvent))
   
+    val fast = Fast(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition))
+    val slow = Slow(master, List(ping2, stop2), stop2, List(pongTransition2, stopTransition2, startTransition2))
+    
+    val slowTransition = SlowTransition(fast, slow, master, List(SlowEvent))
+    val fastTransition = FastTransition(slow, fast, master, List(FastEvent))
+    
     //finally, create the state machine
-    val pingSM : StateMachine = new PingStateMachine(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition))
+    val pingSM : StateMachine = new PingStateMachine(master, List(fast, slow), slow, List(slowTransition, fastTransition))
   
     return pingSM
   }
@@ -50,6 +64,8 @@ class PingStateMachine(master : Orchestrator, substates : List[State], initial :
     val sendButtonPong : JButton = new JButton("Send")
     val sendButtonStop : JButton = new JButton("Send")
     val sendButtonStart : JButton = new JButton("Send")
+    val sendButtonSlow : JButton = new JButton("Send")
+    val sendButtonFast : JButton = new JButton("Send")
 
     def init {
       frame.setLayout(new GridBagLayout());
@@ -102,6 +118,33 @@ class PingStateMachine(master : Orchestrator, substates : List[State], initial :
       frame.add(sendButtonStart, c);
       sendButtonStart.addActionListener(this)
 
+      //GUI related to slow
+      c.gridy = 0;
+      c.gridx = 3;
+      frame.add(new JLabel("slow"), c);
+    
+      c.gridy = 1;
+      c.gridx = 3;
+      frame.add(createSlowPanel(), c);
+      
+      c.gridy = 2;
+      c.gridx = 3;
+      frame.add(sendButtonSlow, c);
+      sendButtonSlow.addActionListener(this)
+      
+      //GUI related to fast
+      c.gridy = 0;
+      c.gridx = 4;
+      frame.add(new JLabel("fast"), c);
+    
+      c.gridy = 1;
+      c.gridx = 4;
+      frame.add(createFastPanel(), c);
+      
+      c.gridy = 2;
+      c.gridx = 4;
+      frame.add(sendButtonFast, c);
+      sendButtonFast.addActionListener(this)
       
       frame.pack
       frame.setVisible(true)
@@ -128,6 +171,20 @@ class PingStateMachine(master : Orchestrator, substates : List[State], initial :
       new JPanel(new GridBagLayout());
     }
     
+    def createFastPanel() : JPanel = {
+      var c : GridBagConstraints = new GridBagConstraints();
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.weightx = 0.5;
+      new JPanel(new GridBagLayout());
+    }
+    
+    def createSlowPanel() : JPanel = {
+      var c : GridBagConstraints = new GridBagConstraints();
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.weightx = 0.5;
+      new JPanel(new GridBagLayout());
+    }
+    
     def actionPerformed(ae : ActionEvent) = {
       ae.getSource match {
         case b : JButton =>
@@ -140,15 +197,40 @@ class PingStateMachine(master : Orchestrator, substates : List[State], initial :
           else if (b == sendButtonStart) {
             master ! StartEvent
           }
+          else if (b == sendButtonSlow) {
+            master ! SlowEvent
+          }
+          else if (b == sendButtonFast) {
+            master ! FastEvent
+          }
       }
     }
   }    
 }
 
-case class Ping(master : Orchestrator) extends State(master) {
+case class Fast(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
+  override def onEntry() = {
+    println("Fast.onEntry")
+  }
+ 
+  override def onExit() = {
+    println("Fast.onExit")
+  }
+}
+
+case class Slow(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
+  override def onEntry() = {
+    println("Slow.onEntry")
+  }
+ 
+  override def onExit() = {
+    println("Slow.onExit")
+  }
+}
+
+case class Ping(master : Orchestrator, delay : Long) extends State(master) {
   val max = 10000
   var count = 0
-  var delay = 25
     
   override def onEntry() = {
     println("Ping.onEntry")
@@ -199,5 +281,17 @@ case class StopTransition(previous : State, next : State, master : Orchestrator,
 case class StartTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) {
   def executeActions() = {
     println("StartTransition")
+  }
+}
+
+case class FastTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) {
+  def executeActions() = {
+    println("FastTransition")
+  }
+}
+
+case class SlowTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) {
+  def executeActions() = {
+    println("SlowTransition")
   }
 }

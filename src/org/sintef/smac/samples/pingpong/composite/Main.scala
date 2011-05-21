@@ -3,10 +3,11 @@
  * and open the template in the editor.
  */
 
-package org.sintef.smac.samples.pingpong
+package org.sintef.smac.samples.pingpong.composite
 
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
+import org.sintef.smac.samples.pingpong.composite._
 
 object Main {
 
@@ -25,7 +26,7 @@ object Main {
     val master = new Orchestrator
     master.start
     
-    val pingBuilder = new PingMachineBuilder(master)
+    val pingBuilder = new CompositePingMachineBuilder(master)
     val pingSM = pingBuilder.createStateMachine
     
     //val pongBuilder = new PongMachineBuilder(master)
