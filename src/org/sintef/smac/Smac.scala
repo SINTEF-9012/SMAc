@@ -28,7 +28,7 @@ abstract class State(master : Orchestrator) extends Actor {
   
   def onExit  
   
-  def initState() : Unit = {
+  def startState() : Unit = {
     start
   }
  
@@ -41,7 +41,9 @@ abstract class State(master : Orchestrator) extends Actor {
  * They should be initialized with the list of their sub-states,
  * the list of transitions among these sub-states and an initial state
  */
-abstract class CompositeState(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends State(master) {
+abstract class CompositeState(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends State(master) {
+  
+  var history = List[State]()
   
   override def act() = {
     //if (isCurrent){
@@ -66,24 +68,30 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
     //}
   }
   
-  override def initState() : Unit = {
+  override def startState() : Unit = {
     //println("Composite.initState "+this.isCurrent+" "+this)
     initial.isCurrent = this.isCurrent
     this.start
     outGoingTransitions.foreach{t => t.start}
     substates.foreach{s => 
       //println("  debug "+s)
-      s.initState}
+      s.startState}
   }
   
   override def executeOnEntry(){
     super.executeOnEntry
-    //println(this.isCurrent)
-    initial.executeOnEntry
-    //println(initial.isCurrent)
+    if (keepHistory) {
+      history.foreach{h => h.executeOnEntry}
+    }
+    else {
+      initial.executeOnEntry
+    }
   }
   
   override def executeOnExit(){
+    if (keepHistory) {
+      history = substates.filter{case s : State => s.isCurrent}
+    }
     substates.filter{case s : State => s.isCurrent}.foreach{s : State => s.executeOnExit}
     super.executeOnExit
   }
@@ -98,8 +106,8 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
  * They should be initialized with the list of their sub-states,
  * the list of transitions among these sub-states and an initial state
  */
-abstract class StateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
-  override def initState() : Unit = {
+abstract class StateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends CompositeState(master, substates, initial, outGoingTransitions, keepHistory) {
+  override def startState() : Unit = {
     // println("StateMachine.initState "+this)
     master.register(this)
     this.isCurrent = true
@@ -108,7 +116,7 @@ abstract class StateMachine(master : Orchestrator, substates : List[State], init
     outGoingTransitions.foreach{t => t.start}
     substates.foreach{s => 
       //println("  debug "+s)
-      s.initState}
+      s.startState}
   }
 }
 

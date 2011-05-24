@@ -32,23 +32,23 @@ class CompositePingMachineBuilder(master : Orchestrator) extends StateMachineBui
     val stopTransition2 = StopTransition(ping2, stop2, master, List(StopEvent))
     val startTransition2 = StartTransition(stop2, ping2, master, List(StartEvent))
   
-    val fast = Fast(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition))
-    val slow = Slow(master, List(ping2, stop2), stop2, List(pongTransition2, stopTransition2, startTransition2))
+    val fast = Fast(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition), true)
+    val slow = Slow(master, List(ping2, stop2), stop2, List(pongTransition2, stopTransition2, startTransition2), true)
     
     val slowTransition = SlowTransition(fast, slow, master, List(SlowEvent))
     val fastTransition = FastTransition(slow, fast, master, List(FastEvent))
     
     //finally, create the state machine
-    val pingSM : StateMachine = new PingStateMachine(master, List(fast, slow), slow, List(slowTransition, fastTransition))
+    val pingSM : StateMachine = new PingStateMachine(master, List(fast, slow), slow, List(slowTransition, fastTransition), false)
   
     return pingSM
   }
 }
 
-class PingStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends StateMachine(master, substates, initial, outGoingTransitions){
+class PingStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends StateMachine(master, substates, initial, outGoingTransitions, keepHistory){
 
-  override def initState() = {
-    super.initState
+  override def startState() = {
+    super.startState
     PingGUI.init
   }
   
@@ -208,7 +208,9 @@ class PingStateMachine(master : Orchestrator, substates : List[State], initial :
   }    
 }
 
-case class Fast(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
+case class Fast(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends CompositeState(master, substates, initial, outGoingTransitions, keepHistory) {
+  
+  
   override def onEntry() = {
     println("Fast.onEntry")
   }
@@ -218,7 +220,7 @@ case class Fast(master : Orchestrator, substates : List[State], initial : State,
   }
 }
 
-case class Slow(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends CompositeState(master, substates, initial, outGoingTransitions) {
+case class Slow(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends CompositeState(master, substates, initial, outGoingTransitions, keepHistory) {
   override def onEntry() = {
     println("Slow.onEntry")
   }

@@ -31,7 +31,7 @@ object Main {
     //val pongBuilder = new PongMachineBuilder(master)
     //val pongSM = pongBuilder.createStateMachine
     
-    pingSM.initState
-    //pongSM.initState
+    pingSM.startState
+    //pongSM.startState
   }
 }

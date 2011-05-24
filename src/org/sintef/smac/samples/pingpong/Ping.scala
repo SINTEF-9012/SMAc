@@ -25,16 +25,16 @@ class PingMachineBuilder(master : Orchestrator) extends StateMachineBuilder(mast
     val startTransition = StartTransition(stop, ping, master, List(StartEvent))
   
     //finally, create the state machine
-    val pingSM : StateMachine = new PingStateMachine(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition))
+    val pingSM : StateMachine = new PingStateMachine(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition), false)
   
     return pingSM
   }
 }
 
-class PingStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends StateMachine(master, substates, initial, outGoingTransitions){
+class PingStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends StateMachine(master, substates, initial, outGoingTransitions, keepHistory){
 
-  override def initState() = {
-    super.initState
+  override def startState() = {
+    super.startState
     PingGUI.init
   }
   

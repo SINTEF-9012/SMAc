@@ -13,14 +13,14 @@ class PongMachineBuilder(master : Orchestrator) extends StateMachineBuilder(mast
     val pingTransition = PingTransition(pong, pong, master, List(PingEvent))
     
     //finally, create the state machine
-    val pongSM : StateMachine = new PongStateMachine(master, List(pong), pong, List(pingTransition))
+    val pongSM : StateMachine = new PongStateMachine(master, List(pong), pong, List(pingTransition), false)
   
     return pongSM
   }
 }
 
 
-class PongStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition]) extends StateMachine(master, substates, initial, outGoingTransitions) {
+class PongStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends StateMachine(master, substates, initial, outGoingTransitions, keepHistory) {
   
   def onEntry() = {}
   
