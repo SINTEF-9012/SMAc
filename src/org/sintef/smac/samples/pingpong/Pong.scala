@@ -3,24 +3,16 @@ package org.sintef.smac.samples.pingpong
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-
-class PongMachineBuilder(master : Orchestrator) extends StateMachineBuilder(master) {
-  def createStateMachine() : StateMachine = {
-    //create sub-states
-    val pong = Pong(master)
+class PongStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory) {
   
-    //create transitions among sub-states
-    val pingTransition = PingTransition(pong, pong, master, List(PingEvent))
-    
-    //finally, create the state machine
-    val pongSM : StateMachine = new PongStateMachine(master, List(pong), pong, List(pingTransition), false)
+  //create sub-states
+  val pong = Pong(master)
+  override val substates = List(pong)
+  override val initial = pong
   
-    return pongSM
-  }
-}
-
-
-class PongStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends StateMachine(master, substates, initial, outGoingTransitions, keepHistory) {
+  //create transitions among sub-states
+  val pingTransition = PingTransition(pong, pong, master, List(PingEvent))
+  override val outGoingTransitions = List(pingTransition)
   
   def onEntry() = {}
   

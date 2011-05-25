@@ -34,19 +34,17 @@ abstract class State(master : Orchestrator) extends Actor {
  
 }
 
-/**
- * Composite states should extend Composite State
- * and implements the onEntry and onExit methods
- * to define the actions to execute on entry and on exit.
- * They should be initialized with the list of their sub-states,
- * the list of transitions among these sub-states and an initial state
- */
-abstract class CompositeState(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends State(master) {
+abstract class CompositeState(master : Orchestrator, keepHistory : Boolean) extends State(master) {
+    
+  val substates : List[State]
+  
+  val outGoingTransitions : List[Transition]
+
+  val initial : State
   
   var history = List[State]()
   
   override def act() = {
-    //if (isCurrent){
     loop {
       react {
         case e : Event =>
@@ -65,7 +63,6 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
           println("Discarded: "+e)
       }
     }
-    //}
   }
   
   override def startState() : Unit = {
@@ -80,7 +77,7 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
   
   override def executeOnEntry(){
     super.executeOnEntry
-    if (keepHistory) {
+    if (keepHistory && history.size > 0) {
       history.foreach{h => h.executeOnEntry}
     }
     else {
@@ -98,15 +95,7 @@ abstract class CompositeState(master : Orchestrator, substates : List[State], in
   
 }
 
-/**
- * State machines should extend StateMachine
- * and implements the onEntry and onExit methods
- * to define the actions to execute on entry and on exit.
- * State machine are basically top-level composite states.
- * They should be initialized with the list of their sub-states,
- * the list of transitions among these sub-states and an initial state
- */
-abstract class StateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends CompositeState(master, substates, initial, outGoingTransitions, keepHistory) {
+abstract class StateMachine(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory) {
   override def startState() : Unit = {
     // println("StateMachine.initState "+this)
     master.register(this)
@@ -118,13 +107,6 @@ abstract class StateMachine(master : Orchestrator, substates : List[State], init
       //println("  debug "+s)
       s.startState}
   }
-}
-
-/**
- * Builder to create instances of your state machines
- */
-abstract class StateMachineBuilder(master : Orchestrator) {
-  def createStateMachine : StateMachine
 }
 
 /**

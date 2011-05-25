@@ -25,11 +25,10 @@ object Main {
     val master = new Orchestrator
     master.start
     
-    val pingBuilder = new PingMachineBuilder(master)
-    val pingSM = pingBuilder.createStateMachine
+    val pingSM = new PingStateMachine(master, false)
+    println(pingSM.initial)
     
-    //val pongBuilder = new PongMachineBuilder(master)
-    //val pongSM = pongBuilder.createStateMachine
+    //val pongSM = new PongStateMachine(master, false)
     
     pingSM.startState
     //pongSM.startState

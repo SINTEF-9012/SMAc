@@ -13,26 +13,20 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingMachineBuilder(master : Orchestrator) extends StateMachineBuilder(master) {
-  def createStateMachine() : StateMachine = {
-    //create sub-states
-    val ping = Ping(master)
-    val stop = Stop(master)    
-    
-    //create transitions among sub-states
-    val pongTransition = PongTransition(ping, ping, master, List(PongEvent))
-    val stopTransition = StopTransition(ping, stop, master, List(StopEvent))
-    val startTransition = StartTransition(stop, ping, master, List(StartEvent))
-  
-    //finally, create the state machine
-    val pingSM : StateMachine = new PingStateMachine(master, List(ping, stop), stop, List(pongTransition, stopTransition, startTransition), false)
-  
-    return pingSM
-  }
-}
+class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory){
 
-class PingStateMachine(master : Orchestrator, substates : List[State], initial : State, outGoingTransitions : List[Transition], keepHistory : Boolean) extends StateMachine(master, substates, initial, outGoingTransitions, keepHistory){
+  //create sub-states
+  val ping = Ping(master)
+  val stop = Stop(master)
+  override val substates = List(ping, stop)
+  override val initial = stop;
 
+  //create transitions among sub-states
+  val pongTransition = PongTransition(ping, ping, master, List(PongEvent))
+  val stopTransition = StopTransition(ping, stop, master, List(StopEvent))
+  val startTransition = StartTransition(stop, ping, master, List(StartEvent))
+  override val outGoingTransitions = List(pongTransition, stopTransition, startTransition)
+  
   override def startState() = {
     super.startState
     PingGUI.init
