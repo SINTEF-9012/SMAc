@@ -1,1 +1,1 @@
-SMAc is a Scala framework which allows you to define and execute state machines. The framework is based on Scala Actors.
+SMAc is a Scala framework (based on Actors) which allows you to define and execute state machines.
