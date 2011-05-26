@@ -28,22 +28,22 @@ object Main{
     val master = new Orchestrator
     master.start
     
-    val sm = new HelloWorldStateMachine(master, false)
+    val sm = new HelloWorldStateMachine(master, null, false)
 
     sm.startState
   }
 }
 
-case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends StateMachine(master, parent, keepHistory) {
 
   //create sub-states
-  val INIT_state = INIT(master)
-  val H_state = H(master)
-  val E_state = E(master)
-  val L1_state = L1(master)
-  val L2_state = L2(master)
-  val O_state = O(master)
-  val STOP_state = STOP(master)
+  val INIT_state = INIT(master, this)
+  val H_state = H(master, this)
+  val E_state = E(master, this)
+  val L1_state = L1(master, this)
+  val L2_state = L2(master, this)
+  val O_state = O(master, this)
+  val STOP_state = STOP(master, this)
   override val substates = List(INIT_state, H_state, E_state, L1_state, L2_state, O_state, STOP_state)
   override val initial = INIT_state
   
@@ -176,7 +176,7 @@ case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean) 
   }
 }
 
-case class INIT(master : Orchestrator) extends State(master) {
+case class INIT(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("init")
   }
@@ -186,13 +186,13 @@ case class INIT(master : Orchestrator) extends State(master) {
   }
 }
 
-case class INIT_Next_H(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class INIT_Next_H(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class H(master : Orchestrator) extends State(master) {
+case class H( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("W")
   }
@@ -202,13 +202,13 @@ case class H(master : Orchestrator) extends State(master) {
   }
 }
 
-case class H_Next_E(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class H_Next_E(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class E(master : Orchestrator) extends State(master) {
+case class E( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("O")
   }
@@ -224,7 +224,7 @@ case class E_Next_L1(previous : State, next : State, master : Orchestrator, var 
   }
 }
 
-case class L1(master : Orchestrator) extends State(master) {
+case class L1( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("R")
   }
@@ -240,7 +240,7 @@ case class L1_Next_L2(previous : State, next : State, master : Orchestrator, var
   }  
 }
 
-case class L2(master : Orchestrator) extends State(master) {
+case class L2( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("L")
   }
@@ -256,7 +256,7 @@ case class L2_Next_O(previous : State, next : State, master : Orchestrator, var 
   }
 }
 
-case class O(master : Orchestrator) extends State(master) {
+case class O( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("D")
   }
@@ -272,7 +272,7 @@ case class O_Next_STOP(previous : State, next : State, master : Orchestrator, va
   }  
 }
 
-case class STOP(master : Orchestrator) extends State(master) {
+case class STOP( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
   override def onEntry() = {
     println("stop")
   }

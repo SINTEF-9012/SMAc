@@ -13,11 +13,11 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory){
+class PingStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends StateMachine(master, parent, keepHistory){
 
   //create sub-states
-  val fast = Fast(master, true)
-  val slow = Slow(master, true)
+  val fast = Fast(master, this, true)
+  val slow = Slow(master, this, true)
   override val substates = List(fast, slow)
   override val initial = slow
     
@@ -187,10 +187,10 @@ class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends Sta
   }    
 }
 
-case class Fast(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory) {
+case class Fast(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
   //create sub-states
-  val ping = Ping(master, 25)
-  val stop = Stop(master)  
+  val ping = Ping(master, this, 25)
+  val stop = Stop(master, this)  
   override val substates = List(ping, stop)
   override val initial = stop
     
@@ -209,10 +209,10 @@ case class Fast(master : Orchestrator, keepHistory : Boolean) extends CompositeS
   }
 }
 
-case class Slow(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory) {
+case class Slow(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
   //create sub-states
-  val ping = Ping(master, 1000)
-  val stop = Stop(master)  
+  val ping = Ping(master, this, 1000)
+  val stop = Stop(master, this)  
   override val substates = List(ping, stop)
   override val initial = stop
     
@@ -231,7 +231,7 @@ case class Slow(master : Orchestrator, keepHistory : Boolean) extends CompositeS
   }
 }
 
-case class Ping(master : Orchestrator, delay : Long) extends State(master) {
+case class Ping(master : Orchestrator, parent : CompositeState, delay : Long) extends State(master, parent) {
   val max = 10000
   var count = 0
     
@@ -254,7 +254,7 @@ case class Ping(master : Orchestrator, delay : Long) extends State(master) {
   
 }
 
-case class Stop(master : Orchestrator) extends State(master) {
+case class Stop(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
   
   override def onEntry() = {
     println("Stop.onEntry")
