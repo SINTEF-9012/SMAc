@@ -34,7 +34,7 @@ object Main{
   }
 }
 
-case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends StateMachine(master, parent, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
 
   //create sub-states
   val INIT_state = INIT(master, this)

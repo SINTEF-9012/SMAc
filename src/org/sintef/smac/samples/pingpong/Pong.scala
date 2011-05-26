@@ -3,7 +3,7 @@ package org.sintef.smac.samples.pingpong
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PongStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends StateMachine(master, parent, keepHistory) {
+class PongStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
   
   //create sub-states
   val pong = Pong(master, this)

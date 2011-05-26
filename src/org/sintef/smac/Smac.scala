@@ -8,9 +8,7 @@ import scala.actors.Actor
  * to define the actions to execute on entry and on exit.
  */
 abstract class State(master : Orchestrator, parent : CompositeState) extends Actor {
-  
-  var isCurrent = false
-  
+    
   def getOutgoingTransitions() : List[Transition] = {
     if (parent != null) {
       parent.outGoingTransitions.filter{t => t.getPrevious == this}
@@ -21,16 +19,16 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
   }
   
   def dispatchEvent(e : Event) {
-    println("State.react: "+e)
+    //println("State.react: "+e)
     getOutgoingTransitions.filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
     .foreach(t => {
-        println("  forward to: "+t)
+        //println("  forward to: "+t)
         t.eventsMap.put(e, true)
         println(t.checkEvents)
         println(t.checkGuard)
         t.evaluateEvent
         if (t.checkEvents && t.checkGuard){
-          println("    and execute")
+          //println("    and execute")
           t.execute
         }
       })    
@@ -46,12 +44,11 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
   }
  
   def executeOnEntry(){
-    isCurrent = true
+    parent.current = this
     onEntry
   }
   
   def executeOnExit(){
-    isCurrent = false
     onExit
   }
  
@@ -73,13 +70,14 @@ abstract class CompositeState(master : Orchestrator, parent : CompositeState, ke
 
   val initial : State
   
-  var history = List[State]()
+  var current : State = null
+  
+  var history : State = null
   
   override def dispatchEvent(e : Event) {
-    println("Dispatching: "+e)
-    substates.filter{s => s.isCurrent}.foreach{s => 
-      println("  to "+s)
-      s ! e
+    //println("Dispatching: "+e)
+    if (current != null) {
+      current ! e
     }
     super.dispatchEvent(e)
   }
@@ -88,9 +86,7 @@ abstract class CompositeState(master : Orchestrator, parent : CompositeState, ke
     loop {
       react {
         case e : Event =>
-          if (isCurrent) {
-            dispatchEvent(e)  
-          }
+          dispatchEvent(e)  
         case e : Any => 
           println("Discarded: "+e)
       }
@@ -98,19 +94,26 @@ abstract class CompositeState(master : Orchestrator, parent : CompositeState, ke
   }
   
   override def startState() : Unit = {
-    //println("Composite.initState "+this.isCurrent+" "+this)
-    initial.isCurrent = this.isCurrent
-    this.start
-    //outGoingTransitions.foreach{t => t.start}
+    super.startState()
+    if (parent == null || parent == this){//root composite
+      //println("Root.current = "+initial)
+      current = initial
+      master.register(this)
+    }
+    else if (parent.current == this) {
+      //println("Composite.current = "+initial)
+      current = initial
+    }
     substates.foreach{s => 
       //println("  debug "+s)
-      s.startState}
+      s.startState
+    }
   }
   
   override def executeOnEntry(){
     super.executeOnEntry
-    if (keepHistory && history.size > 0) {
-      history.foreach{h => h.executeOnEntry}
+    if (keepHistory && history != null) {
+      history.executeOnEntry
     }
     else {
       initial.executeOnEntry
@@ -119,25 +122,12 @@ abstract class CompositeState(master : Orchestrator, parent : CompositeState, ke
   
   override def executeOnExit(){
     if (keepHistory) {
-      history = substates.filter{case s : State => s.isCurrent}
+      history = current
     }
-    substates.filter{case s : State => s.isCurrent}.foreach{s : State => s.executeOnExit}
+    current.executeOnExit
     super.executeOnExit
   }
   
-}
-
-abstract class StateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
-  override def startState() : Unit = {
-    // println("StateMachine.initState "+this)
-    master.register(this)
-    this.isCurrent = true
-    initial.isCurrent = true
-    this.start
-    substates.foreach{s => 
-      //println("  debug "+s)
-      s.startState}
-  }
 }
 
 /**
@@ -184,8 +174,6 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
 
 abstract case class Event {}
 
-abstract case class InternalEvent(sm : StateMachine) extends Event {}
-
 
 /**
  * Orchestrator allows connecting different state machines together
@@ -194,9 +182,9 @@ abstract case class InternalEvent(sm : StateMachine) extends Event {}
  */
 class Orchestrator() extends Actor {
   
-  var stateMachines = List[StateMachine]()
+  var stateMachines = List[CompositeState]()
   
-  def register(sm : StateMachine) = {
+  def register(sm : CompositeState) = {
     //println("Register "+sm)
     stateMachines ::= sm
   }
@@ -204,10 +192,6 @@ class Orchestrator() extends Actor {
   override def act() = {
     loop {
       react {
-        case i : InternalEvent =>
-          stateMachines.filter{sm => sm == i.sm}.foreach{sm => 
-            sm ! i
-          }
         case e : Event =>
           stateMachines.foreach{sm => 
             sm ! e
