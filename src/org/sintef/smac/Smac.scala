@@ -54,7 +54,7 @@ abstract class CompositeState(master : Orchestrator, keepHistory : Boolean) exte
               //println("  to "+s)
               s ! e
             }
-            outGoingTransitions.foreach{t => 
+            outGoingTransitions.filter{t => t.getPrevious.isCurrent}.foreach{t => 
               //println("  to "+t)
               t ! e
             }
@@ -113,6 +113,10 @@ abstract class StateMachine(master : Orchestrator, keepHistory : Boolean) extend
  * Transitions between two states
  */
 abstract class Transition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Actor {
+  
+  def getPrevious() : State = {
+    previous
+  }
   
   def checkGuard : Boolean = true
   
