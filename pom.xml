@@ -26,11 +26,22 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src</sourceDirectory>
+        
         <plugins>
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
+                <configuration>
+                    <launchers>
+                        <launcher>
+                            <id>HelloWorld</id>
+                            <mainClass>org.sintef.smac.samples.helloworld.Main</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx64m</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                    </launchers>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -62,4 +73,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+   
+    
 </project>
