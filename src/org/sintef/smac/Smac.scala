@@ -18,6 +18,12 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
     }
   }
   
+  def checkUnconditionalTransitions {
+    getOutgoingTransitions.filter(t => t.getEvents.isEmpty)
+    .filter(t => {t.checkGuard})
+    .sortWith((t, r) => t.getScore > r.getScore).headOption.getOrElse(return).execute
+  }
+  
   def dispatchEvent(e : Event) {
     //println("State.react: "+e)
     getOutgoingTransitions.filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
@@ -43,6 +49,7 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
   def executeOnEntry(){
     parent.current = this
     onEntry
+    checkUnconditionalTransitions
   }
   
   def executeOnExit(){
@@ -140,7 +147,7 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
   
   def getScore : Double = 1
   
-  var checkEvents : Boolean = false
+  var checkEvents : Boolean = events.isEmpty
 
   var eventsMap = scala.collection.mutable.Map[Event, Boolean]()
   
