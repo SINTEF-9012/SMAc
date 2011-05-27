@@ -18,7 +18,10 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
     }
   }
   
+  def isCurrent = parent.current == this
+  
   def checkUnconditionalTransitions {
+    //println("check")
     getOutgoingTransitions.filter(t => t.getEvents.isEmpty)
     .filter(t => {t.checkGuard})
     .sortWith((t, r) => t.getScore > r.getScore).headOption.getOrElse(return).execute
@@ -169,7 +172,7 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
     eventsMap = newCheckEvents
   }
   
-  final def execute() = {
+  def execute() = {
     clearEvents
     previous.executeOnExit
     executeActions()
@@ -177,6 +180,14 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
   }
 }
 
+abstract class TimedTransition(previous : State, next : State, master : Orchestrator, events : List[Event], delay : Long) extends Transition(previous, next, master, events){
+  override def execute() = {
+    Thread.sleep(delay)
+    if (previous.isCurrent){
+      super.execute
+    }
+  }
+}
 
 abstract case class Event {}
 
