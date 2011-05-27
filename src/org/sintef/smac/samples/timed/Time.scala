@@ -17,7 +17,7 @@ import javax.swing.JPanel
 import javax.swing.JTextPane
 import org.sintef.smac._
 
-case object LeftEvent extends Event {}					
+case object LeftEvent extends Event {}
 case object RightEvent extends Event {}					
 case object CenterEvent extends Event {}									
 
