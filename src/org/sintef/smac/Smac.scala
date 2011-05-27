@@ -21,17 +21,14 @@ abstract class State(master : Orchestrator, parent : CompositeState) extends Act
   def dispatchEvent(e : Event) {
     //println("State.react: "+e)
     getOutgoingTransitions.filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
-    .foreach(t => {
+    .filter(t => {
         //println("  forward to: "+t)
         t.eventsMap.put(e, true)
-        println(t.checkEvents)
-        println(t.checkGuard)
+        //println(t.checkEvents)
+        //println(t.checkGuard)
         t.evaluateEvent
-        if (t.checkEvents && t.checkGuard){
-          //println("    and execute")
-          t.execute
-        }
-      })    
+        t.checkEvents && t.checkGuard
+      }).sortWith((t, r) => t.getScore > r.getScore).headOption.getOrElse(return).execute
   }
   
   override def act(){
@@ -140,6 +137,8 @@ abstract class Transition(previous : State, next : State, master : Orchestrator,
   def getEvents = events
   
   def checkGuard : Boolean = true
+  
+  def getScore : Double = 1
   
   var checkEvents : Boolean = false
 
