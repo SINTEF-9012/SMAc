@@ -43,28 +43,35 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
 
 
   def checkForTransition: Option[Transition] = {
+    //println(this+".checkForTransition: ")
     getOutgoingTransitions()
-      .filter(t => {
-      t.evaluateEvents && t.checkGuard
-    })
-      .sortWith((t, r) => t.getScore > r.getScore).headOption
+    .filter(t => {
+        t.evaluateEvents && t.checkGuard
+      })
+    .sortWith((t, r) => t.getScore > r.getScore).headOption
   }
 
   def dispatchEvent(e: Event) {
+    //println(this+".Dispatching: "+e)
     getOutgoingTransitions().filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
-      .foreach(t => {
-      t.eventsMap.put(e, true)
-    })
+    .foreach(t => {
+        //println("  Dispatching event to transition "+t)
+        t.eventsMap.put(e, true)
+      })
+    checkForTransition match {
+      case Some(t) => 
+        //println("Transition: "+t)
+        t.execute
+      case None =>
+        //println("No Transition")
+    }
   }
 
   override def act() {
     loop {
       react {
-        case e: Event =>
-          dispatchEvent(e)
-          checkForTransition match {
-            case Some(t) => t.execute
-            case None =>
+        case e: Event => {
+            dispatchEvent(e)
           }
       }
     }
@@ -106,21 +113,9 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
   var history: State = null
 
   override def dispatchEvent(e: Event) {
-    //println("Dispatching: "+e)
-    if (current != null) {
-      current ! e
-    }
     super.dispatchEvent(e)
-  }
-
-  override def act() = {
-    loop {
-      react {
-        case e: Event =>
-          dispatchEvent(e)
-        case e: Any =>
-          println("Discarded: " + e)
-      }
+    if (parent == null || (parent.current == this && current != null)) {
+      current ! e
     }
   }
 
@@ -139,7 +134,7 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
     substates.foreach {
       s =>
       //println("  debug "+s)
-        s.startState
+      s.startState
     }
   }
 
@@ -160,7 +155,6 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
     current.executeOnExit
     super.executeOnExit
   }
-
 }
 
 /**
@@ -181,8 +175,8 @@ abstract class Transition(previous: State, next: State, master: Orchestrator, ev
 
   def evaluateEvents(): Boolean = {
     eventsMap.keys.forall(k => {
-      eventsMap.getOrElse(k, false)
-    })
+        eventsMap.getOrElse(k, false)
+      })
   }
 
   def executeActions()
@@ -216,12 +210,12 @@ abstract class TimedTransition(previous: State, next: State, master: Orchestrato
           reactWithin(delay) {
             case STOP_T_TIMER() => { reply(true);exit }
             case TIMEOUT => {
-              if (previous.isCurrent) {
-                getEvents.filter(p => p.isInstanceOf[TIMEOUT_EVENT]).foreach {
-                  event => previous ! event
+                if (previous.isCurrent) {
+                  getEvents.filter(p => p.isInstanceOf[TIMEOUT_EVENT]).foreach {
+                    event => previous ! event
+                  }
                 }
               }
-            }
           }
         }
     }.start
@@ -267,7 +261,7 @@ class Orchestrator() extends Actor {
         case e: Event =>
           stateMachines.foreach {
             sm =>
-              sm ! e
+            sm ! e
           }
         case e: Any =>
           println("Orchestrator_Any: " + e)
