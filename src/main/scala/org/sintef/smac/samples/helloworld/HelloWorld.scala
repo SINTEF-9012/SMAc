@@ -34,7 +34,7 @@ case object EEvent extends Event {}
 case object LEvent extends Event {}									
 case object OEvent extends Event {}					
 
-case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
 
   //create sub-states
   val INIT_state = INIT(master, this)
@@ -58,7 +58,8 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState
   
   override def startState() = {
     super.startState
-    HelloWorldGUI.init
+    if (withGUI)
+      HelloWorldGUI.init
   }
   
   override def onEntry() = {

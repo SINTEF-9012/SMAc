@@ -36,7 +36,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   @Before def initialize() {
     master = new Orchestrator
     master.start
-    sm = new PingStateMachine(master, null, true)
+    sm = new PingStateMachine(master, null, true, false)
     sm.startState
   }
   

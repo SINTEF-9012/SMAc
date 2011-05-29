@@ -30,7 +30,7 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory){
+class PingStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory){
 
   //create sub-states
   val fast = Fast(master, this, true)
@@ -45,7 +45,8 @@ class PingStateMachine(master : Orchestrator, parent : CompositeState, keepHisto
     
   override def startState() = {
     super.startState
-    PingGUI.init
+    if (withGUI)
+      PingGUI.init
   }
   
   def onEntry = {}
