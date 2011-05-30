@@ -56,7 +56,7 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
     getOutgoingTransitions().filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
     .foreach(t => {
         //println("  Dispatching event to transition "+t)
-        t.eventsMap.put(e, true)
+        t.addEvent(e)
       })
     checkForTransition match {
       case Some(t) => 
@@ -71,6 +71,7 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
     loop {
       react {
         case e: Event => {
+            //println("dispacth "+e)
             dispatchEvent(e)
           }
       }
@@ -78,7 +79,8 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
   }
 
   def executeOnEntry() {
-    parent.current = this
+    if (parent != null)
+      parent.current = this
     onEntry
     checkForTransition match {
       case Some(t) => {t.execute}
@@ -96,6 +98,8 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
 
   def startState(): Unit = {
     start
+    /*if (parent == null || parent == this || parent.current == this)
+     executeOnEntry*/
   }
 
 }
@@ -121,21 +125,24 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
 
   override def startState(): Unit = {
     super.startState()
-    if (parent == null || parent == this) {
-      //root composite
-      //println("Root.current = "+initial)
-      current = initial
-      master.register(this)
-    }
-    else if (parent.current == this) {
-      //println("Composite.current = "+initial)
-      current = initial
-    }
     substates.foreach {
       s =>
       //println("  debug "+s)
       s.startState
     }
+    if (parent == null || parent == this) {
+      //root composite
+      //println("Root.current = "+initial)
+      current = initial
+      master.register(this)
+      executeOnEntry
+    }
+    else if (parent.current == this) {
+      //println("Composite.current = "+initial)
+      current = initial
+      executeOnEntry
+    }
+
   }
 
   override def executeOnEntry() {
@@ -170,8 +177,17 @@ abstract class Transition(previous: State, next: State, master: Orchestrator, ev
 
   def getScore: Double = 1
 
-  var eventsMap = scala.collection.mutable.Map[Event, Boolean]()
+  val eventsMap = scala.collection.mutable.Map[Event, Boolean]()
   clearEvents()
+  
+  def addEvent(e : Event) {
+    eventsMap.keys.filter{k => k.getClass == e.getClass}.headOption match { 
+      case Some(k) =>
+        eventsMap.remove(k)
+        eventsMap.put(e, true)
+      case None =>
+    }
+  }
 
   def evaluateEvents(): Boolean = {
     eventsMap.keys.forall(k => {
@@ -237,7 +253,7 @@ abstract class TimedTransition(previous: State, next: State, master: Orchestrato
   }
 }
 
-abstract case class Event() {}
+abstract case class Event()
 case class TIMEOUT_EVENT(t: Transition) extends Event
 
 
@@ -260,11 +276,12 @@ class Orchestrator() extends Actor {
       react {
         case e: Event =>
           stateMachines.foreach {
+            //println("Orchestrator_Event: " + e)
             sm =>
             sm ! e
           }
         case e: Any =>
-          println("Orchestrator_Any: " + e)
+          //println("Orchestrator_Any: " + e)
       }
     }
   }
