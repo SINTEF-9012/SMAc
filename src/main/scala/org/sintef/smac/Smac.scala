@@ -167,18 +167,21 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
 /**
  * Transitions between two states
  */
-abstract class Transition(previous: State, next: State, master: Orchestrator, events: List[Event]) {
+abstract class Transition(previous: State, next: State, master: Orchestrator) {
 
   def getPrevious = previous
 
-  def getEvents = events
+  def getEvents = eventsMap.keys
 
   def checkGuard: Boolean = true
 
   def getScore: Double = 1
 
   val eventsMap = scala.collection.mutable.Map[Event, Boolean]()
-  clearEvents()
+  
+  def initEvent(e : Event) {
+    eventsMap.put(e, false)
+  }
   
   def addEvent(e : Event) {
     eventsMap.keys.filter{k => k.getClass == e.getClass}.headOption match { 
@@ -198,7 +201,7 @@ abstract class Transition(previous: State, next: State, master: Orchestrator, ev
   def executeActions()
 
   final def clearEvents() {
-    getEvents.foreach {
+    eventsMap.keys.foreach {
       k => eventsMap.put(k, false)
     }
   }
@@ -211,11 +214,11 @@ abstract class Transition(previous: State, next: State, master: Orchestrator, ev
   }
 }
 
-abstract class TimedTransition(previous: State, next: State, master: Orchestrator, events: List[Event], delay: Long) extends Transition(previous, next, master, events ) {
+abstract class TimedTransition(previous: State, next: State, master: Orchestrator, delay: Long) extends Transition(previous, next, master) {
 
   var timer: Actor = null;
 
-  override def getEvents = List(TIMEOUT_EVENT(this)) ++events
+  initEvent(TIMEOUT_EVENT(this))
 
   case class STOP_T_TIMER()
 

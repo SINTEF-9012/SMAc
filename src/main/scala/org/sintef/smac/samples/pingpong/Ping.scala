@@ -39,9 +39,9 @@ class PingStateMachine(master : Orchestrator, parent : CompositeState, keepHisto
   override val initial = stop;
 
   //create transitions among sub-states
-  val pongTransition = PongTransition(ping, ping, master, List(PongEvent))
-  val stopTransition = StopTransition(ping, stop, master, List(StopEvent))
-  val startTransition = StartTransition(stop, ping, master, List(StartEvent))
+  val pongTransition = PongTransition(ping, ping, master)
+  val stopTransition = StopTransition(ping, stop, master)
+  val startTransition = StartTransition(stop, ping, master)
   override val outGoingTransitions = List(pongTransition, stopTransition, startTransition)
   
   override def startState() = {
@@ -194,20 +194,23 @@ case class Stop(master : Orchestrator, parent : CompositeState) extends State(ma
 
 
 //Messages defined in the state machine
-case class PongTransition(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) {
+case class PongTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
+  this.initEvent(PongEvent)
   def executeActions() = {
     println("PongTransition")
   }
 }
 
-case class StopTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class StopTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(StopEvent)
   def executeActions() = {
     println("StopTransition")
   }
 }
 
 
-case class StartTransition(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) {
+case class StartTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
+  this.initEvent(StartEvent)
   def executeActions() = {
     println("StartTransition")
   }

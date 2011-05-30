@@ -48,12 +48,12 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState
   override val initial = INIT_state
   
   //create transitions among sub-states
-  val INIT_next_H_transition = INIT_Next_H(INIT_state, H_state, master, List(HEvent))
-  val H_next_E_transition = H_Next_E(H_state, E_state, master, List(EEvent))
-  val E_next_L1_transition = E_Next_L1(E_state, L1_state, master, List(LEvent))
-  val L1_next_L2_transition = L1_Next_L2(L1_state, L2_state, master, List(LEvent))
-  val L2_next_O_transition = L2_Next_O(L2_state, O_state, master, List(OEvent))
-  val O_next_STOP_transition = O_Next_STOP(O_state, STOP_state, master, List())
+  val INIT_next_H_transition = INIT_Next_H(INIT_state, H_state, master)
+  val H_next_E_transition = H_Next_E(H_state, E_state, master)
+  val E_next_L1_transition = E_Next_L1(E_state, L1_state, master)
+  val L1_next_L2_transition = L1_Next_L2(L1_state, L2_state, master)
+  val L2_next_O_transition = L2_Next_O(L2_state, O_state, master)
+  val O_next_STOP_transition = O_Next_STOP(O_state, STOP_state, master)
   override val outGoingTransitions = List(INIT_next_H_transition, H_next_E_transition, E_next_L1_transition, L1_next_L2_transition, L2_next_O_transition, O_next_STOP_transition)    
   
   override def startState() = {
@@ -187,7 +187,8 @@ case class INIT(master : Orchestrator, parent : CompositeState) extends State(ma
   }
 }
 
-case class INIT_Next_H(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class INIT_Next_H(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(HEvent)
   def executeActions() = {
     //TODO: define actions here
   }
@@ -203,7 +204,8 @@ case class H( master : Orchestrator,  parent : CompositeState) extends State(mas
   }
 }
 
-case class H_Next_E(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class H_Next_E(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(EEvent)
   def executeActions() = {
     //TODO: define actions here
   }
@@ -219,7 +221,8 @@ case class E( master : Orchestrator,  parent : CompositeState) extends State(mas
   }
 }
 
-case class E_Next_L1(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class E_Next_L1(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(LEvent)
   def executeActions() = {
     //TODO: define actions here
   }
@@ -235,7 +238,8 @@ case class L1( master : Orchestrator,  parent : CompositeState) extends State(ma
   }
 }
 
-case class L1_Next_L2(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class L1_Next_L2(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(LEvent)
   def executeActions() = {
     //TODO: define actions here
   }  
@@ -251,7 +255,8 @@ case class L2( master : Orchestrator,  parent : CompositeState) extends State(ma
   }
 }
 
-case class L2_Next_O(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class L2_Next_O(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(OEvent)
   def executeActions() = {
     //TODO: define actions here
   }
@@ -267,7 +272,7 @@ case class O( master : Orchestrator,  parent : CompositeState) extends State(mas
   }
 }
 
-case class O_Next_STOP(previous : State, next : State, master : Orchestrator, var events : List[Event]) extends Transition(previous, next, master, events) { 
+case class O_Next_STOP(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
   def executeActions() = {
     //TODO: define actions here
   }  

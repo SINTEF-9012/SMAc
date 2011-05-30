@@ -44,14 +44,14 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : CompositeState
   override val initial = center
   
   //create transitions among sub-states
-  val centerToLeft = CenterToLeft(center, left, master, List(LeftEvent))
-  val centerToRight = CenterToRight(center, right, master, List(RightEvent))
+  val centerToLeft = CenterToLeft(center, left, master)
+  val centerToRight = CenterToRight(center, right, master)
   
-  val leftToCenter = LeftToCenter(left, center, master, List(CenterEvent))
-  val leftToCenterTimeout = LeftToCenterTimeout(left, center, master, List(), 2000)
+  val leftToCenter = LeftToCenter(left, center, master)
+  val leftToCenterTimeout = LeftToCenterTimeout(left, center, master, 2000)
   
-  val rightToCenter = RightToCenter(right, center, master, List(CenterEvent))
-  val rightToCenterTimeout = RightToCenterTimeout(right, center, master, List(), 2000)
+  val rightToCenter = RightToCenter(right, center, master)
+  val rightToCenterTimeout = RightToCenterTimeout(right, center, master, 2000)
   
   override val outGoingTransitions = List(centerToLeft, centerToRight, leftToCenter, leftToCenterTimeout, rightToCenter, rightToCenterTimeout)    
   
@@ -169,13 +169,15 @@ case class Center(master : Orchestrator, parent : CompositeState) extends State(
   }
 }
 
-case class CenterToLeft(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class CenterToLeft(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(LeftEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class CenterToRight(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class CenterToRight(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(RightEvent)
   def executeActions() = {
     //TODO: define actions here
   }
@@ -191,13 +193,15 @@ case class Left( master : Orchestrator,  parent : CompositeState) extends State(
   }
 }
 
-case class LeftToCenter(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class LeftToCenter(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(CenterEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class LeftToCenterTimeout(previous : State, next : State, master : Orchestrator, events : List[Event], delay : Long) extends TimedTransition(previous, next, master, events, delay) { 
+case class LeftToCenterTimeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+  
   def executeActions() = {
     println("TIMEOUT")
   }
@@ -213,13 +217,14 @@ case class Right( master : Orchestrator,  parent : CompositeState) extends State
   }
 }
 
-case class RightToCenter(previous : State, next : State, master : Orchestrator, events : List[Event]) extends Transition(previous, next, master, events) { 
+case class RightToCenter(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+  this.initEvent(CenterEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class RightToCenterTimeout(previous : State, next : State, master : Orchestrator, events : List[Event], delay : Long) extends TimedTransition(previous, next, master, events, delay) { 
+case class RightToCenterTimeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
   def executeActions() = {
     println("TIMEOUT")
   }
