@@ -164,6 +164,7 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
   }
 }
 
+
 /**
  * Transitions between two states
  */
@@ -267,9 +268,9 @@ case class TIMEOUT_EVENT(t: Transition) extends Event
  */
 class Orchestrator() extends Actor {
 
-  var stateMachines = List[CompositeState]()
+  var stateMachines = List[Actor]()
 
-  def register(sm: CompositeState) = {
+  def register(sm: Actor) = {
     //println("Register "+sm)
     stateMachines ::= sm
   }
