@@ -25,7 +25,7 @@ object Main{
     val master = new Orchestrator
     master.start
     
-    val sm = new HelloWorldStateMachine(master, null, false, true)
+    val sm = new HelloWorldStateMachine(master, Option(null), false, true)
 
     sm.startState
   }

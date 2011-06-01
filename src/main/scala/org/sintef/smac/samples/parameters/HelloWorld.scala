@@ -31,16 +31,16 @@ import org.sintef.smac._
 
 case class LetterEvent(letter : String) extends Event {}									
 
-case class HelloWorld2StateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class HelloWorld2StateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
 
   //create sub-states
-  val INIT_state = INIT(master, this)
-  val H_state = H(master, this)
-  val E_state = E(master, this)
-  val L1_state = L1(master, this)
-  val L2_state = L2(master, this)
-  val O_state = O(master, this)
-  val STOP_state = STOP(master, this)
+  val INIT_state = INIT(master, Option(this))
+  val H_state = H(master, Option(this))
+  val E_state = E(master, Option(this))
+  val L1_state = L1(master, Option(this))
+  val L2_state = L2(master, Option(this))
+  val O_state = O(master, Option(this))
+  val STOP_state = STOP(master, Option(this))
   override val substates = List(INIT_state, H_state, E_state, L1_state, L2_state, O_state, STOP_state)
   override val initial = INIT_state
   
@@ -174,7 +174,7 @@ case class HelloWorld2StateMachine(master : Orchestrator, parent : CompositeStat
   }
 }
 
-case class INIT(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+case class INIT(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("init")
   }
@@ -200,7 +200,7 @@ case class INIT_Next_H(previous : State, next : State, master : Orchestrator) ex
   }
 }
 
-case class H( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class H( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("W")
   }
@@ -225,7 +225,7 @@ case class H_Next_E(previous : State, next : State, master : Orchestrator) exten
   }
 }
 
-case class E( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class E( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("O")
   }
@@ -251,7 +251,7 @@ case class E_Next_L1(previous : State, next : State, master : Orchestrator) exte
   }
 }
 
-case class L1( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class L1( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("R")
   }
@@ -277,7 +277,7 @@ case class L1_Next_L2(previous : State, next : State, master : Orchestrator) ext
   }  
 }
 
-case class L2( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class L2( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("L")
   }
@@ -303,7 +303,7 @@ case class L2_Next_O(previous : State, next : State, master : Orchestrator) exte
   }
 }
 
-case class O( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class O( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("D")
   }
@@ -319,7 +319,7 @@ case class O_Next_STOP(previous : State, next : State, master : Orchestrator) ex
   }  
 }
 
-case class STOP( master : Orchestrator,  parent : CompositeState) extends State(master, parent) {
+case class STOP( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("stop")
   }

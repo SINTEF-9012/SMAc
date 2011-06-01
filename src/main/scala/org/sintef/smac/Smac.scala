@@ -26,20 +26,25 @@ import scala.actors.TIMEOUT
  * and implements the onEntry and onExit methods
  * to define the actions to execute on entry and on exit.
  */
-abstract class State(master: Orchestrator, parent: CompositeState) extends Actor {
+abstract class State(master: Orchestrator, parent: Option[CompositeState]) extends Actor {
 
   def getOutgoingTransitions(): List[Transition] = {
-    if (parent != null) {
-      parent.outGoingTransitions.filter {
-        t => t.getPrevious == this
-      }
-    }
-    else {
-      List()
+    parent match {
+      case Some(p) =>
+        p.outGoingTransitions.filter(t => t.getPrevious == this)
+      case None =>
+        List()
     }
   }
 
-  def isCurrent = parent.current == this
+  def isCurrent : Boolean = {
+    parent match {
+      case Some(p) => p.current == this
+      case None => true
+    }
+  }
+    
+    
 
 
   def checkForTransition: Option[Transition] = {
@@ -72,15 +77,25 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
       react {
         case e: Event => {
             //println("dispacth "+e)
-            dispatchEvent(e)
+            if(isCurrent) {
+              dispatchEvent(e)
+            }
+            else {
+              parent match {
+                case Some(p) => p.current ! e
+                case None =>
+              }
+            }
           }
       }
     }
   }
 
   def executeOnEntry() {
-    if (parent != null)
-      parent.current = this
+    parent match {
+      case Some(p) => p.current = this
+      case None =>
+    } 
     onEntry
     checkForTransition match {
       case Some(t) => {t.execute}
@@ -104,7 +119,7 @@ abstract class State(master: Orchestrator, parent: CompositeState) extends Actor
 
 }
 
-abstract class CompositeState(master: Orchestrator, parent: CompositeState, keepHistory: Boolean) extends State(master, parent) {
+abstract class CompositeState(master: Orchestrator, parent: Option[CompositeState], keepHistory: Boolean) extends State(master, parent) {
 
   val substates: List[State]
 
@@ -112,53 +127,38 @@ abstract class CompositeState(master: Orchestrator, parent: CompositeState, keep
 
   val initial: State
 
-  var current: State = null
-
-  var history: State = null
+  var current: State = _
 
   override def dispatchEvent(e: Event) {
     super.dispatchEvent(e)
-    if (parent == null || (parent.current == this && current != null)) {
-      current ! e
-    }
+    current ! e
   }
 
   override def startState(): Unit = {
+    current = initial
     super.startState()
     substates.foreach {
       s =>
       //println("  debug "+s)
       s.startState
     }
-    if (parent == null || parent == this) {
-      //root composite
-      //println("Root.current = "+initial)
-      current = initial
-      master.register(this)
-      executeOnEntry
+    parent match {
+      case Some(p) =>
+      case None => //Root composite
+        master.register(this)
+        executeOnEntry
     }
-    else if (parent.current == this) {
-      //println("Composite.current = "+initial)
-      current = initial
-      executeOnEntry
-    }
-
   }
 
   override def executeOnEntry() {
     super.executeOnEntry
-    if (keepHistory && history != null) {
-      history.executeOnEntry
-    }
-    else {
-      initial.executeOnEntry
-    }
+    current.executeOnEntry
   }
 
   override def executeOnExit() {
-    if (keepHistory) {
-      history = current
-    }
+    if (!keepHistory) {
+      current = initial
+    } 
     current.executeOnExit
     super.executeOnExit
   }

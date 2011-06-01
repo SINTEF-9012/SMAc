@@ -32,7 +32,7 @@ class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
   @Before def initialize() {
     master = new Orchestrator
     master.start
-    sm = new HelloWorld2StateMachine(master, null, false, false)
+    sm = new HelloWorld2StateMachine(master, Option(null), false, false)
     sm.startState
   }
   

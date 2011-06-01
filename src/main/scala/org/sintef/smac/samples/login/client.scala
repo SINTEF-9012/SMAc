@@ -35,9 +35,9 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
 
   var myLogin : String = _
   var myPassword : String = _
-  val behavior = ClientLogicClient(master, null, keepHistory, withGUI)
+  val behavior = ClientLogicClient(master, Option(null), keepHistory, withGUI)
   
-  case class INITClient(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class INITClient(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("Init...")
       myLogin = "Brice"
@@ -56,7 +56,7 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
     }
   }
 
-  case class WaitForAckClient(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class WaitForAckClient(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("Waiting Ack...")
 
@@ -80,7 +80,7 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
     }
   }
 
-  case class TimeoutClient(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class TimeoutClient(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("TIMEOUT!")
       exit
@@ -91,7 +91,7 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
     }
   }
 
-  case class LoggedInClient(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class LoggedInClient(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("Executing business logic")
 
@@ -101,13 +101,13 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
     }
   }
 
-  case class ClientLogicClient(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class ClientLogicClient(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
 
     //create sub-states
-    val INIT_state = INITClient(master, this)
-    val WaitForAck_state = WaitForAckClient(master, this)
-    val Timeout_state = TimeoutClient(master, this)
-    val LoggedIn_state = LoggedInClient(master, this)
+    val INIT_state = INITClient(master, Option(this))
+    val WaitForAck_state = WaitForAckClient(master, Option(this))
+    val Timeout_state = TimeoutClient(master, Option(this))
+    val LoggedIn_state = LoggedInClient(master, Option(this))
     override val substates = List(INIT_state, WaitForAck_state, Timeout_state, LoggedIn_state)
     override val initial = INIT_state
   

@@ -35,9 +35,9 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
   var currentLogin : String = _
   var currentPassword : String = _
   
-  val behavior = new Service1Logic(master, null, keepHistory, withGUI)
+  val behavior = new Service1Logic(master, Option(null), keepHistory, withGUI)
 
-  case class WaitCredentialsService1(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class WaitCredentialsService1(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
     }
   
@@ -60,7 +60,7 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class ValidateCredentialsService1(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class ValidateCredentialsService1(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("Validating credentials...")
 
@@ -76,11 +76,11 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class Service1Logic(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class Service1Logic(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
 
     //create sub-states
-    val WaitCredentials_state = WaitCredentialsService1(master, this)
-    val ValidateCredentials_state = ValidateCredentialsService1(master, this)
+    val WaitCredentials_state = WaitCredentialsService1(master, Option(this))
+    val ValidateCredentials_state = ValidateCredentialsService1(master, Option(this))
     override val substates = List(WaitCredentials_state, ValidateCredentials_state)
     override val initial = WaitCredentials_state
   

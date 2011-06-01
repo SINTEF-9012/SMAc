@@ -20,10 +20,10 @@ package org.sintef.smac.samples.pingpong
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PongStateMachine(master : Orchestrator, parent : CompositeState, keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
+class PongStateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
   
   //create sub-states
-  val pong = Pong(master, this)
+  val pong = Pong(master, Option(this))
   override val substates = List(pong)
   override val initial = pong
   
@@ -36,7 +36,7 @@ class PongStateMachine(master : Orchestrator, parent : CompositeState, keepHisto
   def onExit() = {}
 }
 
-case class Pong(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+case class Pong(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
   override def onEntry() = {
     println("Pong.onEntry")
     master ! PongEvent

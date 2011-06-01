@@ -32,9 +32,9 @@ import org.sintef.smac._
 
 class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) {
   
-  val behavior = new Service2Logic(master, null, keepHistory, withGUI)
+  val behavior = new Service2Logic(master, Option(null), keepHistory, withGUI)
 
-  case class WaitLoginService2(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class WaitLoginService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
     }
   
@@ -50,7 +50,7 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class ValidateLoginService2(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class ValidateLoginService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
     override def onEntry() = {
       println("Validating login...")
 
@@ -68,7 +68,7 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class WaitPasswordService2(master : Orchestrator, parent : CompositeState) extends State(master, parent) {
+  case class WaitPasswordService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
   
     override def onEntry() = {
     }
@@ -87,12 +87,12 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class Service2Logic(master : Orchestrator, parent : CompositeState, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class Service2Logic(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
 
     //create sub-states
-    val WaitLogin_state = WaitLoginService2(master, this)
-    val ValidateLogin_state = ValidateLoginService2(master, this)
-    val WaitPassword_state = WaitPasswordService2(master, this)
+    val WaitLogin_state = WaitLoginService2(master, Option(this))
+    val ValidateLogin_state = ValidateLoginService2(master, Option(this))
+    val WaitPassword_state = WaitPasswordService2(master, Option(this))
     override val substates = List(WaitLogin_state, ValidateLogin_state, WaitPassword_state)
     override val initial = WaitLogin_state
   

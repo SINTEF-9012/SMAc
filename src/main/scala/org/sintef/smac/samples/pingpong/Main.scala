@@ -37,7 +37,7 @@ object Main {
     val master = new Orchestrator
     master.start
     
-    val pingSM = new PingStateMachine(master, null, false)
+    val pingSM = new PingStateMachine(master, Option(null), false)
     println(pingSM.initial)
     
     //val pongSM = new PongStateMachine(master, false)
