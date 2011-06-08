@@ -32,12 +32,12 @@ import org.sintef.smac._
 
 class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) {
   
-  val behavior = new MediatorLogicMediator(master, Option(null), keepHistory, withGUI)
+  val behavior = new MediatorLogicMediator(master, keepHistory, withGUI)
 
   var login : String = _
   var password : String = _
   
-  case class WaitForCredentialsMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitForCredentialsMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Waiting Credentials from Client...")
 
@@ -64,7 +64,7 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class WaitForLoginAckMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitForLoginAckMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Waiting for login Ack from Service2...")
 
@@ -94,7 +94,7 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     
     
     
-  case class WaitForPasswordAckMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitForPasswordAckMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Waiting for password Ack from Service2...")
 
@@ -119,7 +119,7 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class TimeoutMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class TimeoutMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("TIMEOUT!")
       exit
@@ -130,7 +130,7 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class LoggedInMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class LoggedInMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Mediation of the business logic")
 
@@ -140,16 +140,21 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class MediatorLogicMediator(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class MediatorLogicMediator(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
     //create sub-states
-    val WaitForCredentials_state = WaitForCredentialsMediator(master, Option(this))
-    val WaitForLoginAck_state = WaitForLoginAckMediator(master, Option(this))
-    val WaitForPasswordAck_state = WaitForPasswordAckMediator(master, Option(this))
-    val Timeout_state = TimeoutMediator(master, Option(this))
-    val LoggedIn_state = LoggedInMediator(master, Option(this))
-    override val substates = List(WaitForCredentials_state, WaitForLoginAck_state, WaitForPasswordAck_state, Timeout_state, LoggedIn_state)
-    override val initial = WaitForCredentials_state
+    val WaitForCredentials_state = WaitForCredentialsMediator(master)
+    val WaitForLoginAck_state = WaitForLoginAckMediator(master)
+    val WaitForPasswordAck_state = WaitForPasswordAckMediator(master)
+    val Timeout_state = TimeoutMediator(master)
+    val LoggedIn_state = LoggedInMediator(master)
+    addSubState(WaitForCredentials_state)
+    addSubState(WaitForLoginAck_state)
+    addSubState(WaitForPasswordAck_state)
+    addSubState(Timeout_state)
+    addSubState(LoggedIn_state)
+    setInitial(WaitForCredentials_state)
+    
   
     //create transitions among sub-states
     val waitForCrendentials = WaitForCredentials_Next_WaitForLoginAckMediator(WaitForCredentials_state, WaitForLoginAck_state, master)
@@ -157,7 +162,11 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     val loginTimeout = WaitForLoginAck_Timeout_TimeoutMediator(WaitForLoginAck_state, Timeout_state, master, 10000) 
     val WaitForPasswordAck = WaitForPasswordAck_Next_LoggedInMediator(WaitForPasswordAck_state, LoggedIn_state, master)
     val passTimeout = WaitForPasswordAck_Timeout_TimeoutMediator(WaitForPasswordAck_state, Timeout_state, master, 10000)
-    override val outGoingTransitions = List(waitForCrendentials, waitForLoginAck, loginTimeout, WaitForPasswordAck, passTimeout)    
+    addTransition(waitForCrendentials)
+    addTransition(waitForLoginAck)
+    addTransition(loginTimeout)
+    addTransition(WaitForPasswordAck)
+    addTransition(passTimeout)
   
 
     override def onEntry() = {

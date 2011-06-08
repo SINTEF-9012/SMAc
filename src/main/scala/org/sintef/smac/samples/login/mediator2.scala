@@ -32,12 +32,12 @@ import org.sintef.smac._
 
 class MediatorComponent2(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) {
   
-  val behavior = new MediatorLogicMediator(master, Option(null), keepHistory, withGUI)
+  val behavior = new MediatorLogicMediator(master, keepHistory, withGUI)
 
   var login : String = _
   var password : String = _
   
-  case class WaitForCredentialsMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitForCredentialsMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Waiting Credentials from Client...")
 
@@ -65,7 +65,7 @@ class MediatorComponent2(master : Orchestrator, keepHistory : Boolean, withGUI :
     }
   }
 
-  case class WaitForAckMediator(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitForAckMediator(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Waiting for login Ack from Service2...")
 
@@ -94,19 +94,22 @@ class MediatorComponent2(master : Orchestrator, keepHistory : Boolean, withGUI :
     
     
   
-  case class MediatorLogicMediator(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class MediatorLogicMediator(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
     //create sub-states
-    val WaitForCredentials_state = WaitForCredentialsMediator(master, Option(this))
-    val WaitForAck_state = WaitForAckMediator(master, Option(this))
-    override val substates = List(WaitForCredentials_state, WaitForAck_state)
-    override val initial = WaitForCredentials_state
+    val WaitForCredentials_state = WaitForCredentialsMediator(master)
+    val WaitForAck_state = WaitForAckMediator(master)
+    addSubState(WaitForCredentials_state)
+    addSubState(WaitForAck_state)
+    setInitial(WaitForCredentials_state)
   
     //create transitions among sub-states
     val waitForCrendentials = WaitForCredentials_Next_WaitForAckMediator(WaitForCredentials_state, WaitForAck_state, master)
     val waitForAck = WaitForAck_Next_WaitForCredentialsMediator(WaitForAck_state, WaitForCredentials_state, master)
     val timeout = WaitForAck_Timeout_TimeoutMediator(WaitForAck_state, WaitForCredentials_state, master, 10000)
-    override val outGoingTransitions = List(waitForCrendentials, waitForAck, timeout)    
+    addTransition(waitForCrendentials)
+    addTransition(waitForAck)
+    addTransition(timeout)
   
 
     override def onEntry() = {

@@ -30,18 +30,20 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory){
+class PingStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory){
 
   //create sub-states
-  val fast = Fast(master, Option(this), true)
-  val slow = Slow(master, Option(this), true)
-  override val substates = List(fast, slow)
-  override val initial = slow
+  val fast = Fast(master, true)
+  val slow = Slow(master, true)
+  addSubState(fast)
+  addSubState(slow)
+  setInitial(slow)
     
   //create transitions among sub-states
   val slowTransition = SlowTransition(fast, slow, master)
   val fastTransition = FastTransition(slow, fast, master)
-  override val outGoingTransitions = List(slowTransition, fastTransition)
+  addTransition(slowTransition)
+  addTransition(fastTransition)
     
   override def startState() = {
     super.startState
@@ -205,18 +207,21 @@ class PingStateMachine(master : Orchestrator, parent : Option[CompositeState], k
   }    
 }
 
-case class Fast(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class Fast(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory) {
   //create sub-states
-  val ping = Ping(master, Option(this), 25)
-  val stop = Stop(master, Option(this))  
-  override val substates = List(ping, stop)
-  override val initial = stop
+  val ping = Ping(master, 25)
+  val stop = Stop(master)  
+  addSubState(ping)
+  addSubState(stop)
+  setInitial(stop)
     
   //create transitions among sub-states
   val pongTransition = PongTransition(ping, ping, master)
   val stopTransition = StopTransition(ping, stop, master)
   val startTransition = StartTransition(stop, ping, master)
-  override val outGoingTransitions = List(pongTransition, stopTransition, startTransition)
+  addTransition(pongTransition)
+  addTransition(stopTransition)
+  addTransition(startTransition)
     
   override def onEntry() = {
     println("Fast.onEntry")
@@ -227,18 +232,21 @@ case class Fast(master : Orchestrator, parent : Option[CompositeState], keepHist
   }
 }
 
-case class Slow(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class Slow(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory) {
   //create sub-states
-  val ping = Ping(master, Option(this), 1000)
-  val stop = Stop(master, Option(this))  
-  override val substates = List(ping, stop)
-  override val initial = stop
+  val ping = Ping(master, 1000)
+  val stop = Stop(master)  
+  addSubState(ping)
+  addSubState(stop)
+  setInitial(stop)
     
   //create transitions among sub-states
   val pongTransition = PongTransition(ping, ping, master)
   val stopTransition = StopTransition(ping, stop, master)
   val startTransition = StartTransition(stop, ping, master)
-  override val outGoingTransitions = List(pongTransition, stopTransition, startTransition)
+  addTransition(pongTransition)
+  addTransition(stopTransition)
+  addTransition(startTransition)
   
   override def onEntry() = {
     println("Slow.onEntry")
@@ -249,7 +257,7 @@ case class Slow(master : Orchestrator, parent : Option[CompositeState], keepHist
   }
 }
 
-case class Ping(master : Orchestrator, parent : Option[CompositeState], delay : Long) extends State(master, parent) {
+case class Ping(master : Orchestrator, delay : Long) extends State(master) {
   val max = 10000
   var count = 0
     
@@ -272,7 +280,7 @@ case class Ping(master : Orchestrator, parent : Option[CompositeState], delay : 
   
 }
 
-case class Stop(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+case class Stop(master : Orchestrator) extends State(master) {
   
   override def onEntry() = {
     println("Stop.onEntry")

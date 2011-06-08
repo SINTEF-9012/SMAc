@@ -33,7 +33,7 @@ class SimpleTimeTest extends JUnitSuite with ShouldMatchersForJUnit {
     master = new Orchestrator
     master.start
     
-    sm = new HelloWorldStateMachine(master, Option(null), false, false)
+    sm = new HelloWorldStateMachine(master, false, false)
 
     sm.startState
   }

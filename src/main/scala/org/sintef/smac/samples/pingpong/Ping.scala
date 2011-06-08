@@ -30,19 +30,22 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean) extends CompositeState(master, parent, keepHistory){
+class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends CompositeState(master, keepHistory){
 
   //create sub-states
-  val ping = Ping(master, Option(this))
-  val stop = Stop(master, Option(this))
-  override val substates = List(ping, stop)
-  override val initial = stop;
+  val ping = Ping(master)
+  val stop = Stop(master)
+  addSubState(ping)
+  addSubState(stop)
+  setInitial(stop)
 
   //create transitions among sub-states
   val pongTransition = PongTransition(ping, ping, master)
   val stopTransition = StopTransition(ping, stop, master)
   val startTransition = StartTransition(stop, ping, master)
-  override val outGoingTransitions = List(pongTransition, stopTransition, startTransition)
+  addTransition(pongTransition)
+  addTransition(stopTransition)
+  addTransition(pongTransition)
   
   override def startState() = {
     super.startState
@@ -156,7 +159,7 @@ class PingStateMachine(master : Orchestrator, parent : Option[CompositeState], k
   }    
 }
 
-case class Ping(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+case class Ping(master : Orchestrator) extends State(master) {
   val max = 10000
   var count = 0
   var delay = 25
@@ -180,7 +183,7 @@ case class Ping(master : Orchestrator, parent : Option[CompositeState]) extends 
   
 }
 
-case class Stop(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+case class Stop(master : Orchestrator) extends State(master) {
   
   override def onEntry() = {
     println("Stop.onEntry")

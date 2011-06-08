@@ -32,9 +32,9 @@ import org.sintef.smac._
 
 class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) {
   
-  val behavior = new Service2Logic(master, Option(null), keepHistory, withGUI)
+  val behavior = new Service2Logic(master, keepHistory, withGUI)
 
-  case class WaitLoginService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitLoginService2(master : Orchestrator) extends State(master) {
     override def onEntry() = {
     }
   
@@ -50,7 +50,7 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class ValidateLoginService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class ValidateLoginService2(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Validating login...")
 
@@ -68,7 +68,7 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class WaitPasswordService2(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitPasswordService2(master : Orchestrator) extends State(master) {
   
     override def onEntry() = {
     }
@@ -87,20 +87,24 @@ class Service2Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class Service2Logic(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class Service2Logic(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
     //create sub-states
-    val WaitLogin_state = WaitLoginService2(master, Option(this))
-    val ValidateLogin_state = ValidateLoginService2(master, Option(this))
-    val WaitPassword_state = WaitPasswordService2(master, Option(this))
-    override val substates = List(WaitLogin_state, ValidateLogin_state, WaitPassword_state)
-    override val initial = WaitLogin_state
+    val WaitLogin_state = WaitLoginService2(master)
+    val ValidateLogin_state = ValidateLoginService2(master)
+    val WaitPassword_state = WaitPasswordService2(master)
+    addSubState(WaitLogin_state)
+    addSubState(ValidateLogin_state)
+    addSubState(WaitPassword_state)
+    setInitial(WaitLogin_state)
   
     //create transitions among sub-states
     val WaitLogin_next_ValidateLogin_transition = WaitLogin_Next_ValidateLoginService2(WaitLogin_state, ValidateLogin_state, master)
     val ValidateLogin_next_WaitPassword_transition = ValidateLogin_Next_WaitPasswordService2(ValidateLogin_state, WaitPassword_state, master)
     val WaitPassword_next_ValidateLogin_transition = WaitPassword_Next_ValidatePasswordService2(WaitPassword_state, WaitLogin_state, master)
-    override val outGoingTransitions = List(WaitLogin_next_ValidateLogin_transition, ValidateLogin_next_WaitPassword_transition, WaitPassword_next_ValidateLogin_transition)    
+    addTransition(WaitLogin_next_ValidateLogin_transition)
+    addTransition(ValidateLogin_next_WaitPassword_transition)
+    addTransition(WaitPassword_next_ValidateLogin_transition)
   
 
     override def onEntry() = {

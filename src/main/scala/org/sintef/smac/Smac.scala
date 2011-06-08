@@ -26,12 +26,14 @@ import scala.actors.TIMEOUT
  * and implements the onEntry and onExit methods
  * to define the actions to execute on entry and on exit.
  */
-abstract class State(master: Orchestrator, parent: Option[CompositeState]) extends Actor {
+abstract class State(master: Orchestrator) extends Actor {
 
+  var parent: Option[CompositeState] = Option(null)
+  
   def getOutgoingTransitions(): List[Transition] = {
     parent match {
       case Some(p) =>
-        p.outGoingTransitions.filter(t => t.getPrevious == this)
+        p.transitions.filter(t => t.getPrevious == this)
       case None =>
         List()
     }
@@ -44,9 +46,6 @@ abstract class State(master: Orchestrator, parent: Option[CompositeState]) exten
     }
   }
     
-    
-
-
   def checkForTransition: Option[Transition] = {
     //println(this+".checkForTransition: ")
     getOutgoingTransitions()
@@ -113,19 +112,31 @@ abstract class State(master: Orchestrator, parent: Option[CompositeState]) exten
 
   def startState(): Unit = {
     start
-    /*if (parent == null || parent == this || parent.current == this)
-     executeOnEntry*/
   }
 
 }
 
-abstract class CompositeState(master: Orchestrator, parent: Option[CompositeState], keepHistory: Boolean) extends State(master, parent) {
+abstract class CompositeState(master: Orchestrator, keepHistory: Boolean) extends State(master) {
+  
+  def addSubState(sub : State) {
+    substates ++= List(sub)
+    sub.parent = Option(this)
+  }
+  
+  def addTransition(t : Transition) {
+    transitions ++= List(t)
+  }
+  
+  def setInitial(i : State) {
+    initial = i
+    current = initial
+  }
 
-  val substates: List[State]
+  var substates: List[State] = List()
 
-  val outGoingTransitions: List[Transition]
+  var transitions: List[Transition] = List()
 
-  val initial: State
+  var initial: State = _
 
   var current: State = _
 
@@ -135,7 +146,7 @@ abstract class CompositeState(master: Orchestrator, parent: Option[CompositeStat
   }
 
   override def startState(): Unit = {
-    current = initial
+    //current = initial
     super.startState()
     substates.foreach {
       s =>

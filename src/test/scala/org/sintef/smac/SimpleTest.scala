@@ -32,7 +32,7 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
   @Before def initialize() {
     master = new Orchestrator
     master.start
-    sm = new HelloWorldStateMachine(master, Option(null), false, false)
+    sm = new HelloWorldStateMachine(master, false, false)
     sm.startState
   }
   

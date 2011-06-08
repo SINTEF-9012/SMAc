@@ -35,9 +35,9 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
   var currentLogin : String = _
   var currentPassword : String = _
   
-  val behavior = new Service1Logic(master, Option(null), keepHistory, withGUI)
+  val behavior = new Service1Logic(master, keepHistory, withGUI)
 
-  case class WaitCredentialsService1(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class WaitCredentialsService1(master : Orchestrator) extends State(master) {
     override def onEntry() = {
     }
   
@@ -60,7 +60,7 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class ValidateCredentialsService1(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+  case class ValidateCredentialsService1(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Validating credentials...")
 
@@ -76,18 +76,20 @@ class Service1Component(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class Service1Logic(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+  case class Service1Logic(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
     //create sub-states
-    val WaitCredentials_state = WaitCredentialsService1(master, Option(this))
-    val ValidateCredentials_state = ValidateCredentialsService1(master, Option(this))
-    override val substates = List(WaitCredentials_state, ValidateCredentials_state)
-    override val initial = WaitCredentials_state
+    val WaitCredentials_state = WaitCredentialsService1(master)
+    val ValidateCredentials_state = ValidateCredentialsService1(master)
+    addSubState(WaitCredentials_state)
+    addSubState(ValidateCredentials_state)
+    setInitial(WaitCredentials_state)
   
     //create transitions among sub-states
     val WaitCredentials_next_ValidateCredentials_transition = WaitCredentials_Next_ValidateCredentialsService1(WaitCredentials_state, ValidateCredentials_state, master)
     val ValidateCredentials_next_WaitCredentials_transition = ValidateCredentials_Next_WaitCredentialsService1(ValidateCredentials_state, WaitCredentials_state, master)
-    override val outGoingTransitions = List(WaitCredentials_next_ValidateCredentials_transition, ValidateCredentials_next_WaitCredentials_transition)    
+    addTransition(WaitCredentials_next_ValidateCredentials_transition) 
+    addTransition(ValidateCredentials_next_WaitCredentials_transition)
   
 
     override def onEntry() = {

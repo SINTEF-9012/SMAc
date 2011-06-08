@@ -34,18 +34,24 @@ case object EEvent extends Event {}
 case object LEvent extends Event {}									
 case object OEvent extends Event {}					
 
-case class HelloWorldStateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
   //create sub-states
-  val INIT_state = INIT(master, Option(this))
-  val H_state = H(master, Option(this))
-  val E_state = E(master, Option(this))
-  val L1_state = L1(master, Option(this))
-  val L2_state = L2(master, Option(this))
-  val O_state = O(master, Option(this))
-  val STOP_state = STOP(master, Option(this))
-  override val substates = List(INIT_state, H_state, E_state, L1_state, L2_state, O_state, STOP_state)
-  override val initial = INIT_state
+  val INIT_state = INIT(master)
+  val H_state = H(master)
+  val E_state = E(master)
+  val L1_state = L1(master)
+  val L2_state = L2(master)
+  val O_state = O(master)
+  val STOP_state = STOP(master)
+  addSubState(INIT_state)
+  addSubState(H_state)
+  addSubState(E_state)
+  addSubState(L1_state)
+  addSubState(L2_state)
+  addSubState(O_state)
+  addSubState(STOP_state)
+  setInitial(INIT_state)
   
   //create transitions among sub-states
   val INIT_next_H_transition = INIT_Next_H(INIT_state, H_state, master)
@@ -54,7 +60,13 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : Option[Composi
   val L1_next_L2_transition = L1_Next_L2(L1_state, L2_state, master)
   val L2_next_O_transition = L2_Next_O(L2_state, O_state, master)
   val O_next_STOP_transition = O_Next_STOP(O_state, STOP_state, master)
-  override val outGoingTransitions = List(INIT_next_H_transition, H_next_E_transition, E_next_L1_transition, L1_next_L2_transition, L2_next_O_transition, O_next_STOP_transition)    
+  
+  addTransition(INIT_next_H_transition)
+  addTransition(H_next_E_transition)
+  addTransition(E_next_L1_transition)
+  addTransition(L1_next_L2_transition)
+  addTransition(L2_next_O_transition)
+  addTransition(O_next_STOP_transition)
   
   override def startState() = {
     super.startState
@@ -177,7 +189,7 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : Option[Composi
   }
 }
 
-case class INIT(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+case class INIT(master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("init")
   }
@@ -194,7 +206,7 @@ case class INIT_Next_H(previous : State, next : State, master : Orchestrator) ex
   }
 }
 
-case class H( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class H( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("W")
   }
@@ -211,7 +223,7 @@ case class H_Next_E(previous : State, next : State, master : Orchestrator) exten
   }
 }
 
-case class E( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class E( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("O")
   }
@@ -228,7 +240,7 @@ case class E_Next_L1(previous : State, next : State, master : Orchestrator) exte
   }
 }
 
-case class L1( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class L1( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("R")
   }
@@ -245,7 +257,7 @@ case class L1_Next_L2(previous : State, next : State, master : Orchestrator) ext
   }  
 }
 
-case class L2( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class L2( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("L")
   }
@@ -262,7 +274,7 @@ case class L2_Next_O(previous : State, next : State, master : Orchestrator) exte
   }
 }
 
-case class O( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class O( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("D")
   }
@@ -278,7 +290,7 @@ case class O_Next_STOP(previous : State, next : State, master : Orchestrator) ex
   }  
 }
 
-case class STOP( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class STOP( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("stop")
   }

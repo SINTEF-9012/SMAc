@@ -34,14 +34,16 @@ case object RightEvent extends Event {}
 case object CenterEvent extends Event {}									
 
 
-case class HelloWorldStateMachine(master : Orchestrator, parent : Option[CompositeState], keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, parent, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
 
   //create sub-states
-  val center = Center(master, Option(this))
-  val right = Right(master, Option(this))
-  val left = Left(master, Option(this))
-  override val substates = List(center, right, left)
-  override val initial = center
+  val center = Center(master)
+  val right = Right(master)
+  val left = Left(master)
+  addSubState(center)
+  addSubState(right)
+  addSubState(left)
+  setInitial(center)
   
   //create transitions among sub-states
   val centerToLeft = CenterToLeft(center, left, master)
@@ -53,7 +55,12 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : Option[Composi
   val rightToCenter = RightToCenter(right, center, master)
   val rightToCenterTimeout = RightToCenterTimeout(right, center, master, 2000)
   
-  override val outGoingTransitions = List(centerToLeft, centerToRight, leftToCenter, leftToCenterTimeout, rightToCenter, rightToCenterTimeout)    
+  addTransition(centerToLeft)
+  addTransition(centerToRight)
+  addTransition(leftToCenter)
+  addTransition(leftToCenterTimeout)
+  addTransition(rightToCenter)
+  addTransition(rightToCenterTimeout)
   
   override def startState() = {
     super.startState
@@ -159,7 +166,7 @@ case class HelloWorldStateMachine(master : Orchestrator, parent : Option[Composi
   }
 }
 
-case class Center(master : Orchestrator, parent : Option[CompositeState]) extends State(master, parent) {
+case class Center(master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("CENTER")
   }
@@ -183,7 +190,7 @@ case class CenterToRight(previous : State, next : State, master : Orchestrator) 
   }
 }
 
-case class Left( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class Left( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("LEFT")
   }
@@ -207,7 +214,7 @@ case class LeftToCenterTimeout(previous : State, next : State, master : Orchestr
   }
 }
 
-case class Right( master : Orchestrator,  parent : Option[CompositeState]) extends State(master, parent) {
+case class Right( master : Orchestrator) extends State(master) {
   override def onEntry() = {
     println("RIGHT")
   }
