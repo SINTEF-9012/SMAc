@@ -15,7 +15,7 @@
  * Company: SINTEF IKT, Oslo, Norway
  * Date: 2011
  */
-package org.sintef.smac.samples.login
+package org.sintef.smac.samples.generated
 
 import org.sintef.smac._
 
@@ -39,10 +39,10 @@ object Main{
     val service2 = new Service2Component(master, false, false)
     val mediator = new MediatorComponent(master, false, false)*/
     
-    val mediator = new MediatorComponent(master, false, true)
+    val mediator = new MediatorLogic(master, false, true)
     
     //service2.behavior.startState
-    mediator.behavior.startState
+    mediator.startState
     //client.behavior.startState
     
   }
