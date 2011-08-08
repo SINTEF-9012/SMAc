@@ -211,6 +211,8 @@ abstract class Transition(previous: State, next: State, master: Orchestrator) {
   }
 
   def executeActions()
+  def executeBeforeActions()
+  def executeAfterActions()
 
   final def clearEvents() {
     eventsMap.keys.foreach {
@@ -220,9 +222,11 @@ abstract class Transition(previous: State, next: State, master: Orchestrator) {
 
   def execute() = {
     clearEvents
+    executeBeforeActions
     previous.executeOnExit
     executeActions()
     next.executeOnEntry
+    executeAfterActions
   }
 }
 
