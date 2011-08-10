@@ -50,7 +50,7 @@ case class MediatorLogic(master : Orchestrator, keepHistory : Boolean, withGUI :
   
   //create transitions among sub-states
   addTransition(WaitForCredentials_Next_WaitForAck(WaitForCredentials_state, WaitForAck_state, master))
-  addTransition(WaitForAck_Timeout_Timeout(WaitForAck_state, Timeout_state, master, 10000))
+  //addTransition(WaitForAck_Timeout_Timeout(WaitForAck_state, Timeout_state, master, 10000))
   addTransition(WaitForAck_Next_LoggedIn(WaitForAck_state, LoggedIn_state, master))
   addTransition(LoggedIn_Next_WaitForCredentials(LoggedIn_state, WaitForCredentials_state, master))
   
@@ -90,12 +90,12 @@ case class MediatorLogic(master : Orchestrator, keepHistory : Boolean, withGUI :
     override def onExit() = {
     }
   }
-  case class WaitForAck_Timeout_Timeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitForAck_Timeout_Timeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
   
     def executeActions() = {
     }
   }
-  case class WaitForAck_Next_LoggedIn(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
+*/  case class WaitForAck_Next_LoggedIn(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
     initEvent(AckLoginEvent)
     initEvent(AckPasswordEvent)
   
@@ -139,18 +139,24 @@ case class MediatorLogic(master : Orchestrator, keepHistory : Boolean, withGUI :
 
   object MediatorGUI extends ActionListener {
 
-    val frame = new JFrame("Mediator")
+    val frame = new JFrame("Client mock-up")
+    val frame2 = new JFrame("Service2 mock-up")
     val screen = new JTextPane()
 	
     val sendlogin : JButton = new JButton("Send")
     val fieldloginLogin = new JTextField("login")
     val fieldloginPassword = new JTextField("password")
+    
+    
     val sendackLogin : JButton = new JButton("Send")
     val sendackPassword : JButton = new JButton("Send")
 	
     def init {
       frame.setLayout(new GridBagLayout())
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+      
+      frame2.setLayout(new GridBagLayout())
+      frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
 
       var c : GridBagConstraints = new GridBagConstraints()
       c.gridwidth = 1
@@ -173,35 +179,38 @@ case class MediatorLogic(master : Orchestrator, keepHistory : Boolean, withGUI :
     
       //GUI related to ackLogin
       c.gridy = 0
-      c.gridx = 1
-      frame.add(new JLabel("ackLogin"), c)
+      c.gridx = 0
+      frame2.add(new JLabel("ackLogin"), c)
     
       c.gridy = 1
-      c.gridx = 1
-      frame.add(createPanel(), c)
+      c.gridx = 0
+      frame2.add(createPanel(), c)
       
       c.gridy = 2
-      c.gridx = 1
-      frame.add(sendackLogin, c)
+      c.gridx = 0
+      frame2.add(sendackLogin, c)
       sendackLogin.addActionListener(this)
     
       //GUI related to ackPassword
       c.gridy = 0
-      c.gridx = 2
-      frame.add(new JLabel("ackPassword"), c)
+      c.gridx = 1
+      frame2.add(new JLabel("ackPassword"), c)
     
       c.gridy = 1
-      c.gridx = 2
-      frame.add(createPanel(), c)
+      c.gridx = 1
+      frame2.add(createPanel(), c)
       
       c.gridy = 2
-      c.gridx = 2
-      frame.add(sendackPassword, c)
+      c.gridx = 1
+      frame2.add(sendackPassword, c)
       sendackPassword.addActionListener(this)
     
 
       frame.pack
       frame.setVisible(true)
+      
+      frame2.pack
+      frame2.setVisible(true)
     }
   
     def createPanel() : JPanel = {

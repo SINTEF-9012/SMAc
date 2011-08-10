@@ -74,11 +74,11 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class WaitForLoginAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitForLoginAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
     def executeActions() = {
     }
   }
-
+*/
   case class WaitForLoginAck_Next_WaitForPassWordAck(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
   
     this.initEvent(AckLoginEvent(null))
@@ -104,11 +104,11 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     }
   }
 
-  case class WaitForPasswordAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitForPasswordAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
     def executeActions() = {
     }
   }
-
+*/
   case class WaitForPasswordAck_Next_LoggedInMediator(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
   
     this.initEvent(AckPasswordEvent(null))
@@ -159,14 +159,14 @@ class MediatorComponent(master : Orchestrator, keepHistory : Boolean, withGUI : 
     //create transitions among sub-states
     val waitForCrendentials = WaitForCredentials_Next_WaitForLoginAckMediator(WaitForCredentials_state, WaitForLoginAck_state, master)
     val waitForLoginAck = WaitForLoginAck_Next_WaitForPassWordAck(WaitForLoginAck_state, WaitForPasswordAck_state, master)
-    val loginTimeout = WaitForLoginAck_Timeout_TimeoutMediator(WaitForLoginAck_state, Timeout_state, master, 10000) 
+    //val loginTimeout = WaitForLoginAck_Timeout_TimeoutMediator(WaitForLoginAck_state, Timeout_state, master, 10000) 
     val WaitForPasswordAck = WaitForPasswordAck_Next_LoggedInMediator(WaitForPasswordAck_state, LoggedIn_state, master)
-    val passTimeout = WaitForPasswordAck_Timeout_TimeoutMediator(WaitForPasswordAck_state, Timeout_state, master, 10000)
+    //val passTimeout = WaitForPasswordAck_Timeout_TimeoutMediator(WaitForPasswordAck_state, Timeout_state, master, 10000)
     addTransition(waitForCrendentials)
     addTransition(waitForLoginAck)
-    addTransition(loginTimeout)
+    //addTransition(loginTimeout)
     addTransition(WaitForPasswordAck)
-    addTransition(passTimeout)
+    //addTransition(passTimeout)
   
 
     override def onEntry() = {

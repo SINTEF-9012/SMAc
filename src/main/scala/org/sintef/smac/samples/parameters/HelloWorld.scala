@@ -31,7 +31,7 @@ import org.sintef.smac._
 
 case class LetterEvent(letter : String) extends Event {}									
 
-case class HelloWorld2StateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
+case class HelloWorld2StateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends StateMachine(master, keepHistory) {
 
   //create sub-states
   val INIT_state = INIT(master)

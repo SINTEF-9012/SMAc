@@ -30,7 +30,7 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory){
+class PingStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends StateMachine(master, keepHistory){
 
   //create sub-states
   val fast = Fast(master, true)
@@ -216,10 +216,10 @@ case class Fast(master : Orchestrator, keepHistory : Boolean) extends CompositeS
   setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = PongTransition(ping, ping, master)
+  val pongTransition = PongTransition(ping, master)
   val stopTransition = StopTransition(ping, stop, master)
   val startTransition = StartTransition(stop, ping, master)
-  addTransition(pongTransition)
+  addInternalTransition(pongTransition)
   addTransition(stopTransition)
   addTransition(startTransition)
     
@@ -241,10 +241,10 @@ case class Slow(master : Orchestrator, keepHistory : Boolean) extends CompositeS
   setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = PongTransition(ping, ping, master)
+  val pongTransition = PongTransition(ping, master)
   val stopTransition = StopTransition(ping, stop, master)
   val startTransition = StartTransition(stop, ping, master)
-  addTransition(pongTransition)
+  addInternalTransition(pongTransition)
   addTransition(stopTransition)
   addTransition(startTransition)
   
@@ -264,7 +264,7 @@ case class Ping(master : Orchestrator, delay : Long) extends State(master) {
   override def onEntry() = {
     println("Ping.onEntry")
     if (count < max){
-      Thread.sleep(delay)
+      //Thread.sleep(delay)
       master ! PingEvent
       count += 1
     }
@@ -294,7 +294,7 @@ case class Stop(master : Orchestrator) extends State(master) {
 
 
 //Messages defined in the state machine
-case class PongTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
+case class PongTransition(self : State, master : Orchestrator) extends InternalTransition(self, master) {
   this.initEvent(PongEvent)
   def executeActions() = {
     println("PongTransition")

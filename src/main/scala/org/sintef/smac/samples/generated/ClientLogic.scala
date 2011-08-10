@@ -50,7 +50,7 @@ case class ClientLogic(master : Orchestrator, keepHistory : Boolean, withGUI : B
   //create transitions among sub-states
   addTransition(INIT_Next_WaitForAck(INIT_state, WaitForAck_state, master))
   addTransition(WaitForAck_Next_LoggedIn(WaitForAck_state, LoggedIn_state, master))
-  addTransition(WaitForAck_Timeout_Timeout(WaitForAck_state, Timeout_state, master, 10000))
+ // addTransition(WaitForAck_Timeout_Timeout(WaitForAck_state, Timeout_state, master, 10000))
   
 
   override def onEntry() = {
@@ -94,11 +94,11 @@ case class ClientLogic(master : Orchestrator, keepHistory : Boolean, withGUI : B
     def executeActions() = {
     }
   }
-  case class WaitForAck_Timeout_Timeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+  /*case class WaitForAck_Timeout_Timeout(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
   
     def executeActions() = {
     }
-  }
+  }*/
   case class Timeout(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Client.TIMEOUT!")

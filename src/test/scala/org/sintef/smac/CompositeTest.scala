@@ -41,13 +41,13 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   }
   
   @Test def verify() {   
+    println("1/ master ! StartEvent")
     master ! StartEvent
     Thread.sleep(500)
+    println("2/ master ! PongEvent")
     master ! PongEvent
     Thread.sleep(500)
     
-    //LEvent should only trigger one transition
-    //i.e., we should be in L1 state, not in L2 state
     val slow : Slow = sm.substates.filter{s => s.isInstanceOf[Slow]}.head.asInstanceOf[Slow]
     
     println(sm.current)
@@ -55,6 +55,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     sm.current should equal (slow)
     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)
     
+    println("3/ master ! FastEvent")
     master ! FastEvent
     Thread.sleep(500)
     
@@ -64,6 +65,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     sm.current should equal (fast)
     fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)
     
+    println("4/ master ! SlowEvent")
     master ! SlowEvent
     Thread.sleep(500)
     sm.current should equal (slow)

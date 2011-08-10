@@ -48,7 +48,7 @@ case class Service2Logic(master : Orchestrator, keepHistory : Boolean, withGUI :
   addTransition(WaitLogin_Next_ValidateLogin(WaitLogin_state, ValidateLogin_state, master))
   addTransition(ValidateLogin_Next_WaitPassword(ValidateLogin_state, WaitPassword_state, master))
   addTransition(WaitPassword_Next_ValidateLogin(WaitPassword_state, ValidateLogin_state, master))
-  addTransition(WaitPassword_Next_WaitLogin(WaitPassword_state, WaitLogin_state, master, 10000))
+  //addTransition(WaitPassword_Next_WaitLogin(WaitPassword_state, WaitLogin_state, master, 10000))
   addTransition(ValidatePassword_Next_WaitLogin(ValidatePassword_state, WaitLogin_state, master))
   
 
@@ -101,12 +101,12 @@ case class Service2Logic(master : Orchestrator, keepHistory : Boolean, withGUI :
     def executeActions() = {
     }
   }
-  case class WaitPassword_Next_WaitLogin(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitPassword_Next_WaitLogin(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
   
     def executeActions() = {
     }
   }
-  case class ValidatePassword(master : Orchestrator) extends State(master) {
+*/  case class ValidatePassword(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("Validating password...")
 

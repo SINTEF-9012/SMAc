@@ -75,11 +75,11 @@ class MediatorComponent2(master : Orchestrator, keepHistory : Boolean, withGUI :
     }
   }
 
-  case class WaitForAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitForAck_Timeout_TimeoutMediator(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
     def executeActions() = {
     }
   }
-
+*/
   case class WaitForAck_Next_WaitForCredentialsMediator(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
   
     this.initEvent(AckLoginEvent(null))
@@ -106,10 +106,10 @@ class MediatorComponent2(master : Orchestrator, keepHistory : Boolean, withGUI :
     //create transitions among sub-states
     val waitForCrendentials = WaitForCredentials_Next_WaitForAckMediator(WaitForCredentials_state, WaitForAck_state, master)
     val waitForAck = WaitForAck_Next_WaitForCredentialsMediator(WaitForAck_state, WaitForCredentials_state, master)
-    val timeout = WaitForAck_Timeout_TimeoutMediator(WaitForAck_state, WaitForCredentials_state, master, 10000)
+   // val timeout = WaitForAck_Timeout_TimeoutMediator(WaitForAck_state, WaitForCredentials_state, master, 10000)
     addTransition(waitForCrendentials)
     addTransition(waitForAck)
-    addTransition(timeout)
+  //  addTransition(timeout)
   
 
     override def onEntry() = {

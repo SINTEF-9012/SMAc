@@ -75,11 +75,11 @@ class ClientComponent(master : Orchestrator, keepHistory : Boolean, withGUI : Bo
     }
   }
 
-  case class WaitForAck_Timeout_TimeoutClient(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
+/*  case class WaitForAck_Timeout_TimeoutClient(previous : State, next : State, master : Orchestrator, delay : Long) extends TimedTransition(previous, next, master, delay) { 
     def executeActions() = {
     }
   }
-
+*/
   case class TimeoutClient(master : Orchestrator) extends State(master) {
     override def onEntry() = {
       println("TIMEOUT!")

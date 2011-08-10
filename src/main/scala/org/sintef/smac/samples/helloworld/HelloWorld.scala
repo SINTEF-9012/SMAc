@@ -34,7 +34,7 @@ case object EEvent extends Event {}
 case object LEvent extends Event {}									
 case object OEvent extends Event {}					
 
-case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends CompositeState(master, keepHistory) {
+case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends StateMachine(master, keepHistory) {
 
   //create sub-states
   val INIT_state = INIT(master)
