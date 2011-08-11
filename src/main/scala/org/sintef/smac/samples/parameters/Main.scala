@@ -20,13 +20,9 @@ package org.sintef.smac.samples.parameters
 import org.sintef.smac._
 
 object Main{
-  def main(args: Array[String]): Unit = {   
-    println("START")
-    val master = new Orchestrator
-    master.start
-    
-    val sm = new HelloWorld2StateMachine(master, false, true)
-
-    sm.start
+  def main(args: Array[String]): Unit = {       
+    val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
+    val sm = new HelloWorld2StateMachine(false, true)
+    selfChannel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
   }
 }

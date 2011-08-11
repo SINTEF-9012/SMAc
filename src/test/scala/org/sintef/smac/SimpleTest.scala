@@ -26,31 +26,39 @@ import org.junit._
 
 class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
   
-  var master : Orchestrator = _
+  var channel : Channel = _
   var sm :HelloWorldStateMachine = _
   
   @Before def initialize() {
-    master = new Orchestrator
-    master.start
-    sm = new HelloWorldStateMachine(master, false, false)
-    sm.start
+    channel = new Channel
+    channel.start
+    sm = new HelloWorldStateMachine(false, false)
+    
+    println(sm)
+    println(sm.getStateMachine)
+    println(sm.getStateMachine.getPort("hello").get)
+    
+    channel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)  
   }
   
-  @Test def verify() {   
-    master ! HEvent
+  @Test def verify() {
+    println(sm)
+    println(sm.getStateMachine)
+    println(sm.getStateMachine.getPort("hello").get)
+    sm.getStateMachine.getPort("hello").get ! HEvent
     Thread.sleep(100)
-    master ! EEvent
+    sm.getStateMachine.getPort("hello").get ! EEvent
     Thread.sleep(100)
-    master ! LEvent
+    sm.getStateMachine.getPort("hello").get ! LEvent
     Thread.sleep(100)
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
     //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
     
-    master ! LEvent
+    sm.getStateMachine.getPort("hello").get ! LEvent
     Thread.sleep(100)
-    master ! OEvent
+    sm.getStateMachine.getPort("hello").get ! OEvent
     Thread.sleep(100)
     
     //OEvent should trigger on transition from L to O

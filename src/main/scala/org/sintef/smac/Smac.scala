@@ -25,39 +25,94 @@ import scala.actors.Actor
  * These classes should be extended to define the actions of the state
  * and the transitions of a given state machine
  */
-abstract sealed class HandlerAction(master: Orchestrator) {
+abstract sealed class HandlerAction {
   
   protected[smac] var handler : Handler = _
   
-  def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
+  final def getStateMachine = handler.getRoot
+  
+  final def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
   
   def checkGuard: Boolean = true
   def getScore: Double = 1
   
   def executeActions()
+   
 }
 
-abstract class TransitionAction(master: Orchestrator) extends HandlerAction(master) {
+abstract class TransitionAction extends HandlerAction {
   def executeBeforeActions(){}
   def executeAfterActions(){}
 }
 
-abstract class InternalTransitionAction(master: Orchestrator) extends HandlerAction(master) {
+abstract class InternalTransitionAction extends HandlerAction {
   
 }
 
-abstract class StateAction(master: Orchestrator) {
+abstract class StateAction {
+  
+  final def getStateMachine = handler.getRoot
+  
+  protected[smac] var handler : State = _
+    
   def onEntry
   def onExit
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
 
 /**
- * These classes define the SMAc framework and its execution semantics.
+ * These classes define the execution semantics of SMAc.
  * They should not, and cannot (sealed), be extended by user state machines
  */
-sealed class State(master: Orchestrator, action : StateAction) {
+sealed class Port(val name : String, val receive : List[Event], val send : List[Event], sm : StateMachine) extends Actor {
+  
+  sm.ports += (name -> this)
+  
+  protected[smac] var out : List[Channel] = List()
+  
+  override def act() = {
+    loop {
+      react {
+        case e: Event =>
+          if (canReceive(e))
+            sm.dispatchEvent(e)
+        case e: Any =>
+          ////println("Orchestrator_Any: " + e)
+      }
+    }
+  }
+  
+  def send(e : Event) {
+    if (canSend(e)) {
+      out.foreach{c =>
+        c ! e
+      }
+    }
+  }
+  
+  protected[smac] def canSend(e : Event) = {
+    send.exists(p => p.getClass == e.getClass)
+  }
+  
+  protected[smac] def canReceive(e : Event) = {
+    receive.exists(p => p.getClass == e.getClass)
+  }
+}
 
+sealed class State(action : StateAction, val root : StateMachine) {
+  
+  protected[smac] def getRoot = root
+  
+  final def getPort(name : String) : Option[Port] = {
+    getRoot.ports.get(name)
+  }
+  
+  action.handler = this
+  
   protected[smac] var parent: Option[CompositeState] = Option(null)
   
   protected[smac] var internal: List[InternalTransition] = List()
@@ -160,22 +215,14 @@ sealed class State(master: Orchestrator, action : StateAction) {
   }
 }
 
-sealed class StateMachine(master: Orchestrator, action : StateAction, keepHistory: Boolean) extends CompositeState(master, action, keepHistory) with Actor {
-  override def act() {
-    loop {
-      react {
-        case e: Event => {
-            //println("  " + this + " receives and dispaches event " + e)
-            //if(isCurrent) {
-            dispatchEvent(e)
-            //}
-          }
-      }
-    }
-  }  
+sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : StateMachine = null) extends CompositeState(action, keepHistory, root) {
+  
+  protected[smac] override def getRoot = this
+  
+  var ports : Map[String, Port] = Map()
 }
 
-sealed class CompositeState(master: Orchestrator, action : StateAction, keepHistory: Boolean) extends State(master, action) {
+sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : StateMachine) extends State(action, root) {
   
   def addSubState(sub : State) {
     substates ++= List(sub)
@@ -227,7 +274,9 @@ sealed class CompositeState(master: Orchestrator, action : StateAction, keepHist
  * Transitions between two states
  */
 
-abstract sealed class Handler(master: Orchestrator) {
+abstract sealed class Handler(val root : StateMachine) {
+  
+  protected[smac] def getRoot = root
   
   protected[smac] def getAction: HandlerAction
  
@@ -268,7 +317,7 @@ abstract sealed class Handler(master: Orchestrator) {
   def execute   
 }
 
-sealed class Transition(previous: State, next: State, master: Orchestrator, action: TransitionAction) extends Handler(master) {
+sealed class Transition(previous: State, next: State, action: TransitionAction, root : StateMachine) extends Handler(root) {
 
   action.handler = this
   override def getAction = action
@@ -285,7 +334,7 @@ sealed class Transition(previous: State, next: State, master: Orchestrator, acti
   }
 }
 
-sealed class InternalTransition(self: State, master: Orchestrator, action: InternalTransitionAction) extends Handler(master) {
+sealed class InternalTransition(self: State, action: InternalTransitionAction, root : StateMachine) extends Handler(root) {
   
   action.handler = this
   override def getAction = action
@@ -299,27 +348,32 @@ sealed class InternalTransition(self: State, master: Orchestrator, action: Inter
 abstract case class Event()
 
 /**
- * Orchestrator allows connecting different state machines together
+ * Channel allows connecting different state machines together via ports
  * All the events sent by one state machine, will be receive by all 
  * the others managed by the orchestrator
  */
-class Orchestrator() extends Actor {
+sealed class Channel() extends Actor {
 
-  protected var stateMachines = List[StateMachine]()
+  protected var out = List[Port]()
 
-  def register(sm: StateMachine) = {
-    ////println("Register "+sm)
-    stateMachines ::= sm
+  def connect(p: Port, p2: Port) = {
+    p.out ::= this
+    out ::= p2
+  }
+  
+  def disconnect(p : Port) {
+    p.out - this
+    out - p
   }
 
   override def act() = {
     loop {
       react {
         case e: Event =>
-          stateMachines.foreach {
-            sm =>
+          out.foreach {
+            p =>
             //println("Orchestrator: dispatching " + e + " to " + sm)
-            sm ! e
+            p ! e
           }
         case e: Any =>
           ////println("Orchestrator_Any: " + e)

@@ -34,22 +34,25 @@ case object EEvent extends Event {}
 case object LEvent extends Event {}									
 case object OEvent extends Event {}					
 
-case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends StateAction(master) {
+case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
 
-  def start = {
+  /*def start = {
     master.register(sm)
     sm.start
-  }
+  }*/
   
-  val sm : StateMachine = new StateMachine(master, this, keepHistory)
+  def getBehavior = sm
+  
+  val sm : StateMachine = new StateMachine(this, keepHistory)
+  val hello = new Port("hello", List(HEvent, EEvent, LEvent, OEvent), List(HEvent, EEvent, LEvent, OEvent), sm).start
   //create sub-states
-  val INIT_state = new State(master, INIT(master))
-  val H_state = new State(master, H(master))
-  val E_state = new State(master, E(master))
-  val L1_state = new State(master, L1(master))
-  val L2_state = new State(master, L2(master))
-  val O_state = new State(master, O(master))
-  val STOP_state = new State(master, STOP(master))
+  val INIT_state = new State(INIT(), sm)
+  val H_state = new State(H(), sm)
+  val E_state = new State(E(), sm)
+  val L1_state = new State(L1(), sm)
+  val L2_state = new State(L2(), sm)
+  val O_state = new State(O(), sm)
+  val STOP_state = new State(STOP(), sm)
   sm.addSubState(INIT_state)
   sm.addSubState(H_state)
   sm.addSubState(E_state)
@@ -60,17 +63,17 @@ case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, 
   sm.setInitial(INIT_state)
   
   //create transitions among sub-states
-  val INIT_next_H_transition = new Transition(INIT_state, H_state, master, INIT_Next_H(master))
+  val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), sm)
   INIT_next_H_transition.initEvent(HEvent)
-  val H_next_E_transition = new Transition(H_state, E_state, master, H_Next_E(master))
+  val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), sm)
   H_next_E_transition.initEvent(EEvent)
-  val E_next_L1_transition = new Transition(E_state, L1_state, master, E_Next_L1(master))
+  val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), sm)
   E_next_L1_transition.initEvent(LEvent)
-  val L1_next_L2_transition = new Transition(L1_state, L2_state, master, L1_Next_L2(master))
+  val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), sm)
   L1_next_L2_transition.initEvent(LEvent)
-  val L2_next_O_transition = new Transition(L2_state, O_state, master, L2_Next_O(master))
+  val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), sm)
   L2_next_O_transition.initEvent(OEvent)
-  val O_next_STOP_transition = new Transition(O_state, STOP_state, master, O_Next_STOP(master))
+  val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), sm)
   
   H_next_E_transition.addEvent(EEvent)
   
@@ -186,16 +189,16 @@ case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, 
       ae.getSource match {
         case b : JButton =>
           if (b == sendH) {
-            master ! HEvent
+            sm.getPort("hello").get ! HEvent
           }
           else if (b == sendE) {
-            master ! EEvent
+            sm.getPort("hello").get ! EEvent
           }
           else if (b == sendL) {
-            master ! LEvent
+            sm.getPort("hello").get ! LEvent
           }
           else if (b == sendO) {
-            master ! OEvent
+            sm.getPort("hello").get ! OEvent
           }
       }
     }
@@ -203,7 +206,7 @@ case class HelloWorldStateMachine(master : Orchestrator, keepHistory : Boolean, 
   }
 }
 
-case class INIT(master : Orchestrator) extends StateAction(master) {
+case class INIT extends StateAction {
   override def onEntry() = {
     println("init")
   }
@@ -213,14 +216,14 @@ case class INIT(master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class INIT_Next_H(master : Orchestrator) extends TransitionAction(master) { 
+case class INIT_Next_H extends TransitionAction { 
   //this.initEvent(HEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class H( master : Orchestrator) extends StateAction(master) {
+case class H extends StateAction {
   override def onEntry() = {
     println("W")
   }
@@ -230,14 +233,14 @@ case class H( master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class H_Next_E(master : Orchestrator) extends TransitionAction(master) { 
+case class H_Next_E extends TransitionAction { 
   //this.initEvent(EEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class E( master : Orchestrator) extends StateAction(master) {
+case class E extends StateAction {
   override def onEntry() = {
     println("O")
   }
@@ -247,14 +250,14 @@ case class E( master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class E_Next_L1(master : Orchestrator) extends TransitionAction(master) { 
+case class E_Next_L1 extends TransitionAction { 
   //this.initEvent(LEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class L1( master : Orchestrator) extends StateAction(master) {
+case class L1 extends StateAction {
   override def onEntry() = {
     println("R")
   }
@@ -264,14 +267,14 @@ case class L1( master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class L1_Next_L2(master : Orchestrator) extends TransitionAction(master) { 
+case class L1_Next_L2 extends TransitionAction { 
   //this.initEvent(LEvent)
   def executeActions() = {
     //TODO: define actions here
   }  
 }
 
-case class L2( master : Orchestrator) extends StateAction(master) {
+case class L2 extends StateAction {
   override def onEntry() = {
     println("L")
   }
@@ -281,14 +284,14 @@ case class L2( master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class L2_Next_O(master : Orchestrator) extends TransitionAction(master) { 
+case class L2_Next_O extends TransitionAction { 
   //this.initEvent(OEvent)
   def executeActions() = {
     //TODO: define actions here
   }
 }
 
-case class O( master : Orchestrator) extends StateAction(master) {
+case class O extends StateAction {
   override def onEntry() = {
     println("D")
   }
@@ -298,13 +301,13 @@ case class O( master : Orchestrator) extends StateAction(master) {
   }
 }
 
-case class O_Next_STOP(master : Orchestrator) extends TransitionAction(master) { 
+case class O_Next_STOP extends TransitionAction { 
   def executeActions() = {
     //TODO: define actions here
   }  
 }
 
-case class STOP( master : Orchestrator) extends StateAction(master) {
+case class STOP extends StateAction {
   override def onEntry() = {
     println("stop")
   }

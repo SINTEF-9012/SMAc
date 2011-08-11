@@ -30,25 +30,27 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : Boolean) extends StateAction(master){
+class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction{
 
+  /*
   def start = {
     master.register(sm)
     sm.start
-  }
+  }*/
   
-  val sm : StateMachine = new StateMachine(master, this, keepHistory)
+  val sm : StateMachine = new StateMachine(this, keepHistory)
+  val ping = new Port("ping", List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), sm).start
   //create sub-states
-  val fast = Fast(master, true).getComposite
-  val slow = Slow(master, true).getComposite
+  val fast = Fast(true, sm).getComposite
+  val slow = Slow(true, sm).getComposite
   sm.addSubState(fast)
   sm.addSubState(slow)
   sm.setInitial(slow)
     
   //create transitions among sub-states
-  val slowTransition = new Transition(fast, slow, master, SlowTransition(master))
+  val slowTransition = new Transition(fast, slow, SlowTransition(), sm)
   slowTransition.initEvent(SlowEvent)
-  val fastTransition = new Transition(slow, fast, master, FastTransition(master))
+  val fastTransition = new Transition(slow, fast, FastTransition(), sm)
   fastTransition.initEvent(FastEvent)
   sm.addTransition(slowTransition)
   sm.addTransition(fastTransition)
@@ -196,43 +198,43 @@ class PingStateMachine(master : Orchestrator, keepHistory : Boolean, withGUI : B
       ae.getSource match {
         case b : JButton =>
           if (b == sendButtonPong) {
-            master ! PongEvent
+            sm.getPort("ping").get ! PongEvent
           }
           else if (b == sendButtonStop) {
-            master ! StopEvent
+            sm.getPort("ping").get ! StopEvent
           }
           else if (b == sendButtonStart) {
-            master ! StartEvent
+            sm.getPort("ping").get ! StartEvent
           }
           else if (b == sendButtonSlow) {
-            master ! SlowEvent
+            sm.getPort("ping").get ! SlowEvent
           }
           else if (b == sendButtonFast) {
-            master ! FastEvent
+            sm.getPort("ping").get ! FastEvent
           }
       }
     }
   }    
 }
 
-case class Fast(master : Orchestrator, keepHistory : Boolean) extends StateAction(master) {
+case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction {
   
   def getComposite : CompositeState = c
   
-  val c : CompositeState = new CompositeState(master, this, keepHistory)
+  val c : CompositeState = new CompositeState(this, keepHistory, root)
   //create sub-states
-  val ping = new State(master, Ping(master, 25))
-  val stop = new State(master, Stop(master))
+  val ping = new State(Ping(25), root)
+  val stop = new State(Stop(), root)
   c.addSubState(ping)
   c.addSubState(stop)
   c.setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, master, PongTransition(master))
+  val pongTransition = new InternalTransition(ping, PongTransition(), root)
   pongTransition.initEvent(PongEvent)
-  val stopTransition = new Transition(ping, stop, master, StopTransition(master))
+  val stopTransition = new Transition(ping, stop, StopTransition(), root)
   stopTransition.initEvent(StopEvent)
-  val startTransition = new Transition(stop, ping, master, StartTransition(master))
+  val startTransition = new Transition(stop, ping, StartTransition(), root)
   startTransition.initEvent(StartEvent)
   c.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
@@ -247,24 +249,24 @@ case class Fast(master : Orchestrator, keepHistory : Boolean) extends StateActio
   }
 }
 
-case class Slow(master : Orchestrator, keepHistory : Boolean) extends StateAction(master) {
+case class Slow(keepHistory : Boolean, root : StateMachine) extends StateAction() {
   
   def getComposite : CompositeState = c
   
-  val c : CompositeState = new CompositeState(master, this, keepHistory)
+  val c : CompositeState = new CompositeState(this, keepHistory, root)
 //create sub-states
-  val ping = new State(master, Ping(master, 1000))
-  val stop = new State(master, Stop(master))
+  val ping = new State(Ping(1000), root)
+  val stop = new State(Stop(), root)
   c.addSubState(ping)
   c.addSubState(stop)
   c.setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, master, PongTransition(master))
+  val pongTransition = new InternalTransition(ping, PongTransition(), root)
   pongTransition.initEvent(PongEvent)
-  val stopTransition = new Transition(ping, stop, master, StopTransition(master))
+  val stopTransition = new Transition(ping, stop, StopTransition(), root)
   stopTransition.initEvent(StopEvent)
-  val startTransition = new Transition(stop, ping, master, StartTransition(master))
+  val startTransition = new Transition(stop, ping, StartTransition(), root)
   startTransition.initEvent(StartEvent)
   c.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
@@ -279,7 +281,7 @@ case class Slow(master : Orchestrator, keepHistory : Boolean) extends StateActio
   }
 }
 
-case class Ping(master : Orchestrator, delay : Long) extends StateAction(master) {
+case class Ping(delay : Long) extends StateAction {
   val max = 10000
   var count = 0
     
@@ -287,11 +289,11 @@ case class Ping(master : Orchestrator, delay : Long) extends StateAction(master)
     println("Ping.onEntry")
     if (count < max){
       //Thread.sleep(delay)
-      master ! PingEvent
+      handler.getPort("ping").get ! PingEvent
       count += 1
     }
     else {
-      master ! StopEvent
+      handler.getPort("ping").get ! StopEvent
       count = 0
     }
   }
@@ -302,7 +304,7 @@ case class Ping(master : Orchestrator, delay : Long) extends StateAction(master)
   
 }
 
-case class Stop(master : Orchestrator) extends StateAction(master) {
+case class Stop extends StateAction {
   
   override def onEntry() = {
     println("Stop.onEntry")
@@ -316,14 +318,14 @@ case class Stop(master : Orchestrator) extends StateAction(master) {
 
 
 //Messages defined in the state machine
-case class PongTransition(master : Orchestrator) extends InternalTransitionAction(master) {
+case class PongTransition extends InternalTransitionAction {
   //this.initEvent(PongEvent)
   def executeActions() = {
     println("PongTransition")
   }
 }
 
-case class StopTransition(master : Orchestrator) extends TransitionAction(master) { 
+case class StopTransition extends TransitionAction { 
   //this.initEvent(StopEvent)
   def executeActions() = {
     println("StopTransition")
@@ -331,21 +333,21 @@ case class StopTransition(master : Orchestrator) extends TransitionAction(master
 }
 
 
-case class StartTransition(master : Orchestrator) extends TransitionAction(master) {
+case class StartTransition extends TransitionAction {
   //this.initEvent(StartEvent)
   def executeActions() = {
     println("StartTransition")
   }
 }
 
-case class FastTransition(master : Orchestrator) extends TransitionAction(master) {
+case class FastTransition extends TransitionAction {
   //this.initEvent(FastEvent)
   def executeActions() = {
     println("FastTransition")
   }
 }
 
-case class SlowTransition(master : Orchestrator) extends TransitionAction(master) {
+case class SlowTransition extends TransitionAction {
   //this.initEvent(SlowEvent)
   def executeActions() = {
     println("SlowTransition")

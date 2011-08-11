@@ -26,31 +26,31 @@ import org.junit._
 
 class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
   
-  var master : Orchestrator = _
+  var channel : Channel = _
   var sm :HelloWorld2StateMachine = _
   
   @Before def initialize() {
-    master = new Orchestrator
-    master.start
-    sm = new HelloWorld2StateMachine(master, false, false)
-    sm.start
+    channel = new Channel
+    channel.start
+    sm = new HelloWorld2StateMachine(false, false)
+    channel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
   }
   
   @Test def verify() {   
-    master ! new LetterEvent("H")
+    sm.getStateMachine.getPort("hello").get ! new LetterEvent("H")
     Thread.sleep(100)
-    master ! new LetterEvent("E")
+    sm.getStateMachine.getPort("hello").get ! new LetterEvent("E")
     Thread.sleep(100)
-    master ! new LetterEvent("L")
+    sm.getStateMachine.getPort("hello").get ! new LetterEvent("L")
     Thread.sleep(100)
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
     //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
     
-    master ! new LetterEvent("L")
+    sm.getStateMachine.getPort("hello").get ! new LetterEvent("L")
     Thread.sleep(100)
-    master ! new LetterEvent("O")
+    sm.getStateMachine.getPort("hello").get ! new LetterEvent("O")
     Thread.sleep(100)
     
     //OEvent should trigger on transition from L to O

@@ -22,11 +22,9 @@ import org.sintef.smac._
 object Main{
   def main(args: Array[String]): Unit = {   
     println("START")
-    val master = new Orchestrator
-    master.start
     
-    val sm = new HelloWorldStateMachine(master, false, true)
-
-    sm.start
+    val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
+    val sm = new HelloWorldStateMachine(false, true)
+    selfChannel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
   }
 }

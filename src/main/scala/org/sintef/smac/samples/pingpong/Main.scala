@@ -34,15 +34,9 @@ object Main {
    */
   def main(args: Array[String]): Unit = {   
     println("START")
-    val master = new Orchestrator
-    master.start
-    
-    val pingSM = new PingStateMachine(master, false)
-    
-    
-    //val pongSM = new PongStateMachine(master, false)
-    
-    pingSM.start
-    //pongSM.start
+
+    val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
+    val sm = new PingStateMachine(true)
+    selfChannel.connect(sm.getStateMachine.getPort("ping").get, sm.getStateMachine.getPort("ping").get)
   }
 }

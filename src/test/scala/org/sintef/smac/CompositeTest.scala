@@ -30,22 +30,22 @@ import org.junit._
 
 class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   
-  var master : Orchestrator = _
+  var channel : Channel = _
   var sm :PingStateMachine = _
   
   @Before def initialize() {
-    master = new Orchestrator
-    master.start
-    sm = new PingStateMachine(master, true, false)
-    sm.start
+    channel = new Channel
+    channel.start
+    sm = new PingStateMachine(true, false)
+    channel.connect(sm.getStateMachine.getPort("ping").get, sm.getStateMachine.getPort("ping").get)
   }
   
   @Test def verify() {   
     println("1/ master ! StartEvent")
-    master ! StartEvent
+    sm.getStateMachine.getPort("ping").get ! StartEvent
     Thread.sleep(500)
     println("2/ master ! PongEvent")
-    master ! PongEvent
+    sm.getStateMachine.getPort("ping").get ! PongEvent
     Thread.sleep(500)
     
     /*val slow : Slow = sm.substates.filter{s => s.isInstanceOf[Slow]}.head.asInstanceOf[Slow]
@@ -56,7 +56,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
     
     println("3/ master ! FastEvent")
-    master ! FastEvent
+    sm.getStateMachine.getPort("ping").get ! FastEvent
     Thread.sleep(500)
     
     /*println(sm.current)
@@ -66,7 +66,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)*/
     
     println("4/ master ! SlowEvent")
-    master ! SlowEvent
+    sm.getStateMachine.getPort("ping").get ! SlowEvent
     Thread.sleep(500)
     /*sm.current should equal (slow)
     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
