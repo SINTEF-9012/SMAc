@@ -117,15 +117,17 @@ sealed class State(action : StateAction, val root : StateMachine) {
   
   protected[smac] var internal: List[InternalTransition] = List()
   
-  def addInternalTransition(t : InternalTransition) {
+  final def addInternalTransition(t : InternalTransition) {
     internal ++= List(t)
   }
   
   //TODO: Union with internal
-  protected[smac] def getOutgoingTransitions(): List[Handler] = {
+  protected[smac] def allTransitions(): List[Handler] = {
+    var result : List[Handler] = List()
+    result ++ internal
     parent match {
       case Some(p) =>
-        p.transitions.filter(t => t.getPrevious == this)
+        result ++ p.transitions.filter(t => t.getPrevious == this)
       case None =>
         List()
     }
@@ -139,49 +141,30 @@ sealed class State(action : StateAction, val root : StateMachine) {
   }
   
   protected[smac] def clearEvents() {
-    getOutgoingTransitions.foreach{t => t.clearEvents}
-    internal.foreach{t => t.clearEvents}
+    allTransitions.foreach{t => t.clearEvents}
     parent match {
       case Some(p) =>
         p.clearEvents
       case None =>
     }
   }
-    
+      
   protected[smac] def checkForTransition: Option[Handler] = {
     //println(this+".checkForTransition: ")  
-    internal.filter(t => {
+    allTransitions.filter(t => {
         t.evaluateEvents && t.getAction.checkGuard
-      }).sortWith((t, r) => t.getAction.getScore > r.getAction.getScore).headOption match {
+      }).sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore)).headOption match {
       case Some(in) => 
         //println("  An internal transition can be triggered: "+in)
         return Option(in)
       case None => 
-        //println("  No valid internal transition. Checking outgoing transitions")
-        getOutgoingTransitions()
-        .filter(t => {
-            t.evaluateEvents && t.getAction.checkGuard
-          }).sortWith((t, r) => t.getAction.getScore > r.getAction.getScore).headOption match {
-          case Some(ext) => 
-            //println("  A transition can be triggered: "+ext)
-            return Option(ext)
-          case None => 
-            //println("  No valid transition")
-            return Option(null)
-        }
+        return Option(null)
     }
   }
 
+
   protected[smac] def dispatchEvent(e: Event) : Boolean = {
-    //println(this + ".dispatchEvent: " + e)
-    ////println(this+".Dispatching: "+e)
-    //TODO avoid duplication
-    getOutgoingTransitions().filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
-    .foreach(t => {
-        //println(this + "  Dispatching event to transition "+t)
-        t.addEvent(e)
-      })
-    internal.filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
+    allTransitions().filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
     .foreach(t => {
         //println(this + "  Dispatching event to transition "+t)
         t.addEvent(e)
