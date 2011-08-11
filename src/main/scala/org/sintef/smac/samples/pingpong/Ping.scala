@@ -30,27 +30,36 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory){
-
+class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateAction(master){
+  
+  def start = {
+    master.register(sm)
+    sm.start
+  }
+  
+  val sm : StateMachine = new StateMachine(master, this, keepHistory)
   //create sub-states
-  val ping = Ping(master)
-  val stop = Stop(master)
-  addSubState(ping)
-  addSubState(stop)
-  setInitial(stop)
+  val ping = new State(master, Ping(master))
+  val stop = new State(master, Stop(master))
+  sm.addSubState(ping)
+  sm.addSubState(stop)
+  sm.setInitial(stop)
 
   //create transitions among sub-states
-  val pongTransition = PongTransition(ping, master)
-  val stopTransition = StopTransition(ping, stop, master)
-  val startTransition = StartTransition(stop, ping, master)
-  addTransition(startTransition)
-  addTransition(stopTransition)
-  addInternalTransition(pongTransition)
+  val pongTransition = new InternalTransition(ping, master, PongTransition(master))
+  pongTransition.initEvent(PongEvent)
+  val stopTransition = new Transition(ping, stop, master, StopTransition(master))
+  stopTransition.initEvent(StopEvent)
+  val startTransition = new Transition(stop, ping, master, StartTransition(master))
+  startTransition.initEvent(StartEvent)
+  sm.addTransition(startTransition)
+  sm.addTransition(stopTransition)
+  sm.addInternalTransition(pongTransition)
   
-  override def startState() = {
-    super.startState
-    PingGUI.init
-  }
+  /*override def startState() = {
+   super.startState*/
+  PingGUI.init
+  //}
   
   def onEntry = {}
   
@@ -159,7 +168,7 @@ class PingStateMachine(master : Orchestrator, keepHistory : Boolean) extends Sta
   }    
 }
 
-case class Ping(master : Orchestrator) extends State(master) {
+case class Ping(master : Orchestrator) extends StateAction(master) {
   val max = 10000
   var count = 0
   var delay = 25
@@ -183,7 +192,7 @@ case class Ping(master : Orchestrator) extends State(master) {
   
 }
 
-case class Stop(master : Orchestrator) extends State(master) {
+case class Stop(master : Orchestrator) extends StateAction(master) {
   
   override def onEntry() = {
     println("Stop.onEntry")
@@ -197,23 +206,23 @@ case class Stop(master : Orchestrator) extends State(master) {
 
 
 //Messages defined in the state machine
-case class PongTransition(self : State, master : Orchestrator) extends InternalTransition(self, master) {
-  this.initEvent(PongEvent)
+case class PongTransition(master : Orchestrator) extends InternalTransitionAction(master) {
+  //this.initEvent(PongEvent)
   def executeActions() = {
     println("PongTransition")
   }
 }
 
-case class StopTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) { 
-  this.initEvent(StopEvent)
+case class StopTransition(master : Orchestrator) extends TransitionAction(master) { 
+  //this.initEvent(StopEvent)
   def executeActions() = {
     println("StopTransition")
   }
 }
 
 
-case class StartTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
-  this.initEvent(StartEvent)
+case class StartTransition(master : Orchestrator) extends TransitionAction(master) {
+  //this.initEvent(StartEvent)
   def executeActions() = {
     println("StartTransition")
   }

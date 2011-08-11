@@ -27,6 +27,6 @@ object Main{
     
     val sm = new HelloWorld2StateMachine(master, false, true)
 
-    sm.startState
+    sm.start
   }
 }

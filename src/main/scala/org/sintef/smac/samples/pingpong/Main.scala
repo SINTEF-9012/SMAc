@@ -38,11 +38,11 @@ object Main {
     master.start
     
     val pingSM = new PingStateMachine(master, false)
-    println(pingSM.initial)
+    
     
     //val pongSM = new PongStateMachine(master, false)
     
-    pingSM.startState
-    //pongSM.startState
+    pingSM.start
+    //pongSM.start
   }
 }

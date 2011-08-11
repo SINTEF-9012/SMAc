@@ -20,23 +20,30 @@ package org.sintef.smac.samples.pingpong
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PongStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateMachine(master, keepHistory) {
+class PongStateMachine(master : Orchestrator, keepHistory : Boolean) extends StateAction(master) {
+    
+  def start = {
+    master.register(sm)
+    sm.start
+  }
   
+  val sm : StateMachine = new StateMachine(master, this, keepHistory)
   //create sub-states
-  val pong = Pong(master)
-  addSubState(pong)
-  setInitial(pong)
+  val pong = new State(master, Pong(master))
+  sm.addSubState(pong)
+  sm.setInitial(pong)
   
   //create transitions among sub-states
-  val pingTransition = PingTransition(pong, pong, master)
-  addTransition(pingTransition)
+  val pingTransition = new InternalTransition(pong, master, PingTransition(master))
+  pingTransition.initEvent(PingEvent)
+  sm.addInternalTransition(pingTransition)
   
   def onEntry() = {}
   
   def onExit() = {}
 }
 
-case class Pong(master : Orchestrator) extends State(master) {
+case class Pong(master : Orchestrator) extends StateAction(master) {
   override def onEntry() = {
     println("Pong.onEntry")
     master ! PongEvent
@@ -49,8 +56,8 @@ case class Pong(master : Orchestrator) extends State(master) {
 }
 
 //Messages defined in the state machine
-case class PingTransition(previous : State, next : State, master : Orchestrator) extends Transition(previous, next, master) {
-  this.initEvent(PingEvent)
+case class PingTransition(master : Orchestrator) extends InternalTransitionAction(master) {
+  //this.initEvent(PingEvent)
   def executeActions() = {
     println("PingTransition")
   }

@@ -42,7 +42,7 @@ object Main {
     
     //val pongSM = new PongStateMachine(master, true)
     
-    pingSM.startState
-    //pongSM.startState
+    pingSM.start
+    //pongSM.start
   }
 }

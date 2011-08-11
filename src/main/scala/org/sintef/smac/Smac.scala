@@ -20,23 +20,54 @@ package org.sintef.smac
 
 import scala.actors.Actor
 
-/**
- * Atomic states should extend State
- * and implements the onEntry and onExit methods
- * to define the actions to execute on entry and on exit.
- */
-abstract class State(master: Orchestrator) {
 
-  var parent: Option[CompositeState] = Option(null)
+/**
+ * These classes should be extended to define the actions of the state
+ * and the transitions of a given state machine
+ */
+abstract sealed class HandlerAction(master: Orchestrator) {
   
-  var internal: List[InternalTransition] = List()
+  protected[smac] var handler : Handler = _
+  
+  def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
+  
+  def checkGuard: Boolean = true
+  def getScore: Double = 1
+  
+  def executeActions()
+}
+
+abstract class TransitionAction(master: Orchestrator) extends HandlerAction(master) {
+  def executeBeforeActions(){}
+  def executeAfterActions(){}
+}
+
+abstract class InternalTransitionAction(master: Orchestrator) extends HandlerAction(master) {
+  
+}
+
+abstract class StateAction(master: Orchestrator) {
+  def onEntry
+  def onExit
+}
+
+
+/**
+ * These classes define the SMAc framework and its execution semantics.
+ * They should not, and cannot (sealed), be extended by user state machines
+ */
+sealed class State(master: Orchestrator, action : StateAction) {
+
+  protected[smac] var parent: Option[CompositeState] = Option(null)
+  
+  protected[smac] var internal: List[InternalTransition] = List()
   
   def addInternalTransition(t : InternalTransition) {
     internal ++= List(t)
   }
   
   //TODO: Union with internal
-  def getOutgoingTransitions(): List[Handler] = {
+  protected[smac] def getOutgoingTransitions(): List[Handler] = {
     parent match {
       case Some(p) =>
         p.transitions.filter(t => t.getPrevious == this)
@@ -45,14 +76,14 @@ abstract class State(master: Orchestrator) {
     }
   }
 
-  def isCurrent : Boolean = {
+  protected[smac] def isCurrent : Boolean = {
     parent match {
       case Some(p) => p.current == this
       case None => true
     }
   }
   
-  final def clearEvents() {
+  protected[smac] def clearEvents() {
     getOutgoingTransitions.foreach{t => t.clearEvents}
     internal.foreach{t => t.clearEvents}
     parent match {
@@ -62,11 +93,11 @@ abstract class State(master: Orchestrator) {
     }
   }
     
-  def checkForTransition: Option[Handler] = {
+  protected[smac] def checkForTransition: Option[Handler] = {
     //println(this+".checkForTransition: ")  
     internal.filter(t => {
-        t.evaluateEvents && t.checkGuard
-      }).sortWith((t, r) => t.getScore > r.getScore).headOption match {
+        t.evaluateEvents && t.getAction.checkGuard
+      }).sortWith((t, r) => t.getAction.getScore > r.getAction.getScore).headOption match {
       case Some(in) => 
         //println("  An internal transition can be triggered: "+in)
         return Option(in)
@@ -74,8 +105,8 @@ abstract class State(master: Orchestrator) {
         //println("  No valid internal transition. Checking outgoing transitions")
         getOutgoingTransitions()
         .filter(t => {
-            t.evaluateEvents && t.checkGuard
-          }).sortWith((t, r) => t.getScore > r.getScore).headOption match {
+            t.evaluateEvents && t.getAction.checkGuard
+          }).sortWith((t, r) => t.getAction.getScore > r.getAction.getScore).headOption match {
           case Some(ext) => 
             //println("  A transition can be triggered: "+ext)
             return Option(ext)
@@ -86,7 +117,7 @@ abstract class State(master: Orchestrator) {
     }
   }
 
-  def dispatchEvent(e: Event) : Boolean = {
+  protected[smac] def dispatchEvent(e: Event) : Boolean = {
     //println(this + ".dispatchEvent: " + e)
     ////println(this+".Dispatching: "+e)
     //TODO avoid duplication
@@ -111,34 +142,25 @@ abstract class State(master: Orchestrator) {
     }
   }
 
-  def executeOnEntry() {
+  protected[smac] def executeOnEntry() {
     clearEvents
     parent match {
       case Some(p) => p.current = this
       case None =>
     } 
-    onEntry
+    action.onEntry
     checkForTransition match {
       case Some(t) => {t.execute}
       case None =>
     }
   }
 
-  def executeOnExit() {
-    onExit
+  protected[smac] def executeOnExit() {
+    action.onExit
   }
-
-  def onEntry
-
-  def onExit
-
-  def startState(): Unit = {
-    //start
-  }
-
 }
 
-abstract class StateMachine(master: Orchestrator, keepHistory: Boolean) extends CompositeState(master, keepHistory) with Actor {
+sealed class StateMachine(master: Orchestrator, action : StateAction, keepHistory: Boolean) extends CompositeState(master, action, keepHistory) with Actor {
   override def act() {
     loop {
       react {
@@ -151,15 +173,9 @@ abstract class StateMachine(master: Orchestrator, keepHistory: Boolean) extends 
       }
     }
   }  
-  
-  override def startState(): Unit = {
-    master.register(this)
-    start
-    super.startState
-  }
 }
 
-abstract class CompositeState(master: Orchestrator, keepHistory: Boolean) extends State(master) {
+sealed class CompositeState(master: Orchestrator, action : StateAction, keepHistory: Boolean) extends State(master, action) {
   
   def addSubState(sub : State) {
     substates ++= List(sub)
@@ -175,13 +191,13 @@ abstract class CompositeState(master: Orchestrator, keepHistory: Boolean) extend
     current = initial
   }
 
-  var substates: List[State] = List()
+  protected[smac] var substates: List[State] = List()
 
-  var transitions: List[Transition] = List()
+  protected[smac] var transitions: List[Transition] = List()
 
-  var initial: State = _
+  protected[smac] var initial: State = _
 
-  var current: State = _
+  protected[smac] var current: State = _
 
   override def dispatchEvent(e: Event) : Boolean = {
     if (!current.dispatchEvent(e)) { //composite dispatch event to sub-states, which might consume the event
@@ -189,16 +205,6 @@ abstract class CompositeState(master: Orchestrator, keepHistory: Boolean) extend
     }
     else {
       return false
-    }
-  }
-
-  override def startState(): Unit = {
-    //current = initial
-    super.startState()
-    substates.foreach {
-      s =>
-      ////println("  debug "+s)
-      s.startState
     }
   }
 
@@ -221,25 +227,23 @@ abstract class CompositeState(master: Orchestrator, keepHistory: Boolean) extend
  * Transitions between two states
  */
 
-abstract class Handler(master: Orchestrator) {
+abstract sealed class Handler(master: Orchestrator) {
+  
+  protected[smac] def getAction: HandlerAction
  
-  def getEvents = eventsMap.keys
+  protected[smac] def getEvents = eventsMap.keys
 
-  def checkGuard: Boolean = true
-
-  def getScore: Double = 1
-
-  val eventsMap = scala.collection.mutable.Map[Event, Boolean]()
+  protected[smac] val eventsMap = scala.collection.mutable.Map[Event, Boolean]()
   
   def initEvent(e : Event) {
     eventsMap.put(e, false)
   }
   
-  def getEvent(e : Event) : Event ={
-    getEvents.filter(ev => ev.getClass == e.getClass).head
+  def getEvent(e : Event) : Option[Event] ={
+    getEvents.filter(ev => ev.getClass == e.getClass).headOption
   }
   
-  def addEvent(e : Event) {
+  protected[smac] def addEvent(e : Event) {
     eventsMap.keys.filter{k => k.getClass == e.getClass}.headOption match { 
       case Some(k) =>
         eventsMap.remove(k)
@@ -248,15 +252,11 @@ abstract class Handler(master: Orchestrator) {
     }
   }
 
-  def evaluateEvents(): Boolean = {
+  protected[smac] def evaluateEvents(): Boolean = {
     eventsMap.size == 0 || eventsMap.values.exists(v => v)
-    /*eventsMap.keys.forall(k => {
-        eventsMap.getOrElse(k, false)
-      })*/
   }
 
-  //TODO: Once the event is consumed, it should be cleared for ALL the transition (?)
-  final def clearEvents() {
+  protected[smac] def clearEvents() {
     eventsMap.keys.foreach {
       k => eventsMap.put(k, false)
     }
@@ -265,35 +265,34 @@ abstract class Handler(master: Orchestrator) {
   /**
    * Describe the overall execution of the transition
    */
-  def execute 
-  
-  /**
-   * Only describes the execution of the actions associated with the transition
-   */
-  def executeActions()
+  def execute   
 }
 
-abstract class Transition(previous: State, next: State, master: Orchestrator) extends Handler(master) {
+sealed class Transition(previous: State, next: State, master: Orchestrator, action: TransitionAction) extends Handler(master) {
 
-  def getPrevious = previous
-
-  def executeBeforeActions(){}
-  def executeAfterActions(){}
+  action.handler = this
+  override def getAction = action
+  
+  protected[smac] def getPrevious = previous
 
   override def execute() = {
     clearEvents
-    executeBeforeActions
+    action.executeBeforeActions
     previous.executeOnExit
-    executeActions()
+    action.executeActions()
     next.executeOnEntry
-    executeAfterActions
+    action.executeAfterActions
   }
 }
 
-abstract class InternalTransition(self: State, master: Orchestrator) extends Handler(master) {
+sealed class InternalTransition(self: State, master: Orchestrator, action: InternalTransitionAction) extends Handler(master) {
+  
+  action.handler = this
+  override def getAction = action
+  
   override def execute() = {
     clearEvents
-    executeActions()
+    action.executeActions()
   }
 }
 
@@ -306,7 +305,7 @@ abstract case class Event()
  */
 class Orchestrator() extends Actor {
 
-  var stateMachines = List[StateMachine]()
+  protected var stateMachines = List[StateMachine]()
 
   def register(sm: StateMachine) = {
     ////println("Register "+sm)
