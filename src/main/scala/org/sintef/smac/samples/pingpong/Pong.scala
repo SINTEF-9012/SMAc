@@ -35,7 +35,7 @@ class PongStateMachine(keepHistory : Boolean) extends StateAction {
   
   //create transitions among sub-states
   val pingTransition = new InternalTransition(pong, PingTransition(), sm)
-  pingTransition.initEvent(PingEvent)
+  pingTransition.initEvent(PingEvent.getName)
   sm.addInternalTransition(pingTransition)
   
   def onEntry() = {}
@@ -46,7 +46,7 @@ class PongStateMachine(keepHistory : Boolean) extends StateAction {
 case class Pong extends StateAction {
   override def onEntry() = {
     println("Pong.onEntry")
-    handler.root.getPort("pong").get ! PongEvent
+    handler.root.getPort("pong").get.send(new PongEvent())
   }
   
   override def onExit() = {

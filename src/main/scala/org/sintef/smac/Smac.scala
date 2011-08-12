@@ -32,6 +32,8 @@ abstract sealed class HandlerAction {
   
   final def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
   
+  final def getEvent(e : String) : Option[Event] = handler.getEvent(e)
+  
   def checkGuard: Boolean = true
   def getScore: Double = 1
   
@@ -67,7 +69,7 @@ abstract class StateAction {
  * These classes define the execution semantics of SMAc.
  * They should not, and cannot (sealed), be extended by user state machines
  */
-sealed class Port(val name : String, val receive : List[Event], val send : List[Event], sm : StateMachine) extends Actor {
+sealed class Port(val name : String, val receive : List[String], val send : List[String], sm : StateMachine) extends Actor {
   
   sm.ports += (name -> this)
   
@@ -78,6 +80,7 @@ sealed class Port(val name : String, val receive : List[Event], val send : List[
       react {
         case e: Event =>
           if (canReceive(e))
+            //println("Port " + this + " dispatches to state machine")
             sm.dispatchEvent(e)
         case e: Any =>
           ////println("Orchestrator_Any: " + e)
@@ -87,6 +90,7 @@ sealed class Port(val name : String, val receive : List[Event], val send : List[
   
   def send(e : Event) {
     if (canSend(e)) {
+      //println("Port " + this + " sending to channels")
       out.foreach{c =>
         c ! e
       }
@@ -94,11 +98,11 @@ sealed class Port(val name : String, val receive : List[Event], val send : List[
   }
   
   protected[smac] def canSend(e : Event) = {
-    send.exists(p => p.getClass == e.getClass)
+    send.exists(p => p.equals(e.name))
   }
   
   protected[smac] def canReceive(e : Event) = {
-    receive.exists(p => p.getClass == e.getClass)
+    receive.exists(p => p.equals(e.name))
   }
 }
 
@@ -123,10 +127,10 @@ sealed class State(action : StateAction, val root : StateMachine) {
   //TODO: Union with internal
   protected[smac] def allTransitions(): List[Handler] = {
     var result : List[Handler] = List()
-    result ++ internal
+    result :: internal
     parent match {
       case Some(p) =>
-        result ++ p.transitions.filter(t => t.getPrevious == this)
+        result ::: p.transitions.filter(t => t.getPrevious == this)
       case None =>
         List()
     }
@@ -260,7 +264,7 @@ abstract sealed class Handler(val root : StateMachine) {
   
   protected[smac] def isInterestedIn(e : Event) : Boolean = {
     //println(this+" is interested in "+e.getClass.toString+"?")
-    events.keys.exists(k => k.equals(e.getClass.toString))
+    events.keys.exists(k => k.equals(e.name))
   }
   
   protected[smac] def getRoot = root
@@ -277,11 +281,11 @@ abstract sealed class Handler(val root : StateMachine) {
   }
   
   final def initEvent(e : Event) {
-    initEvent(e.getClass.toString)
+    initEvent(e.name)
   }
   
   final def getEvent(e : Event) : Option[Event] = {
-    getEvent(e.getClass.toString)
+    getEvent(e.name)
   }
   
   final def getEvent(e : String) : Option[Event] = {
@@ -301,7 +305,7 @@ abstract sealed class Handler(val root : StateMachine) {
   protected[smac] def addEvent(e : Event) {
     if (isInterestedIn(e)){
       //println("  "+this+" is interested in "+e.getClass.toString+"!!!")
-      events.put(e.getClass.toString, (e, true))
+      events.put(e.name, (e, true))
     }
   }
 
@@ -349,7 +353,10 @@ sealed class InternalTransition(self: State, action: InternalTransitionAction, r
   }
 }
 
-abstract case class Event()
+
+abstract case class Event(val name : String){}
+
+
 
 /**
  * Channel allows connecting different state machines together via ports
@@ -376,7 +383,7 @@ sealed class Channel() extends Actor {
         case e: Event =>
           out.foreach {
             p =>
-            //println("Orchestrator: dispatching " + e + " to " + sm)
+            //println("Channel dispatching " + e + " to " + p)
             p ! e
           }
         case e: Any =>

@@ -39,7 +39,7 @@ class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAc
   }*/
   
   val sm : StateMachine = new StateMachine(this, keepHistory)
-  val ping = new Port("ping", List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), sm).start
+  val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
   //create sub-states
   val fast = Fast(true, sm).getComposite
   val slow = Slow(true, sm).getComposite
@@ -49,9 +49,9 @@ class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAc
     
   //create transitions among sub-states
   val slowTransition = new Transition(fast, slow, SlowTransition(), sm)
-  slowTransition.initEvent(SlowEvent)
+  slowTransition.initEvent(SlowEvent.getName)
   val fastTransition = new Transition(slow, fast, FastTransition(), sm)
-  fastTransition.initEvent(FastEvent)
+  fastTransition.initEvent(FastEvent.getName)
   sm.addTransition(slowTransition)
   sm.addTransition(fastTransition)
     
@@ -198,19 +198,20 @@ class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAc
       ae.getSource match {
         case b : JButton =>
           if (b == sendButtonPong) {
-            sm.getPort("ping").get ! PongEvent
+            sm.getPort("ping").get.send(PongEvent())
           }
           else if (b == sendButtonStop) {
-            sm.getPort("ping").get ! StopEvent
+            sm.getPort("ping").get.send(StopEvent())
           }
           else if (b == sendButtonStart) {
-            sm.getPort("ping").get ! StartEvent
+            println("start button clicked!")
+            sm.getPort("ping").get.send(StartEvent())
           }
           else if (b == sendButtonSlow) {
-            sm.getPort("ping").get ! SlowEvent
+            sm.getPort("ping").get.send(SlowEvent())
           }
           else if (b == sendButtonFast) {
-            sm.getPort("ping").get ! FastEvent
+            sm.getPort("ping").get.send(FastEvent())
           }
       }
     }
@@ -231,11 +232,11 @@ case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction 
     
   //create transitions among sub-states
   val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent)
+  pongTransition.initEvent(PongEvent.getName)
   val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent)
+  stopTransition.initEvent(StopEvent.getName)
   val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent)
+  startTransition.initEvent(StartEvent.getName)
   c.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
@@ -263,11 +264,11 @@ case class Slow(keepHistory : Boolean, root : StateMachine) extends StateAction(
     
   //create transitions among sub-states
   val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent)
+  pongTransition.initEvent(PongEvent.getName)
   val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent)
+  stopTransition.initEvent(StopEvent.getName)
   val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent)
+  startTransition.initEvent(StartEvent.getName)
   c.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
@@ -289,11 +290,11 @@ case class Ping(delay : Long) extends StateAction {
     println("Ping.onEntry")
     if (count < max){
       //Thread.sleep(delay)
-      handler.getPort("ping").get ! PingEvent
+      handler.getPort("ping").get.send(PingEvent())
       count += 1
     }
     else {
-      handler.getPort("ping").get ! StopEvent
+      handler.getPort("ping").get.send(StopEvent())
       count = 0
     }
   }

@@ -45,20 +45,20 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
     println(sm)
     println(sm.getStateMachine)
     println(sm.getStateMachine.getPort("hello").get)
-    sm.getStateMachine.getPort("hello").get ! HEvent
+    sm.getStateMachine.getPort("hello").get ! new HEvent()
     Thread.sleep(100)
-    sm.getStateMachine.getPort("hello").get ! EEvent
+    sm.getStateMachine.getPort("hello").get ! new EEvent()
     Thread.sleep(100)
-    sm.getStateMachine.getPort("hello").get ! LEvent
+    sm.getStateMachine.getPort("hello").get ! new LEvent()
     Thread.sleep(100)
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
     //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
     
-    sm.getStateMachine.getPort("hello").get ! LEvent
+    sm.getStateMachine.getPort("hello").get ! new LEvent()
     Thread.sleep(100)
-    sm.getStateMachine.getPort("hello").get ! OEvent
+    sm.getStateMachine.getPort("hello").get ! new OEvent()
     Thread.sleep(100)
     
     //OEvent should trigger on transition from L to O

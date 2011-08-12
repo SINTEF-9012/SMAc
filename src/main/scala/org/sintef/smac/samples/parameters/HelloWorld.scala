@@ -29,7 +29,8 @@ import javax.swing.JPanel
 import javax.swing.JTextPane
 import org.sintef.smac._
 
-case class LetterEvent(letter : String) extends Event {}									
+object LetterEvent {def getName = "LetterEvent"}
+case class LetterEvent(letter : String, override val name : String = LetterEvent.getName) extends Event(name)									
 
 case class HelloWorld2StateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
 
@@ -41,7 +42,7 @@ case class HelloWorld2StateMachine(keepHistory : Boolean, withGUI : Boolean) ext
   */
   
   val sm : StateMachine = new StateMachine(this, keepHistory)
-  val hello = new Port("hello", List(LetterEvent(null)), List(LetterEvent(null)), sm).start
+  val hello = new Port("hello", List(LetterEvent.getName), List(LetterEvent.getName), sm).start
   //create sub-states
   val INIT_state = new State(INIT(), sm)
   val H_state =  new State(H(), sm)
@@ -61,15 +62,15 @@ case class HelloWorld2StateMachine(keepHistory : Boolean, withGUI : Boolean) ext
   
   //create transitions among sub-states
   val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), sm)
-  INIT_next_H_transition.initEvent(new LetterEvent("H"))
+  INIT_next_H_transition.initEvent(LetterEvent.getName)
   val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), sm)
-  H_next_E_transition.initEvent(new LetterEvent("E"))
+  H_next_E_transition.initEvent(LetterEvent.getName)
   val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), sm)
-  E_next_L1_transition.initEvent(new LetterEvent("L"))
+  E_next_L1_transition.initEvent(LetterEvent.getName)
   val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), sm)
-  L1_next_L2_transition.initEvent(new LetterEvent("L"))
+  L1_next_L2_transition.initEvent(LetterEvent.getName)
   val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), sm)
-  L2_next_O_transition.initEvent(new LetterEvent("O"))
+  L2_next_O_transition.initEvent(LetterEvent.getName)
   val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), sm)
   sm.addTransition(INIT_next_H_transition)
   sm.addTransition(H_next_E_transition)
@@ -182,16 +183,16 @@ case class HelloWorld2StateMachine(keepHistory : Boolean, withGUI : Boolean) ext
       ae.getSource match {
         case b : JButton =>
           if (b == sendH) {
-            sm.getPort("hello").get ! new LetterEvent("H")
+            sm.getPort("hello").get.send(new LetterEvent("H"))
           }
           else if (b == sendE) {
-            sm.getPort("hello").get ! new LetterEvent("E")
+            sm.getPort("hello").get.send(new LetterEvent("E"))
           }
           else if (b == sendL) {
-            sm.getPort("hello").get ! new LetterEvent("L")
+            sm.getPort("hello").get.send(new LetterEvent("L"))
           }
           else if (b == sendO) {
-            sm.getPort("hello").get ! new LetterEvent("O")
+            sm.getPort("hello").get.send(new LetterEvent("O"))
           }
       }
     }
@@ -214,7 +215,7 @@ case class INIT_Next_H extends TransitionAction {
   //this.initEvent(new LetterEvent("H"))
   
   override def checkGuard : Boolean = {
-    this.getEvent(LetterEvent(null)) match {
+    this.getEvent(LetterEvent.getName) match {
       case Some(t) => t.asInstanceOf[LetterEvent].letter.equals("H")
       case None => true
     }
@@ -239,7 +240,7 @@ case class H_Next_E extends TransitionAction {
   //this.initEvent(new LetterEvent("E"))
   
   override def checkGuard : Boolean = {
-    this.getEvent(LetterEvent(null)) match {
+    this.getEvent(LetterEvent.getName) match {
       case Some(t) => t.asInstanceOf[LetterEvent].letter.equals("E")
       case None => true
     }
@@ -265,7 +266,7 @@ case class E_Next_L1 extends TransitionAction {
   //this.initEvent(new LetterEvent("L"))
   
   override def checkGuard : Boolean = {
-    this.getEvent(LetterEvent(null)) match {
+    this.getEvent(LetterEvent.getName) match {
       case Some(t) => t.asInstanceOf[LetterEvent].letter.equals("L")
       case None => true
     }
@@ -291,7 +292,7 @@ case class L1_Next_L2 extends TransitionAction {
   //this.initEvent(new LetterEvent("L"))
   
   override def checkGuard : Boolean = {
-    this.getEvent(LetterEvent(null)) match {
+    this.getEvent(LetterEvent.getName) match {
       case Some(t) => t.asInstanceOf[LetterEvent].letter.equals("L")
       case None => true
     }
@@ -317,7 +318,7 @@ case class L2_Next_O extends TransitionAction {
   //this.initEvent(new LetterEvent("O"))
   
   override def checkGuard : Boolean = {
-    this.getEvent(LetterEvent(null)) match {
+    this.getEvent(LetterEvent.getName) match {
       case Some(t) => t.asInstanceOf[LetterEvent].letter.equals("O")
       case None => true
     }

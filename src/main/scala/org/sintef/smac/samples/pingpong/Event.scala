@@ -19,10 +19,16 @@ package org.sintef.smac.samples.pingpong
 
 import org.sintef.smac.Event
 
-case object PingEvent extends Event {}
-case object PongEvent extends Event {}
-case object StopEvent extends Event {}
-case object StartEvent extends Event {}
+object PingEvent {def getName = "PingEvent"}
+object PongEvent {def getName = "PongEvent"}
+object StopEvent {def getName = "StopEvent"}
+object StartEvent {def getName = "StartEvent"}
+object FastEvent {def getName = "FastEvent"}
+object SlowEvent {def getName = "SlowEvent"}
 
-case object FastEvent extends Event {}
-case object SlowEvent extends Event {}
+case class PingEvent(override val name : String = PingEvent.getName) extends Event(name)
+case class PongEvent(override val name : String = PongEvent.getName) extends Event(name)
+case class StopEvent(override val name : String = StopEvent.getName) extends Event(name)
+case class StartEvent(override val name : String = StartEvent.getName) extends Event(name)
+case class FastEvent(override val name : String = FastEvent.getName) extends Event(name)
+case class SlowEvent(override val name : String = SlowEvent.getName) extends Event(name)

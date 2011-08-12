@@ -38,7 +38,7 @@ class PingStateMachine(keepHistory : Boolean) extends StateAction{
   }*/
   
   val sm : StateMachine = new StateMachine(this, keepHistory)
-  new Port("ping", List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), List(PongEvent, StartEvent, StopEvent, FastEvent, SlowEvent), sm).start
+  new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
   //create sub-states
   val ping = new State(Ping(), sm)
   val stop = new State(Stop(), sm)
@@ -48,11 +48,11 @@ class PingStateMachine(keepHistory : Boolean) extends StateAction{
 
   //create transitions among sub-states
   val pongTransition = new InternalTransition(ping, PongTransition(), sm)
-  pongTransition.initEvent(PongEvent)
+  pongTransition.initEvent(PongEvent.getName)
   val stopTransition = new Transition(ping, stop, StopTransition(), sm)
-  stopTransition.initEvent(StopEvent)
+  stopTransition.initEvent(StopEvent.getName)
   val startTransition = new Transition(stop, ping, StartTransition(), sm)
-  startTransition.initEvent(StartEvent)
+  startTransition.initEvent(StartEvent.getName)
   sm.addTransition(startTransition)
   sm.addTransition(stopTransition)
   sm.addInternalTransition(pongTransition)
@@ -156,13 +156,13 @@ class PingStateMachine(keepHistory : Boolean) extends StateAction{
       ae.getSource match {
         case b : JButton =>
           if (b == sendButtonPong) {
-            sm.getPort("ping").get ! PongEvent
+            sm.getPort("ping").get.send(new PongEvent())
           }
           else if (b == sendButtonStop) {
-            sm.getPort("ping").get ! StopEvent
+            sm.getPort("ping").get.send(new StopEvent())
           }
           else if (b == sendButtonStart) {
-            sm.getPort("ping").get ! StartEvent
+            sm.getPort("ping").get.send(new StartEvent())
           }
       }
     }
@@ -178,11 +178,11 @@ case class Ping extends StateAction {
     println("Ping.onEntry")
     if (count < max){
       //Thread.sleep(delay)
-      handler.root.getPort("ping").get ! PingEvent
+      handler.root.getPort("ping").get.send(new PingEvent())
       count += 1
     }
     else {
-      handler.root.getPort("ping").get ! StopEvent
+      handler.root.getPort("ping").get.send(new StopEvent())
       count = 0
     }
   }

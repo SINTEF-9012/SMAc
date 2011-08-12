@@ -29,10 +29,23 @@ import javax.swing.JPanel
 import javax.swing.JTextPane
 import org.sintef.smac._
 
-case object HEvent extends Event {}					
-case object EEvent extends Event {}					
-case object LEvent extends Event {}									
-case object OEvent extends Event {}					
+object HEvent {
+  def getName = "HEvent"
+}
+object EEvent {
+  def getName = "EEvent"
+}
+object LEvent {
+  def getName = "LEvent"
+}
+object OEvent {
+  def getName = "OEvent"
+}
+
+case class HEvent(override val name : String = HEvent.getName) extends Event(name)
+case class EEvent(override val name : String = EEvent.getName) extends Event(name)
+case class LEvent(override val name : String = LEvent.getName) extends Event(name)
+case class OEvent(override val name : String = OEvent.getName) extends Event(name)
 
 case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
 
@@ -44,7 +57,7 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
   def getBehavior = sm
   
   val sm : StateMachine = new StateMachine(this, keepHistory)
-  val hello = new Port("hello", List(HEvent, EEvent, LEvent, OEvent), List(HEvent, EEvent, LEvent, OEvent), sm).start
+  val hello = new Port("hello", List(HEvent.getName), List(HEvent.getName), sm).start
   //create sub-states
   val INIT_state = new State(INIT(), sm)
   val H_state = new State(H(), sm)
@@ -64,15 +77,15 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
   
   //create transitions among sub-states
   val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), sm)
-  INIT_next_H_transition.initEvent(HEvent)
+  INIT_next_H_transition.initEvent(HEvent.getName)
   val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), sm)
-  H_next_E_transition.initEvent(EEvent)
+  H_next_E_transition.initEvent(EEvent.getName)
   val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), sm)
-  E_next_L1_transition.initEvent(LEvent)
+  E_next_L1_transition.initEvent(LEvent.getName)
   val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), sm)
-  L1_next_L2_transition.initEvent(LEvent)
+  L1_next_L2_transition.initEvent(LEvent.getName)
   val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), sm)
-  L2_next_O_transition.initEvent(OEvent)
+  L2_next_O_transition.initEvent(OEvent.getName)
   val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), sm)
   
   sm.addTransition(INIT_next_H_transition)
@@ -187,16 +200,16 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
       ae.getSource match {
         case b : JButton =>
           if (b == sendH) {
-            sm.getPort("hello").get ! HEvent
+            sm.getPort("hello").get.send(new HEvent())
           }
           else if (b == sendE) {
-            sm.getPort("hello").get ! EEvent
+            sm.getPort("hello").get.send(new EEvent())
           }
           else if (b == sendL) {
-            sm.getPort("hello").get ! LEvent
+            sm.getPort("hello").get.send(new LEvent())
           }
           else if (b == sendO) {
-            sm.getPort("hello").get ! OEvent
+            sm.getPort("hello").get.send(new OEvent())
           }
       }
     }

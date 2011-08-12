@@ -42,10 +42,10 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   
   @Test def verify() {   
     println("1/ master ! StartEvent")
-    sm.getStateMachine.getPort("ping").get ! StartEvent
+    sm.getStateMachine.getPort("ping").get ! new StartEvent()
     Thread.sleep(500)
     println("2/ master ! PongEvent")
-    sm.getStateMachine.getPort("ping").get ! PongEvent
+    sm.getStateMachine.getPort("ping").get ! new PongEvent()
     Thread.sleep(500)
     
     /*val slow : Slow = sm.substates.filter{s => s.isInstanceOf[Slow]}.head.asInstanceOf[Slow]
@@ -56,7 +56,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
     
     println("3/ master ! FastEvent")
-    sm.getStateMachine.getPort("ping").get ! FastEvent
+    sm.getStateMachine.getPort("ping").get ! new FastEvent()
     Thread.sleep(500)
     
     /*println(sm.current)
@@ -66,7 +66,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)*/
     
     println("4/ master ! SlowEvent")
-    sm.getStateMachine.getPort("ping").get ! SlowEvent
+    sm.getStateMachine.getPort("ping").get ! new SlowEvent()
     Thread.sleep(500)
     /*sm.current should equal (slow)
     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
