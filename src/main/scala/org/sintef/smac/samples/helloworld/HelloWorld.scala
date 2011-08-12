@@ -75,8 +75,6 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
   L2_next_O_transition.initEvent(OEvent)
   val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), sm)
   
-  H_next_E_transition.addEvent(EEvent)
-  
   sm.addTransition(INIT_next_H_transition)
   sm.addTransition(H_next_E_transition)
   sm.addTransition(E_next_L1_transition)

@@ -11,10 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Authors: Brice Morin and Francois Fouquet
- * Company: SINTEF IKT, Oslo, Norway
- *          INRIA, Rennes, France
- * Date: 2011
+ * @Authors: Brice Morin and Francois Fouquet
+ * @Copyright: SINTEF IKT, Oslo, Norway
+ * @Contact: <brice.morin@sintef.no>
  */
 package org.sintef.smac
 
@@ -151,24 +150,20 @@ sealed class State(action : StateAction, val root : StateMachine) {
       
   protected[smac] def checkForTransition: Option[Handler] = {
     //println(this+".checkForTransition: ")  
-    allTransitions.filter(t => {
-        t.evaluateEvents && t.getAction.checkGuard
-      }).sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore)).headOption match {
+    allTransitions.filter(t => { t.evaluateEvents && t.getAction.checkGuard})
+    .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
+    .headOption match {
       case Some(in) => 
         //println("  An internal transition can be triggered: "+in)
         return Option(in)
       case None => 
-        return Option(null)
+        return None
     }
   }
 
 
   protected[smac] def dispatchEvent(e: Event) : Boolean = {
-    allTransitions().filter(t => t.getEvents.exists(ev => ev.getClass == e.getClass))
-    .foreach(t => {
-        //println(this + "  Dispatching event to transition "+t)
-        t.addEvent(e)
-      })
+    allTransitions().foreach(t => t.addEvent(e))
     checkForTransition match {
       case Some(t) => 
         //println(this + ".Transition: " + t)
@@ -259,45 +254,71 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : S
 
 abstract sealed class Handler(val root : StateMachine) {
   
+  final def getPort(name : String) : Option[Port] = {
+    getRoot.ports.get(name)
+  }
+  
+  protected[smac] def isInterestedIn(e : Event) : Boolean = {
+    //println(this+" is interested in "+e.getClass.toString+"?")
+    events.keys.exists(k => k.equals(e.getClass.toString))
+  }
+  
   protected[smac] def getRoot = root
   
   protected[smac] def getAction: HandlerAction
  
-  protected[smac] def getEvents = eventsMap.keys
+  protected[smac] def getEvents = events.keys
 
-  protected[smac] val eventsMap = scala.collection.mutable.Map[Event, Boolean]()
+  protected[smac] val events = scala.collection.mutable.Map[String, Pair[Event, Boolean]]()
   
-  def initEvent(e : Event) {
-    eventsMap.put(e, false)
+  final def initEvent(e : String) {
+    //println(this+" init event "+e)
+    events.put(e, (null, false))
   }
   
-  def getEvent(e : Event) : Option[Event] ={
-    getEvents.filter(ev => ev.getClass == e.getClass).headOption
+  final def initEvent(e : Event) {
+    initEvent(e.getClass.toString)
+  }
+  
+  final def getEvent(e : Event) : Option[Event] = {
+    getEvent(e.getClass.toString)
+  }
+  
+  final def getEvent(e : String) : Option[Event] = {
+    events.get(e) match {
+      case Some(p) =>
+        if (p._2) {
+          return Option(p._1)
+        }
+        else {
+          return None
+        }
+      case None =>
+        return None
+    }
   }
   
   protected[smac] def addEvent(e : Event) {
-    eventsMap.keys.filter{k => k.getClass == e.getClass}.headOption match { 
-      case Some(k) =>
-        eventsMap.remove(k)
-        eventsMap.put(e, true)
-      case None =>
+    if (isInterestedIn(e)){
+      //println("  "+this+" is interested in "+e.getClass.toString+"!!!")
+      events.put(e.getClass.toString, (e, true))
     }
   }
 
   protected[smac] def evaluateEvents(): Boolean = {
-    eventsMap.size == 0 || eventsMap.values.exists(v => v)
+    events.size == 0 || events.values.exists(p => p._2)
   }
 
   protected[smac] def clearEvents() {
-    eventsMap.keys.foreach {
-      k => eventsMap.put(k, false)
+    events.keys.foreach {
+      k => events.put(k, (null, false))
     }
   }
 
   /**
    * Describe the overall execution of the transition
    */
-  def execute   
+  protected[smac] def execute   
 }
 
 sealed class Transition(previous: State, next: State, action: TransitionAction, root : StateMachine) extends Handler(root) {
