@@ -38,6 +38,7 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     channel.start
     sm = new PingStateMachine(true, false)
     channel.connect(sm.getStateMachine.getPort("ping").get, sm.getStateMachine.getPort("ping").get)
+    sm.getBehavior.start
   }
   
   @Test def verify() {   

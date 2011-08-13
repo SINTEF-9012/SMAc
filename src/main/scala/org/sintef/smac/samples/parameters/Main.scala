@@ -24,5 +24,6 @@ object Main{
     val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
     val sm = new HelloWorld2StateMachine(false, true)
     selfChannel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
+    sm.getBehavior.start
   }
 }

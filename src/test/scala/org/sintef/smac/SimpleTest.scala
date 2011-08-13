@@ -32,19 +32,12 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
   @Before def initialize() {
     channel = new Channel
     channel.start
-    sm = new HelloWorldStateMachine(false, false)
-    
-    println(sm)
-    println(sm.getStateMachine)
-    println(sm.getStateMachine.getPort("hello").get)
-    
+    sm = new HelloWorldStateMachine(false, false)    
     channel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)  
+    sm.getBehavior.start
   }
   
   @Test def verify() {
-    println(sm)
-    println(sm.getStateMachine)
-    println(sm.getStateMachine.getPort("hello").get)
     sm.getStateMachine.getPort("hello").get ! new HEvent()
     Thread.sleep(100)
     sm.getStateMachine.getPort("hello").get ! new EEvent()

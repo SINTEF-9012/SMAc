@@ -202,6 +202,8 @@ sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Sta
   protected[smac] override def getRoot = this
   
   var ports : Map[String, Port] = Map()
+  
+  final def start { current.executeOnEntry }
 }
 
 sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : StateMachine) extends State(action, root) {

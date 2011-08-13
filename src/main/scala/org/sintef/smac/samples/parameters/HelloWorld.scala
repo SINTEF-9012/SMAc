@@ -34,13 +34,7 @@ case class LetterEvent(letter : String, override val name : String = LetterEvent
 
 case class HelloWorld2StateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
 
-  
- /* def start = {
-    master.register(sm)
-    sm.start
-  }
-  */
-  
+  def getBehavior = sm
   val sm : StateMachine = new StateMachine(this, keepHistory)
   val hello = new Port("hello", List(LetterEvent.getName), List(LetterEvent.getName), sm).start
   //create sub-states

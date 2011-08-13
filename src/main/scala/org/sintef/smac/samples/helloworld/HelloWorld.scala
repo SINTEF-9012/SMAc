@@ -49,15 +49,9 @@ case class OEvent(override val name : String = OEvent.getName) extends Event(nam
 
 case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
 
-  /*def start = {
-    master.register(sm)
-    sm.start
-  }*/
-  
-  def getBehavior = sm
-  
+  def getBehavior = sm  
   val sm : StateMachine = new StateMachine(this, keepHistory)
-  val hello = new Port("hello", List(HEvent.getName), List(HEvent.getName), sm).start
+  val hello = new Port("hello", List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), sm).start
   //create sub-states
   val INIT_state = new State(INIT(), sm)
   val H_state = new State(H(), sm)

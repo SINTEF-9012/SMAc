@@ -22,11 +22,7 @@ import org.sintef.smac.samples.pingpong._
 
 class PongStateMachine(keepHistory : Boolean) extends StateAction {
     
-  /*def start = {
-    master.register(sm)
-    sm.start
-  }*/
-  
+  def getBehavior = sm
   val sm : StateMachine = new StateMachine(this, keepHistory)
   //create sub-states
   val pong = new State(Pong(), sm)

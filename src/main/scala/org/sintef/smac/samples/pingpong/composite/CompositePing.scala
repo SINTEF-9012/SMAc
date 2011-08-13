@@ -32,12 +32,7 @@ import org.sintef.smac.samples.pingpong._
 
 class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction{
 
-  /*
-  def start = {
-    master.register(sm)
-    sm.start
-  }*/
-  
+  def getBehavior = sm
   val sm : StateMachine = new StateMachine(this, keepHistory)
   val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
   //create sub-states

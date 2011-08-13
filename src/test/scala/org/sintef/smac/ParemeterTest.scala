@@ -34,6 +34,7 @@ class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
     channel.start
     sm = new HelloWorld2StateMachine(false, false)
     channel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
+    sm.getBehavior.start
   }
   
   @Test def verify() {   
