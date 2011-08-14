@@ -84,68 +84,68 @@ object InterruptTrigger_ENUM extends Enumeration {
   val INTERRUPTTRIGGER_FALLING : Byte = 2
   val INTERRUPTTRIGGER_LOW : Byte = 0
 }
-object Led_off{ def getName = "led_off" }
-case class Led_off(override val name : String = Led_off.getName) extends Event(name)
-object DigitalRead{ def getName = "digitalRead" }
-case class DigitalRead(pin : Byte, override val name : String = DigitalRead.getName) extends Event(name)
-object Poll{ def getName = "poll" }
-case class Poll(override val name : String = Poll.getName) extends Event(name)
-object PinMode{ def getName = "pinMode" }
-case class PinMode(pin : Byte, mode : Byte, override val name : String = PinMode.getName) extends Event(name)
-object InterruptNotification{ def getName = "interruptNotification" }
-case class InterruptNotification(interrupt : Byte, override val name : String = InterruptNotification.getName) extends Event(name)
-object TestIn{ def getName = "testIn" }
-case class TestIn(c : Char, override val name : String = TestIn.getName) extends Event(name)
-object Eeprom_value{ def getName = "eeprom_value" }
-case class Eeprom_value(value : Short, override val name : String = Eeprom_value.getName) extends Event(name)
-object DigitalWrite{ def getName = "digitalWrite" }
-case class DigitalWrite(pin : Byte, value : Byte, override val name : String = DigitalWrite.getName) extends Event(name)
-object Ping{ def getName = "ping" }
-case class Ping(override val name : String = Ping.getName) extends Event(name)
-object Setup{ def getName = "setup" }
-case class Setup(override val name : String = Setup.getName) extends Event(name)
-object Eeprom_sync_write{ def getName = "eeprom_sync_write" }
-case class Eeprom_sync_write(address : Int, value : Short, override val name : String = Eeprom_sync_write.getName) extends Event(name)
-object Timer_timeout{ def getName = "timer_timeout" }
-case class Timer_timeout(override val name : String = Timer_timeout.getName) extends Event(name)
-object DigitalReadResult{ def getName = "digitalReadResult" }
-case class DigitalReadResult(value : Byte, override val name : String = DigitalReadResult.getName) extends Event(name)
-object Eeprom_write_ack{ def getName = "eeprom_write_ack" }
-case class Eeprom_write_ack(override val name : String = Eeprom_write_ack.getName) extends Event(name)
-object Eeprom_read{ def getName = "eeprom_read" }
-case class Eeprom_read(address : Int, override val name : String = Eeprom_read.getName) extends Event(name)
-object Timer_start{ def getName = "timer_start" }
-case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
-object Tone{ def getName = "tone" }
-case class Tone(pin : Byte, frequency : Int, duration : Int, override val name : String = Tone.getName) extends Event(name)
-object AnalogWrite{ def getName = "analogWrite" }
-case class AnalogWrite(pin : Byte, value : Short, override val name : String = AnalogWrite.getName) extends Event(name)
 object Led_toggle{ def getName = "led_toggle" }
 case class Led_toggle(override val name : String = Led_toggle.getName) extends Event(name)
-object TestOut{ def getName = "testOut" }
-case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
+object TestFailure{ def getName = "testFailure" }
+case class TestFailure(override val name : String = TestFailure.getName) extends Event(name)
+object DigitalRead{ def getName = "digitalRead" }
+case class DigitalRead(pin : Byte, override val name : String = DigitalRead.getName) extends Event(name)
 object Led_on{ def getName = "led_on" }
 case class Led_on(override val name : String = Led_on.getName) extends Event(name)
+object Eeprom_value{ def getName = "eeprom_value" }
+case class Eeprom_value(value : Short, override val name : String = Eeprom_value.getName) extends Event(name)
+object AttachInterrupt{ def getName = "attachInterrupt" }
+case class AttachInterrupt(interrupt : Byte, mode : Byte, override val name : String = AttachInterrupt.getName) extends Event(name)
 object DetachInterrupt{ def getName = "detachInterrupt" }
 case class DetachInterrupt(interrupt : Byte, override val name : String = DetachInterrupt.getName) extends Event(name)
+object Ping{ def getName = "ping" }
+case class Ping(override val name : String = Ping.getName) extends Event(name)
+object AnalogRead{ def getName = "analogRead" }
+case class AnalogRead(pin : Byte, override val name : String = AnalogRead.getName) extends Event(name)
+object Pong{ def getName = "pong" }
+case class Pong(override val name : String = Pong.getName) extends Event(name)
+object TestOut{ def getName = "testOut" }
+case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
+object Poll{ def getName = "poll" }
+case class Poll(override val name : String = Poll.getName) extends Event(name)
+object Eeprom_write{ def getName = "eeprom_write" }
+case class Eeprom_write(address : Int, value : Short, override val name : String = Eeprom_write.getName) extends Event(name)
+object Eeprom_read{ def getName = "eeprom_read" }
+case class Eeprom_read(address : Int, override val name : String = Eeprom_read.getName) extends Event(name)
+object InterruptNotification{ def getName = "interruptNotification" }
+case class InterruptNotification(interrupt : Byte, override val name : String = InterruptNotification.getName) extends Event(name)
+object Eeprom_write_ack{ def getName = "eeprom_write_ack" }
+case class Eeprom_write_ack(override val name : String = Eeprom_write_ack.getName) extends Event(name)
+object DigitalReadResult{ def getName = "digitalReadResult" }
+case class DigitalReadResult(value : Byte, override val name : String = DigitalReadResult.getName) extends Event(name)
 object AnalogReadResult{ def getName = "analogReadResult" }
 case class AnalogReadResult(value : Int, override val name : String = AnalogReadResult.getName) extends Event(name)
 object NoTone{ def getName = "noTone" }
 case class NoTone(pin : Byte, override val name : String = NoTone.getName) extends Event(name)
-object TestFailure{ def getName = "testFailure" }
-case class TestFailure(override val name : String = TestFailure.getName) extends Event(name)
-object Pong{ def getName = "pong" }
-case class Pong(override val name : String = Pong.getName) extends Event(name)
-object AnalogRead{ def getName = "analogRead" }
-case class AnalogRead(pin : Byte, override val name : String = AnalogRead.getName) extends Event(name)
-object AnalogReference{ def getName = "analogReference" }
-case class AnalogReference(`type` : Byte, override val name : String = AnalogReference.getName) extends Event(name)
-object Eeprom_write{ def getName = "eeprom_write" }
-case class Eeprom_write(address : Int, value : Short, override val name : String = Eeprom_write.getName) extends Event(name)
+object AnalogWrite{ def getName = "analogWrite" }
+case class AnalogWrite(pin : Byte, value : Short, override val name : String = AnalogWrite.getName) extends Event(name)
+object Led_off{ def getName = "led_off" }
+case class Led_off(override val name : String = Led_off.getName) extends Event(name)
+object Timer_start{ def getName = "timer_start" }
+case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
+object Setup{ def getName = "setup" }
+case class Setup(override val name : String = Setup.getName) extends Event(name)
+object Eeprom_sync_write{ def getName = "eeprom_sync_write" }
+case class Eeprom_sync_write(address : Int, value : Short, override val name : String = Eeprom_sync_write.getName) extends Event(name)
+object PinMode{ def getName = "pinMode" }
+case class PinMode(pin : Byte, mode : Byte, override val name : String = PinMode.getName) extends Event(name)
 object Timer_cancel{ def getName = "timer_cancel" }
 case class Timer_cancel(override val name : String = Timer_cancel.getName) extends Event(name)
-object AttachInterrupt{ def getName = "attachInterrupt" }
-case class AttachInterrupt(interrupt : Byte, mode : Byte, override val name : String = AttachInterrupt.getName) extends Event(name)
+object Tone{ def getName = "tone" }
+case class Tone(pin : Byte, frequency : Int, duration : Int, override val name : String = Tone.getName) extends Event(name)
+object Timer_timeout{ def getName = "timer_timeout" }
+case class Timer_timeout(override val name : String = Timer_timeout.getName) extends Event(name)
+object TestIn{ def getName = "testIn" }
+case class TestIn(c : Char, override val name : String = TestIn.getName) extends Event(name)
+object DigitalWrite{ def getName = "digitalWrite" }
+case class DigitalWrite(pin : Byte, value : Byte, override val name : String = DigitalWrite.getName) extends Event(name)
+object AnalogReference{ def getName = "analogReference" }
+case class AnalogReference(`type` : Byte, override val name : String = AnalogReference.getName) extends Event(name)
 
 /**
  * Definitions for type : Arduino
@@ -189,30 +189,35 @@ class Arduino {
       new Port(k, ports.get(k).get._1, ports.get(k).get._2, parent).start
     }
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
 //create sub-states
     val RunningArduino_state = new State(RunningArduinoState(), parent)
     parent.addSubState(RunningArduino_state)
-    case class InternalTransition952443392 extends InternalTransitionAction {
+    case class InternalTransition332139135 extends InternalTransitionAction {
       override def executeActions() = {
-        /*pinMode(getEvent("pinMode").get.asInstanceOf[PinMode].pin, getEvent("pinMode").get.asInstanceOf[PinMode].mode);*/
+        println(this + ".executeActions")
+        /*pinMode(getEvent(PinMode.getName).get.asInstanceOf[PinMode].pin, getEvent(PinMode.getName).get.asInstanceOf[PinMode].mode);*/
       }
 
     }
-    case class InternalTransition1902059420 extends InternalTransitionAction {
+    case class InternalTransition585697603 extends InternalTransitionAction {
       override def executeActions() = {
-        /*digitalWrite(getEvent("digitalWrite").get.asInstanceOf[DigitalWrite].pin, getEvent("digitalWrite").get.asInstanceOf[DigitalWrite].value);*/
+        println(this + ".executeActions")
+        /*digitalWrite(getEvent(DigitalWrite.getName).get.asInstanceOf[DigitalWrite].pin, getEvent(DigitalWrite.getName).get.asInstanceOf[DigitalWrite].value);*/
       }
 
     }
-    case class InternalTransition572487432 extends InternalTransitionAction {
+    case class InternalTransition846275759 extends InternalTransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
         handler.getPort("DigitalIO") match{
           case Some(p) => p.send(new DigitalReadResult(0))
           case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
@@ -220,14 +225,16 @@ class Arduino {
       }
 
     }
-    case class InternalTransition2112994712 extends InternalTransitionAction {
+    case class InternalTransition1092714087 extends InternalTransitionAction {
       override def executeActions() = {
-        /*analogReference(getEvent("analogReference").get.asInstanceOf[AnalogReference].`type`);*/
+        println(this + ".executeActions")
+        /*analogReference(getEvent(AnalogReference.getName).get.asInstanceOf[AnalogReference].`type`);*/
       }
 
     }
-    case class InternalTransition887699865 extends InternalTransitionAction {
+    case class InternalTransition1945910404 extends InternalTransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
         handler.getPort("AnalogIO") match{
           case Some(p) => p.send(new AnalogReadResult(0))
           case None => println("Warning: no port AnalogIO You may consider revising your ThingML model.")
@@ -235,54 +242,59 @@ class Arduino {
       }
 
     }
-    case class InternalTransition780638304 extends InternalTransitionAction {
+    case class InternalTransition891136526 extends InternalTransitionAction {
       override def executeActions() = {
-        /*analogWrite(getEvent("analogWrite").get.asInstanceOf[AnalogWrite].pin, getEvent("analogWrite").get.asInstanceOf[AnalogWrite].value);*/
+        println(this + ".executeActions")
+        /*analogWrite(getEvent(AnalogWrite.getName).get.asInstanceOf[AnalogWrite].pin, getEvent(AnalogWrite.getName).get.asInstanceOf[AnalogWrite].value);*/
       }
 
     }
-    case class InternalTransition1013462002 extends InternalTransitionAction {
+    case class InternalTransition1634151355 extends InternalTransitionAction {
       override def executeActions() = {
-        /*tone(getEvent("tone").get.asInstanceOf[Tone].pin, getEvent("tone").get.asInstanceOf[Tone].frequency, getEvent("tone").get.asInstanceOf[Tone].duration);*/
+        println(this + ".executeActions")
+        /*tone(getEvent(Tone.getName).get.asInstanceOf[Tone].pin, getEvent(Tone.getName).get.asInstanceOf[Tone].frequency, getEvent(Tone.getName).get.asInstanceOf[Tone].duration);*/
       }
 
     }
-    case class InternalTransition919099148 extends InternalTransitionAction {
+    case class InternalTransition853068360 extends InternalTransitionAction {
       override def executeActions() = {
-        /*noTone(getEvent("noTone").get.asInstanceOf[NoTone].pin);*/
+        println(this + ".executeActions")
+        /*noTone(getEvent(NoTone.getName).get.asInstanceOf[NoTone].pin);*/
       }
 
     }
-    val t_self_952443392 = new InternalTransition(RunningArduino_state, new InternalTransition952443392(), parent)
-    t_self_952443392.initEvent("pinMode")
-    RunningArduino_state.addInternalTransition(t_self_952443392)
-    val t_self_1902059420 = new InternalTransition(RunningArduino_state, new InternalTransition1902059420(), parent)
-    t_self_1902059420.initEvent("digitalWrite")
-    RunningArduino_state.addInternalTransition(t_self_1902059420)
-    val t_self_572487432 = new InternalTransition(RunningArduino_state, new InternalTransition572487432(), parent)
-    t_self_572487432.initEvent("digitalRead")
-    RunningArduino_state.addInternalTransition(t_self_572487432)
-    val t_self_2112994712 = new InternalTransition(RunningArduino_state, new InternalTransition2112994712(), parent)
-    t_self_2112994712.initEvent("analogReference")
-    RunningArduino_state.addInternalTransition(t_self_2112994712)
-    val t_self_887699865 = new InternalTransition(RunningArduino_state, new InternalTransition887699865(), parent)
-    t_self_887699865.initEvent("analogRead")
-    RunningArduino_state.addInternalTransition(t_self_887699865)
-    val t_self_780638304 = new InternalTransition(RunningArduino_state, new InternalTransition780638304(), parent)
-    t_self_780638304.initEvent("analogWrite")
-    RunningArduino_state.addInternalTransition(t_self_780638304)
-    val t_self_1013462002 = new InternalTransition(RunningArduino_state, new InternalTransition1013462002(), parent)
-    t_self_1013462002.initEvent("tone")
-    RunningArduino_state.addInternalTransition(t_self_1013462002)
-    val t_self_919099148 = new InternalTransition(RunningArduino_state, new InternalTransition919099148(), parent)
-    t_self_919099148.initEvent("noTone")
-    RunningArduino_state.addInternalTransition(t_self_919099148)
+    val t_self_332139135 = new InternalTransition(RunningArduino_state, new InternalTransition332139135(), parent)
+    t_self_332139135.initEvent(PinMode.getName)
+    RunningArduino_state.addInternalTransition(t_self_332139135)
+    val t_self_585697603 = new InternalTransition(RunningArduino_state, new InternalTransition585697603(), parent)
+    t_self_585697603.initEvent(DigitalWrite.getName)
+    RunningArduino_state.addInternalTransition(t_self_585697603)
+    val t_self_846275759 = new InternalTransition(RunningArduino_state, new InternalTransition846275759(), parent)
+    t_self_846275759.initEvent(DigitalRead.getName)
+    RunningArduino_state.addInternalTransition(t_self_846275759)
+    val t_self_1092714087 = new InternalTransition(RunningArduino_state, new InternalTransition1092714087(), parent)
+    t_self_1092714087.initEvent(AnalogReference.getName)
+    RunningArduino_state.addInternalTransition(t_self_1092714087)
+    val t_self_1945910404 = new InternalTransition(RunningArduino_state, new InternalTransition1945910404(), parent)
+    t_self_1945910404.initEvent(AnalogRead.getName)
+    RunningArduino_state.addInternalTransition(t_self_1945910404)
+    val t_self_891136526 = new InternalTransition(RunningArduino_state, new InternalTransition891136526(), parent)
+    t_self_891136526.initEvent(AnalogWrite.getName)
+    RunningArduino_state.addInternalTransition(t_self_891136526)
+    val t_self_1634151355 = new InternalTransition(RunningArduino_state, new InternalTransition1634151355(), parent)
+    t_self_1634151355.initEvent(Tone.getName)
+    RunningArduino_state.addInternalTransition(t_self_1634151355)
+    val t_self_853068360 = new InternalTransition(RunningArduino_state, new InternalTransition853068360(), parent)
+    t_self_853068360.initEvent(NoTone.getName)
+    RunningArduino_state.addInternalTransition(t_self_853068360)
     case class RunningArduinoState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -324,6 +336,7 @@ class LED {
       new Port(k, ports.get(k).get._1, ports.get(k).get._2, parent).start
     }
     override def onEntry() = {
+      println(this + ".onEntry")
       handler.getPort("DigitalIO") match{
         case Some(p) => p.send(new PinMode(LED_pin_var, PinMode_ENUM.PINMODE_OUTPUT))
         case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
@@ -331,6 +344,7 @@ class LED {
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -339,6 +353,7 @@ class LED {
     parent.addSubState(LED_OFF_state)
     case class LED_OFFState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
           case Some(p) => p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_LOW))
           case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
@@ -346,6 +361,7 @@ class LED {
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -355,6 +371,7 @@ class LED {
     parent.addSubState(LED_ON_state)
     case class LED_ONState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
           case Some(p) => p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_HIGH))
           case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
@@ -362,6 +379,7 @@ class LED {
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -370,24 +388,26 @@ class LED {
     parent.setInitial(LED_OFF_state)
 
 //create transitions among sub-states
-    case class TransitionLED_OFF2LED_ON_1388314661 extends TransitionAction {
+    case class TransitionLED_OFF2LED_ON_481404130 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
-    val t_LED_OFF2LED_ON_1388314661 = new Transition(LED_OFF_state, LED_ON_state, TransitionLED_OFF2LED_ON_1388314661(), parent)
-    t_LED_OFF2LED_ON_1388314661.initEvent("led_on")
-    parent.addTransition(t_LED_OFF2LED_ON_1388314661)
-    case class TransitionLED_ON2LED_OFF_1364844884 extends TransitionAction {
+    val t_LED_OFF2LED_ON_481404130 = new Transition(LED_OFF_state, LED_ON_state, TransitionLED_OFF2LED_ON_481404130(), parent)
+    t_LED_OFF2LED_ON_481404130.initEvent(Led_on.getName)
+    parent.addTransition(t_LED_OFF2LED_ON_481404130)
+    case class TransitionLED_ON2LED_OFF_733882515 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
-    val t_LED_ON2LED_OFF_1364844884 = new Transition(LED_ON_state, LED_OFF_state, TransitionLED_ON2LED_OFF_1364844884(), parent)
-    t_LED_ON2LED_OFF_1364844884.initEvent("led_off")
-    parent.addTransition(t_LED_ON2LED_OFF_1364844884)
+    val t_LED_ON2LED_OFF_733882515 = new Transition(LED_ON_state, LED_OFF_state, TransitionLED_ON2LED_OFF_733882515(), parent)
+    t_LED_ON2LED_OFF_733882515.initEvent(Led_off.getName)
+    parent.addTransition(t_LED_ON2LED_OFF_733882515)
   }
 }
 
@@ -421,10 +441,12 @@ class SoftTimer {
       new Port(k, ports.get(k).get._1, ports.get(k).get._2, parent).start
     }
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -433,10 +455,12 @@ class SoftTimer {
     parent.addSubState(Idle_state)
     case class IdleState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -444,21 +468,24 @@ class SoftTimer {
 
     val Counting_state = new State(CountingState(), parent)
     parent.addSubState(Counting_state)
-    case class InternalTransition1009920161 extends InternalTransitionAction {
+    case class InternalTransition1206877668 extends InternalTransitionAction {
       override def executeActions() = {
-        SoftTimer_SoftTimer_target_var = System.currentTimeMillis + getEvent("timer_start").get.asInstanceOf[Timer_start].delay
+        println(this + ".executeActions")
+        SoftTimer_SoftTimer_target_var = System.currentTimeMillis + getEvent(Timer_start.getName).get.asInstanceOf[Timer_start].delay
       }
 
     }
-    val t_self_1009920161 = new InternalTransition(Counting_state, new InternalTransition1009920161(), parent)
-    t_self_1009920161.initEvent("timer_start")
-    Counting_state.addInternalTransition(t_self_1009920161)
+    val t_self_1206877668 = new InternalTransition(Counting_state, new InternalTransition1206877668(), parent)
+    t_self_1206877668.initEvent(Timer_start.getName)
+    Counting_state.addInternalTransition(t_self_1206877668)
     case class CountingState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -467,21 +494,24 @@ class SoftTimer {
     parent.setInitial(Idle_state)
 
 //create transitions among sub-states
-    case class TransitionIdle2Counting_1617922859 extends TransitionAction {
+    case class TransitionIdle2Counting_257686973 extends TransitionAction {
       override def executeActions() = {
-        SoftTimer_SoftTimer_target_var = System.currentTimeMillis + getEvent("timer_start").get.asInstanceOf[Timer_start].delay
+        println(this + ".executeActions")
+        SoftTimer_SoftTimer_target_var = System.currentTimeMillis + getEvent(Timer_start.getName).get.asInstanceOf[Timer_start].delay
       }
 
     }
-    val t_Idle2Counting_1617922859 = new Transition(Idle_state, Counting_state, TransitionIdle2Counting_1617922859(), parent)
-    t_Idle2Counting_1617922859.initEvent("timer_start")
-    parent.addTransition(t_Idle2Counting_1617922859)
-    case class TransitionCounting2Idle_953169274 extends TransitionAction {
+    val t_Idle2Counting_257686973 = new Transition(Idle_state, Counting_state, TransitionIdle2Counting_257686973(), parent)
+    t_Idle2Counting_257686973.initEvent(Timer_start.getName)
+    parent.addTransition(t_Idle2Counting_257686973)
+    case class TransitionCounting2Idle_649272183 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
       override def executeAfterActions() = {
+        println(this + ".executeAfterActions")
         handler.getPort("timer") match{
           case Some(p) => p.send(new Timer_timeout())
           case None => println("Warning: no port timer You may consider revising your ThingML model.")
@@ -489,18 +519,19 @@ class SoftTimer {
       }
 
     }
-    val t_Counting2Idle_953169274 = new Transition(Counting_state, Idle_state, TransitionCounting2Idle_953169274(), parent)
-    t_Counting2Idle_953169274.initEvent("poll")
-    parent.addTransition(t_Counting2Idle_953169274)
-    case class TransitionCounting2Idle_1056794277 extends TransitionAction {
+    val t_Counting2Idle_649272183 = new Transition(Counting_state, Idle_state, TransitionCounting2Idle_649272183(), parent)
+    t_Counting2Idle_649272183.initEvent(Poll.getName)
+    parent.addTransition(t_Counting2Idle_649272183)
+    case class TransitionCounting2Idle_1445432963 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
-    val t_Counting2Idle_1056794277 = new Transition(Counting_state, Idle_state, TransitionCounting2Idle_1056794277(), parent)
-    t_Counting2Idle_1056794277.initEvent("timer_cancel")
-    parent.addTransition(t_Counting2Idle_1056794277)
+    val t_Counting2Idle_1445432963 = new Transition(Counting_state, Idle_state, TransitionCounting2Idle_1445432963(), parent)
+    t_Counting2Idle_1445432963.initEvent(Timer_cancel.getName)
+    parent.addTransition(t_Counting2Idle_1445432963)
   }
 }
 
@@ -526,10 +557,12 @@ class Blink {
       new Port(k, ports.get(k).get._1, ports.get(k).get._2, parent).start
     }
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -538,6 +571,7 @@ class Blink {
     parent.addSubState(Blinking_state)
     case class BlinkingState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         handler.getPort("HW") match{
           case Some(p) => p.send(new Timer_start(1000))
           case None => println("Warning: no port HW You may consider revising your ThingML model.")
@@ -545,6 +579,7 @@ class Blink {
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -553,12 +588,14 @@ class Blink {
     parent.setInitial(Blinking_state)
 
 //create transitions among sub-states
-    case class TransitionBlinking2Blinking_451982499 extends TransitionAction {
+    case class TransitionBlinking2Blinking_769732461 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
       override def executeAfterActions() = {
+        println(this + ".executeAfterActions")
         handler.getPort("HW") match{
           case Some(p) => p.send(new Led_toggle())
           case None => println("Warning: no port HW You may consider revising your ThingML model.")
@@ -566,8 +603,8 @@ class Blink {
       }
 
     }
-    val t_Blinking2Blinking_451982499 = new Transition(Blinking_state, Blinking_state, TransitionBlinking2Blinking_451982499(), parent)
-    t_Blinking2Blinking_451982499.initEvent("timer_timeout")
-    parent.addTransition(t_Blinking2Blinking_451982499)
+    val t_Blinking2Blinking_769732461 = new Transition(Blinking_state, Blinking_state, TransitionBlinking2Blinking_769732461(), parent)
+    t_Blinking2Blinking_769732461.initEvent(Timer_timeout.getName)
+    parent.addTransition(t_Blinking2Blinking_769732461)
   }
 }
