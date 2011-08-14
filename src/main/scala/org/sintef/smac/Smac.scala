@@ -124,16 +124,19 @@ sealed class State(action : StateAction, val root : StateMachine) {
     internal ++= List(t)
   }
   
-  //TODO: Union with internal
   protected[smac] def allTransitions(): List[Handler] = {
     var result : List[Handler] = List()
-    result :: internal
+    result = result ::: internal
+    //println(result.size)
     parent match {
       case Some(p) =>
-        result ::: p.transitions.filter(t => t.getPrevious == this)
+        result = result ::: p.transitions.filter(t => t.getPrevious == this)
+        //println(result.size)
       case None =>
-        List()
+        result
     }
+    //println(result.size)
+    return result
   }
 
   protected[smac] def isCurrent : Boolean = {
@@ -158,7 +161,7 @@ sealed class State(action : StateAction, val root : StateMachine) {
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
-        //println("  An internal transition can be triggered: "+in)
+        //println("  A transition can be triggered: "+in)
         return Option(in)
       case None => 
         return None
@@ -167,7 +170,10 @@ sealed class State(action : StateAction, val root : StateMachine) {
 
 
   protected[smac] def dispatchEvent(e: Event) : Boolean = {
-    allTransitions().foreach(t => t.addEvent(e))
+    allTransitions().foreach{t => 
+      //println(t)
+      t.addEvent(e)
+    }
     checkForTransition match {
       case Some(t) => 
         //println(this + ".Transition: " + t)
@@ -350,6 +356,7 @@ sealed class InternalTransition(self: State, action: InternalTransitionAction, r
   override def getAction = action
   
   override def execute() = {
+    //println("EXECUTE")
     action.executeActions()
     //clearEvents
   }
