@@ -11,341 +11,386 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Authors: Brice Morin
- * Company: SINTEF IKT, Oslo, Norway
- * Date: 2011
+ * @Authors: Brice Morin and Francois Fouquet
+ * @Copyright: SINTEF IKT, Oslo, Norway
+ * @Contact: <brice.morin@sintef.no>
  */
-package org.sintef.smac.samples.pingpong.composite
+package org.sintef.smac
 
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextPane
-import org.sintef.smac._
-import org.sintef.smac.samples.pingpong._
+import scala.actors.Actor
 
-class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction{
 
-  def getBehavior = sm
-  val sm : StateMachine = new StateMachine(this, keepHistory)
-  val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
-  //create sub-states
-  val fast = Fast(true, sm).getComposite
-  val slow = Slow(true, sm).getComposite
-  sm.addSubState(fast)
-  sm.addSubState(slow)
-  sm.setInitial(slow)
-    
-  //create transitions among sub-states
-  val slowTransition = new Transition(fast, slow, SlowTransition(), sm)
-  slowTransition.initEvent(SlowEvent.getName)
-  val fastTransition = new Transition(slow, fast, FastTransition(), sm)
-  fastTransition.initEvent(FastEvent.getName)
-  sm.addTransition(slowTransition)
-  sm.addTransition(fastTransition)
-    
-  /*override def startState() = {
-   super.startState*/
-  if (withGUI)
-    PingGUI.init
-  //}
+/**
+ * These classes should be extended to define the actions of the state
+ * and the transitions of a given state machine
+ */
+abstract sealed class HandlerAction {
   
-  def onEntry = {}
+  protected[smac] var handler : Handler = _
   
-  def onExit = {}
-
-  //This is just an ugly GUI...
-  object PingGUI extends ActionListener {
-    val frame = new JFrame("PingGUI")
-    val screen = new JTextPane()
-	
-    val sendButtonPong : JButton = new JButton("Send")
-    val sendButtonStop : JButton = new JButton("Send")
-    val sendButtonStart : JButton = new JButton("Send")
-    val sendButtonSlow : JButton = new JButton("Send")
-    val sendButtonFast : JButton = new JButton("Send")
-
-    def init {
-      frame.setLayout(new GridBagLayout());
-      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.gridwidth = 1;
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.insets = new Insets(0,3,0,3);
-    
-      //GUI related to pong
-      c.gridy = 0;
-      c.gridx = 0;
-      frame.add(new JLabel("pong"), c);
-    
-      c.gridy = 1;
-      c.gridx = 0;
-      frame.add(createPongPanel(), c);
-      
-      c.gridy = 2;
-      c.gridx = 0;
-      frame.add(sendButtonPong, c);
-      sendButtonPong.addActionListener(this)
-      
-      //GUI related to stop
-      c.gridy = 0;
-      c.gridx = 1;
-      frame.add(new JLabel("stop"), c);
-    
-      c.gridy = 1;
-      c.gridx = 1;
-      frame.add(createStopPanel(), c);
-      
-      c.gridy = 2;
-      c.gridx = 1;
-      frame.add(sendButtonStop, c);
-      sendButtonStop.addActionListener(this)
-      
-      //GUI related to start
-      c.gridy = 0;
-      c.gridx = 2;
-      frame.add(new JLabel("start"), c);
-    
-      c.gridy = 1;
-      c.gridx = 2;
-      frame.add(createStartPanel(), c);
-      
-      c.gridy = 2;
-      c.gridx = 2;
-      frame.add(sendButtonStart, c);
-      sendButtonStart.addActionListener(this)
-
-      //GUI related to slow
-      c.gridy = 0;
-      c.gridx = 3;
-      frame.add(new JLabel("slow"), c);
-    
-      c.gridy = 1;
-      c.gridx = 3;
-      frame.add(createSlowPanel(), c);
-      
-      c.gridy = 2;
-      c.gridx = 3;
-      frame.add(sendButtonSlow, c);
-      sendButtonSlow.addActionListener(this)
-      
-      //GUI related to fast
-      c.gridy = 0;
-      c.gridx = 4;
-      frame.add(new JLabel("fast"), c);
-    
-      c.gridy = 1;
-      c.gridx = 4;
-      frame.add(createFastPanel(), c);
-      
-      c.gridy = 2;
-      c.gridx = 4;
-      frame.add(sendButtonFast, c);
-      sendButtonFast.addActionListener(this)
-      
-      frame.pack
-      frame.setVisible(true)
-    }
+  final def getStateMachine = handler.getRoot
   
-    def createPongPanel() : JPanel = {
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 0.5;
-      new JPanel(new GridBagLayout());
-    }
+  final def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
+  
+  final def getEvent(e : String) : Option[Event] = handler.getEvent(e)
+  
+  def checkGuard: Boolean = true
+  def getScore: Double = 1
+  
+  def executeActions()
+   
+}
+
+abstract class TransitionAction extends HandlerAction {
+  def executeBeforeActions(){}
+  def executeAfterActions(){}
+}
+
+abstract class InternalTransitionAction extends HandlerAction {
+  
+}
+
+abstract class StateAction {
+  
+  final def getStateMachine = handler.getRoot
+  
+  protected[smac] var handler : State = _
     
-    def createStopPanel() : JPanel = {
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 0.5;
-      new JPanel(new GridBagLayout());
-    }
-    
-    def createStartPanel() : JPanel = {
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 0.5;
-      new JPanel(new GridBagLayout());
-    }
-    
-    def createFastPanel() : JPanel = {
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 0.5;
-      new JPanel(new GridBagLayout());
-    }
-    
-    def createSlowPanel() : JPanel = {
-      var c : GridBagConstraints = new GridBagConstraints();
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 0.5;
-      new JPanel(new GridBagLayout());
-    }
-    
-    def actionPerformed(ae : ActionEvent) = {
-      ae.getSource match {
-        case b : JButton =>
-          if (b == sendButtonPong) {
-            sm.getPort("ping").get.send(PongEvent())
-          }
-          else if (b == sendButtonStop) {
-            sm.getPort("ping").get.send(StopEvent())
-          }
-          else if (b == sendButtonStart) {
-            println("start button clicked!")
-            sm.getPort("ping").get.send(StartEvent())
-          }
-          else if (b == sendButtonSlow) {
-            sm.getPort("ping").get.send(SlowEvent())
-          }
-          else if (b == sendButtonFast) {
-            sm.getPort("ping").get.send(FastEvent())
-          }
+  def onEntry
+  def onExit
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * These classes define the execution semantics of SMAc.
+ * They should not, and cannot (sealed), be extended by user state machines
+ */
+sealed class Port(val name : String, val receive : List[String], val send : List[String], sm : StateMachine) extends Actor {
+  
+  sm.ports += (name -> this)
+  
+  protected[smac] var out : List[Channel] = List()
+  
+  override def act() = {
+    loop {
+      react {
+        case e: Event =>
+          if (canReceive(e))
+            //println("Port " + this + " dispatches to state machine")
+          sm.dispatchEvent(e)
+        case e: Any =>
+          ////println("Orchestrator_Any: " + e)
       }
     }
-  }    
-}
-
-case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction {
-  
-  def getComposite : CompositeState = c
-  
-  val c : CompositeState = new CompositeState(this, keepHistory, root)
-  //create sub-states
-  val ping = new State(Ping(25), root)
-  val stop = new State(Stop(), root)
-  c.addSubState(ping)
-  c.addSubState(stop)
-  c.setInitial(stop)
-    
-  //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent.getName)
-  c.addInternalTransition(pongTransition)
-  c.addTransition(stopTransition)
-  c.addTransition(startTransition)
-    
-  override def onEntry() = {
-    println("Fast.onEntry")
   }
- 
-  override def onExit() = {
-    println("Fast.onExit")
+  
+  def send(e : Event) {
+    if (canSend(e)) {
+      //println("Port " + this + " sending to channels")
+      out.foreach{c =>
+        c ! e
+      }
+    }
+  }
+  
+  protected[smac] def canSend(e : Event) = {
+    send.exists(p => p.equals(e.name))
+  }
+  
+  protected[smac] def canReceive(e : Event) = {
+    receive.exists(p => p.equals(e.name))
   }
 }
 
-case class Slow(keepHistory : Boolean, root : StateMachine) extends StateAction() {
+sealed class State(action : StateAction, val root : StateMachine) {
   
-  def getComposite : CompositeState = c
+  protected[smac] def getRoot = root
   
-  val c : CompositeState = new CompositeState(this, keepHistory, root)
-//create sub-states
-  val ping = new State(Ping(1000), root)
-  val stop = new State(Stop(), root)
-  c.addSubState(ping)
-  c.addSubState(stop)
-  c.setInitial(stop)
-    
-  //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent.getName)
-  c.addInternalTransition(pongTransition)
-  c.addTransition(stopTransition)
-  c.addTransition(startTransition)
-  
-  override def onEntry() = {
-    println("Slow.onEntry")
+  final def getPort(name : String) : Option[Port] = {
+    getRoot.ports.get(name)
   }
- 
-  override def onExit() = {
-    println("Slow.onExit")
+  
+  action.handler = this
+  
+  protected[smac] var parent: Option[CompositeState] = Option(null)
+  
+  protected[smac] var internal: List[InternalTransition] = List()
+  
+  final def addInternalTransition(t : InternalTransition) {
+    internal ++= List(t)
+  }
+  
+  //TODO: Union with internal
+  protected[smac] def allTransitions(): List[Handler] = {
+    var result : List[Handler] = List()
+    result :: internal
+    parent match {
+      case Some(p) =>
+        result ::: p.transitions.filter(t => t.getPrevious == this)
+      case None =>
+        List()
+    }
+  }
+
+  protected[smac] def isCurrent : Boolean = {
+    parent match {
+      case Some(p) => p.current == this
+      case None => true
+    }
+  }
+  
+  protected[smac] def clearEvents() {
+    allTransitions.foreach{t => t.clearEvents}
+    parent match {
+      case Some(p) =>
+        p.clearEvents
+      case None =>
+    }
+  }
+      
+  protected[smac] def checkForTransition: Option[Handler] = {
+    //println(this+".checkForTransition: ")  
+    allTransitions.filter(t => { t.evaluateEvents && t.getAction.checkGuard})
+    .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
+    .headOption match {
+      case Some(in) => 
+        //println("  An internal transition can be triggered: "+in)
+        return Option(in)
+      case None => 
+        return None
+    }
+  }
+
+
+  protected[smac] def dispatchEvent(e: Event) : Boolean = {
+    allTransitions().foreach(t => t.addEvent(e))
+    checkForTransition match {
+      case Some(t) => 
+        //println(this + ".Transition: " + t)
+        t.execute
+        return true
+      case None =>
+        //println(this + "No Transition")
+        return false
+    }
+  }
+
+  protected[smac] def executeOnEntry() {
+    clearEvents
+    parent match {
+      case Some(p) => p.current = this
+      case None =>
+    } 
+    action.onEntry
+    checkForTransition match {
+      case Some(t) => {t.execute}
+      case None =>
+    }
+  }
+
+  protected[smac] def executeOnExit() {
+    action.onExit
   }
 }
 
-case class Ping(delay : Long) extends StateAction {
-  val max = 10000
-  var count = 0
-    
-  override def onEntry() = {
-    println("Ping.onEntry")
-    if (count < max){
-      //Thread.sleep(delay)
-      handler.getPort("ping").get.send(PingEvent())
-      count += 1
+sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : StateMachine = null) extends CompositeState(action, keepHistory, root) {
+  
+  protected[smac] override def getRoot = this
+  
+  var ports : Map[String, Port] = Map()
+  
+  final def start { current.executeOnEntry }
+}
+
+sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : StateMachine) extends State(action, root) {
+  
+  def addSubState(sub : State) {
+    substates ++= List(sub)
+    sub.parent = Option(this)
+  }
+  
+  def addTransition(t : Transition) {
+    transitions ++= List(t)
+  }
+  
+  def setInitial(i : State) {
+    initial = i
+    current = initial
+  }
+
+  protected[smac] var substates: List[State] = List()
+
+  protected[smac] var transitions: List[Transition] = List()
+
+  protected[smac] var initial: State = _
+
+  protected[smac] var current: State = _
+
+  override def dispatchEvent(e: Event) : Boolean = {
+    if (!current.dispatchEvent(e)) { //composite dispatch event to sub-states, which might consume the event
+      return super.dispatchEvent(e)//before checking if a transition is valid
     }
     else {
-      handler.getPort("ping").get.send(StopEvent())
-      count = 0
+      return false
+    }
+  }
+
+  override def executeOnEntry() {
+    super.executeOnEntry
+    current.executeOnEntry
+  }
+
+  override def executeOnExit() {
+    if (!keepHistory) {
+      current = initial
+    } 
+    current.executeOnExit
+    super.executeOnExit
+  }
+}
+
+
+/**
+ * Transitions between two states
+ */
+
+abstract sealed class Handler(val root : StateMachine) {
+  
+  final def getPort(name : String) : Option[Port] = {
+    getRoot.ports.get(name)
+  }
+  
+  protected[smac] def isInterestedIn(e : Event) : Boolean = {
+    //println(this+" is interested in "+e.getClass.toString+"?")
+    events.keys.exists(k => k.equals(e.name))
+  }
+  
+  protected[smac] def getRoot = root
+  
+  protected[smac] def getAction: HandlerAction
+ 
+  protected[smac] def getEvents = events.keys
+
+  protected[smac] val events = scala.collection.mutable.Map[String, Pair[Event, Boolean]]()
+  
+  final def initEvent(e : String) {
+    //println(this+" init event "+e)
+    events.put(e, (null, false))
+  }
+  
+  final def initEvent(e : Event) {
+    initEvent(e.name)
+  }
+  
+  final def getEvent(e : Event) : Option[Event] = {
+    getEvent(e.name)
+  }
+  
+  final def getEvent(e : String) : Option[Event] = {
+    events.get(e) match {
+      case Some(p) =>
+        if (p._2) {
+          return Option(p._1)
+        }
+        else {
+          return None
+        }
+      case None =>
+        return None
     }
   }
   
-  override def onExit() = {
-    println("Ping.onExit")
+  protected[smac] def addEvent(e : Event) {
+    if (isInterestedIn(e)){
+      //println("  "+this+" is interested in "+e.getClass.toString+"!!!")
+      events.put(e.name, (e, true))
+    }
+  }
+
+  protected[smac] def evaluateEvents(): Boolean = {
+    events.size == 0 || events.values.exists(p => p._2)
+  }
+
+  protected[smac] def clearEvents() {
+    events.keys.foreach {
+      k => events.put(k, (null, false))
+    }
+  }
+
+  /**
+   * Describe the overall execution of the transition
+   */
+  protected[smac] def execute   
+}
+
+sealed class Transition(previous: State, next: State, action: TransitionAction, root : StateMachine) extends Handler(root) {
+
+  action.handler = this
+  override def getAction = action
+  
+  protected[smac] def getPrevious = previous
+
+  override def execute() = {
+    action.executeBeforeActions
+    previous.executeOnExit
+    action.executeActions()
+    next.executeOnEntry
+    action.executeAfterActions
+    clearEvents
+  }
+}
+
+sealed class InternalTransition(self: State, action: InternalTransitionAction, root : StateMachine) extends Handler(root) {
+  
+  action.handler = this
+  override def getAction = action
+  
+  override def execute() = {
+    action.executeActions()
+    clearEvents
+  }
+}
+
+
+abstract case class Event(val name : String){}
+
+
+
+/**
+ * Channel allows connecting different state machines together via ports
+ * All the events sent by one state machine, will be receive by all 
+ * the others managed by the orchestrator
+ */
+sealed class Channel() extends Actor {
+
+  protected var out = List[Port]()
+
+  def connect(p: Port, p2: Port) = {
+    p.out ::= this
+    out ::= p2
   }
   
-}
-
-case class Stop extends StateAction {
-  
-  override def onEntry() = {
-    println("Stop.onEntry")
+  def disconnect(p : Port) {
+    p.out - this
+    out - p
   }
-  
-  override def onExit() = {
-    println("Stop.onExit")
-  } 
 
-}
-
-
-//Messages defined in the state machine
-case class PongTransition extends InternalTransitionAction {
-  //this.initEvent(PongEvent)
-  def executeActions() = {
-    println("PongTransition")
-  }
-}
-
-case class StopTransition extends TransitionAction { 
-  //this.initEvent(StopEvent)
-  def executeActions() = {
-    println("StopTransition")
-  }
-}
-
-
-case class StartTransition extends TransitionAction {
-  //this.initEvent(StartEvent)
-  def executeActions() = {
-    println("StartTransition")
-  }
-}
-
-case class FastTransition extends TransitionAction {
-  //this.initEvent(FastEvent)
-  def executeActions() = {
-    println("FastTransition")
-  }
-}
-
-case class SlowTransition extends TransitionAction {
-  //this.initEvent(SlowEvent)
-  def executeActions() = {
-    println("SlowTransition")
+  override def act() = {
+    loop {
+      react {
+        case e: Event =>
+          out.foreach {
+            p =>
+            //println("Channel dispatching " + e + " to " + p)
+            p ! e
+          }
+        case e: Any =>
+          ////println("Orchestrator_Any: " + e)
+      }
+    }
   }
 }

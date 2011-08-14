@@ -81,7 +81,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
         case e: Event =>
           if (canReceive(e))
             //println("Port " + this + " dispatches to state machine")
-            sm.dispatchEvent(e)
+          sm.dispatchEvent(e)
         case e: Any =>
           ////println("Orchestrator_Any: " + e)
       }
@@ -180,12 +180,12 @@ sealed class State(action : StateAction, val root : StateMachine) {
   }
 
   protected[smac] def executeOnEntry() {
-    clearEvents
     parent match {
       case Some(p) => p.current = this
       case None =>
     } 
     action.onEntry
+    clearEvents
     checkForTransition match {
       case Some(t) => {t.execute}
       case None =>
@@ -335,12 +335,12 @@ sealed class Transition(previous: State, next: State, action: TransitionAction, 
   protected[smac] def getPrevious = previous
 
   override def execute() = {
-    clearEvents
     action.executeBeforeActions
     previous.executeOnExit
     action.executeActions()
     next.executeOnEntry
     action.executeAfterActions
+    //clearEvents
   }
 }
 
@@ -350,8 +350,8 @@ sealed class InternalTransition(self: State, action: InternalTransitionAction, r
   override def getAction = action
   
   override def execute() = {
-    clearEvents
     action.executeActions()
+    //clearEvents
   }
 }
 
