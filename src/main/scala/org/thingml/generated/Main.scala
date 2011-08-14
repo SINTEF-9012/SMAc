@@ -17,7 +17,16 @@
  */
 package org.thingml.generated
 
+import java.util.Timer
+import java.util.TimerTask
 import org.sintef.smac._
+
+class PollTask(p : Port) extends TimerTask {
+  override def run() {
+    //println("PollTask")
+    p ! new Poll()
+  }
+}
 
 // Initialize instance variables and states
 object Main {
@@ -40,19 +49,38 @@ object Main {
       LED_763555691.getBehavior("LEDImpl").get.getPort("DigitalIO").get,
       Arduino_154082288.getBehavior("ArduinoStdlibImpl").get.getPort("DigitalIO").get
     )
+    null_948074856.connect(
+      Arduino_154082288.getBehavior("ArduinoStdlibImpl").get.getPort("DigitalIO").get,
+      LED_763555691.getBehavior("LEDImpl").get.getPort("DigitalIO").get
+    )
+
     null_311092314.connect(
       Blink_1595847065.getBehavior("BlinkImpl").get.getPort("HW").get,
       LED_763555691.getBehavior("LEDImpl").get.getPort("LED").get
     )
+    null_311092314.connect(
+      LED_763555691.getBehavior("LEDImpl").get.getPort("LED").get,
+      Blink_1595847065.getBehavior("BlinkImpl").get.getPort("HW").get
+    )
+
     null_1524582596.connect(
       Blink_1595847065.getBehavior("BlinkImpl").get.getPort("HW").get,
       SoftTimer_1913537093.getBehavior("SoftTimer").get.getPort("timer").get
     )
+    null_1524582596.connect(
+      SoftTimer_1913537093.getBehavior("SoftTimer").get.getPort("timer").get,
+      Blink_1595847065.getBehavior("BlinkImpl").get.getPort("HW").get
+    )
+    
 //Starting Things
     Arduino_154082288.getBehaviors.foreach{sm => sm.start}
     LED_763555691.getBehaviors.foreach{sm => sm.start}
     SoftTimer_1913537093.getBehaviors.foreach{sm => sm.start}
     Blink_1595847065.getBehaviors.foreach{sm => sm.start}
+    
+    val pollPort : Port = SoftTimer_1913537093.getBehavior("SoftTimer").get.getPort("Polling").get
+    val t : Timer = new Timer()
+    t.scheduleAtFixedRate(new PollTask(pollPort), 5, 5)
   }
 
 }
