@@ -20,17 +20,23 @@ package org.sintef.smac.samples.pingpong
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PongStateMachine(keepHistory : Boolean) extends StateAction {
+class PongComponent(keepHistory : Boolean) extends Component {
+  val root : StateMachine = new PingStateMachine(keepHistory, this).getBehavior
+  this.behavior ++= List(root)
+  //new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), this).start
+}
+
+class PongStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
     
   def getBehavior = sm
-  val sm : StateMachine = new StateMachine(this, keepHistory)
+  val sm : StateMachine = new StateMachine(this, keepHistory, root)
   //create sub-states
-  val pong = new State(Pong(), sm)
+  val pong = new State(Pong(), root)
   sm.addSubState(pong)
   sm.setInitial(pong)
   
   //create transitions among sub-states
-  val pingTransition = new InternalTransition(pong, PingTransition(), sm)
+  val pingTransition = new InternalTransition(pong, PingTransition(), root)
   pingTransition.initEvent(PingEvent.getName)
   sm.addInternalTransition(pingTransition)
   

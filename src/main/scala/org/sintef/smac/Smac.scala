@@ -69,9 +69,23 @@ abstract class StateAction {
  * These classes define the execution semantics of SMAc.
  * They should not, and cannot (sealed), be extended by user state machines
  */
-sealed class Port(val name : String, val receive : List[String], val send : List[String], sm : StateMachine) extends Actor {
+abstract class Component {
+  var ports : Map[String, Port] = Map()
+  var behavior : List[StateMachine] = List()
   
-  sm.ports += (name -> this)
+  def start {
+    behavior.foreach{b => b.start}
+  }
+  
+  final def getPort(name : String) : Option[Port] = {
+    ports.get(name)
+  }
+}
+
+
+sealed class Port(val name : String, val receive : List[String], val send : List[String], cpt : Component) extends Actor {
+  
+  cpt.ports += (name -> this)
   
   protected[smac] var out : List[Channel] = List()
   
@@ -81,9 +95,11 @@ sealed class Port(val name : String, val receive : List[String], val send : List
         case e: Event =>
           if (canReceive(e))
             //println("Port " + this + " dispatches to state machine")
-          sm.dispatchEvent(e)
+          cpt.behavior.foreach{sm => 
+            //println("  "+sm)
+            sm.getActor ! e}
         case e: Any =>
-          ////println("Orchestrator_Any: " + e)
+          //////println("Orchestrator_Any: " + e)
       }
     }
   }
@@ -106,13 +122,9 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   }
 }
 
-sealed class State(action : StateAction, val root : StateMachine) {
+sealed class State(action : StateAction, val root : Component) {
   
   protected[smac] def getRoot = root
-  
-  final def getPort(name : String) : Option[Port] = {
-    getRoot.ports.get(name)
-  }
   
   action.handler = this
   
@@ -127,41 +139,41 @@ sealed class State(action : StateAction, val root : StateMachine) {
   protected[smac] def allTransitions(): List[Handler] = {
     var result : List[Handler] = List()
     result = result ::: internal
-    //println(result.size)
+    ////println(result.size)
     parent match {
       case Some(p) =>
-        result = result ::: p.transitions.filter(t => t.getPrevious == this)
-        //println(result.size)
+        p match {
+          case c : CompositeState =>
+            result = result ::: c.transitions.filter(t => t.getPrevious == this)
+          case _ =>
+        }
+        
+        ////println(result.size)
       case None =>
         result
     }
-    //println(result.size)
+    ////println(result.size)
     return result
   }
-
-  protected[smac] def isCurrent : Boolean = {
-    parent match {
-      case Some(p) => p.current == this
-      case None => true
-    }
-  }
   
-  protected[smac] def clearEvents() {
+  protected[smac] def clearEvents(goBack : Boolean) {
     allTransitions.foreach{t => t.clearEvents}
-    parent match {
-      case Some(p) =>
-        p.clearEvents
-      case None =>
+    if (goBack){
+      parent match {
+        case Some(p) =>
+          p.clearEvents(this)
+        case None =>
+      }
     }
   }
       
   protected[smac] def checkForTransition: Option[Handler] = {
-    //println(this+".checkForTransition: ")  
+    ////println(this+".checkForTransition: ")  
     allTransitions.filter(t => { t.evaluateEvents && t.getAction.checkGuard})
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
-        //println("  A transition can be triggered: "+in)
+        ////println("  A transition can be triggered: "+in)
         return Option(in)
       case None => 
         return None
@@ -170,17 +182,18 @@ sealed class State(action : StateAction, val root : StateMachine) {
 
 
   protected[smac] def dispatchEvent(e: Event) : Boolean = {
+    //println(this + "dispatch event "+e)
     allTransitions().foreach{t => 
-      //println(t)
+      //println("  "+t)
       t.addEvent(e)
     }
     checkForTransition match {
       case Some(t) => 
-        //println(this + ".Transition: " + t)
+        //println("  "+this + ".Transition: " + t)
         t.execute
         return true
       case None =>
-        //println(this + "No Transition")
+        //println("  "+this + "No Transition")
         return false
     }
   }
@@ -191,7 +204,6 @@ sealed class State(action : StateAction, val root : StateMachine) {
       case None =>
     } 
     action.onEntry
-    clearEvents
     checkForTransition match {
       case Some(t) => {t.execute}
       case None =>
@@ -203,46 +215,87 @@ sealed class State(action : StateAction, val root : StateMachine) {
   }
 }
 
-sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : StateMachine = null) extends CompositeState(action, keepHistory, root) {
+sealed trait Region {
+  var keepsHistory = false
   
-  protected[smac] override def getRoot = this
-  
-  var ports : Map[String, Port] = Map()
-  
-  final def start { current.executeOnEntry }
-}
+  protected[smac] var initial: State = _
 
-sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : StateMachine) extends State(action, root) {
+  protected[smac] var current: State = _
   
-  def addSubState(sub : State) {
-    substates ++= List(sub)
-    sub.parent = Option(this)
+  protected[smac] var substates: List[State] = List()
+  
+  val actor = new Actor{
+    override def act() = {
+      loop {
+        react {
+          case e: Event =>
+            //println("Region " + this + " dispatching event "+e + " to "+current)
+            current.dispatchEvent(e)
+          case e: Any =>
+        }
+      }
+    }
   }
   
-  def addTransition(t : Transition) {
-    transitions ++= List(t)
-  }
+  def getActor = actor
+  
+  def setHistory(h : Boolean) {keepsHistory = h}
   
   def setInitial(i : State) {
     initial = i
     current = initial
   }
 
-  protected[smac] var substates: List[State] = List()
+  def addSubState(sub : State) {
+    substates ++= List(sub)
+    this match {
+      case c : CompositeState => sub.parent = Option(c)
+      case _ =>
+    }
+    
+  }
+  
+  def start { 
+    actor.start
+    current.executeOnEntry 
+  }
+  
+}
 
+sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
+  
+}
+
+sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : Component) extends State(action, root) with Region {
+  
+  protected[smac] var regions : List[Region] = List()
+  
   protected[smac] var transitions: List[Transition] = List()
 
-  protected[smac] var initial: State = _
-
-  protected[smac] var current: State = _
+  
+  def addRegion(r : Region) {
+    regions ++= List(r)
+  }
+  
+  def addTransition(t : Transition) {
+    transitions ++= List(t)
+  }  
 
   override def dispatchEvent(e: Event) : Boolean = {
+    //println(this + ".dispatchEvent "+e)
+    var status = false
+    regions.foreach{r => //events are dispatched to regions with no condition
+      //println("  to region "+r)
+      r.getActor ! e
+    }
     if (!current.dispatchEvent(e)) { //composite dispatch event to sub-states, which might consume the event
-      return super.dispatchEvent(e)//before checking if a transition is valid
+      //println("  current has not been activated. Try to activate self")
+      status = super.dispatchEvent(e)//if not, they might consume the event
     }
-    else {
-      return false
-    }
+    /*else {
+     clearEvents
+     }*/
+    return status
   }
 
   override def executeOnEntry() {
@@ -257,6 +310,11 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : S
     current.executeOnExit
     super.executeOnExit
   }
+  
+  protected[smac] def clearEvents(s : State) {
+    substates.filter{sub => sub != s}.foreach{sub => sub.clearEvents(false)}
+    super.clearEvents(true)
+  }
 }
 
 
@@ -264,14 +322,14 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : S
  * Transitions between two states
  */
 
-abstract sealed class Handler(val root : StateMachine) {
+abstract sealed class Handler(val root : Component) {
   
   final def getPort(name : String) : Option[Port] = {
-    getRoot.ports.get(name)
+    root.ports.get(name)
   }
   
   protected[smac] def isInterestedIn(e : Event) : Boolean = {
-    //println(this+" is interested in "+e.getClass.toString+"?")
+    ////println(this+" is interested in "+e.getClass.toString+"?")
     events.keys.exists(k => k.equals(e.name))
   }
   
@@ -284,7 +342,7 @@ abstract sealed class Handler(val root : StateMachine) {
   protected[smac] val events = scala.collection.mutable.Map[String, Pair[Event, Boolean]]()
   
   final def initEvent(e : String) {
-    //println(this+" init event "+e)
+    ////println(this+" init event "+e)
     events.put(e, (null, false))
   }
   
@@ -312,7 +370,7 @@ abstract sealed class Handler(val root : StateMachine) {
   
   protected[smac] def addEvent(e : Event) {
     if (isInterestedIn(e)){
-      //println("  "+this+" is interested in "+e.getClass.toString+"!!!")
+      ////println("  "+this+" is interested in "+e.getClass.toString+"!!!")
       events.put(e.name, (e, true))
     }
   }
@@ -322,6 +380,7 @@ abstract sealed class Handler(val root : StateMachine) {
   }
 
   protected[smac] def clearEvents() {
+    //println(this + ".clearEvents")
     events.keys.foreach {
       k => events.put(k, (null, false))
     }
@@ -330,10 +389,12 @@ abstract sealed class Handler(val root : StateMachine) {
   /**
    * Describe the overall execution of the transition
    */
-  protected[smac] def execute   
+  protected[smac] def execute {
+    clearEvents
+  }
 }
 
-sealed class Transition(previous: State, next: State, action: TransitionAction, root : StateMachine) extends Handler(root) {
+sealed class Transition(previous: State, next: State, action: TransitionAction, root : Component) extends Handler(root) {
 
   action.handler = this
   override def getAction = action
@@ -346,19 +407,19 @@ sealed class Transition(previous: State, next: State, action: TransitionAction, 
     action.executeActions()
     next.executeOnEntry
     action.executeAfterActions
-    //clearEvents
+    previous.clearEvents(true)
   }
 }
 
-sealed class InternalTransition(self: State, action: InternalTransitionAction, root : StateMachine) extends Handler(root) {
+sealed class InternalTransition(self: State, action: InternalTransitionAction, root : Component) extends Handler(root) {
   
   action.handler = this
   override def getAction = action
   
   override def execute() = {
-    //println("EXECUTE")
+    ////println("EXECUTE")
     action.executeActions()
-    //clearEvents
+    self.clearEvents(true)
   }
 }
 
@@ -375,6 +436,14 @@ abstract case class Event(val name : String){}
 sealed class Channel() extends Actor {
 
   protected var out = List[Port]()
+  
+  def connectIn(p : Port){
+    p.out ::= this
+  }
+  
+  def connectOut(p : Port){
+    out ::= p
+  }
 
   def connect(p: Port, p2: Port) = {
     p.out ::= this
@@ -392,11 +461,11 @@ sealed class Channel() extends Actor {
         case e: Event =>
           out.foreach {
             p =>
-            //println("Channel dispatching " + e + " to " + p)
+            ////println("Channel dispatching " + e + " to " + p)
             p ! e
           }
         case e: Any =>
-          ////println("Orchestrator_Any: " + e)
+          //////println("Orchestrator_Any: " + e)
       }
     }
   }

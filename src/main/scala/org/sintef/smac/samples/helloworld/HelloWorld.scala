@@ -47,19 +47,24 @@ case class EEvent(override val name : String = EEvent.getName) extends Event(nam
 case class LEvent(override val name : String = LEvent.getName) extends Event(name)
 case class OEvent(override val name : String = OEvent.getName) extends Event(name)
 
-case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction {
+class HelloWorldComponent(keepHistory : Boolean, withGUI : Boolean) extends Component {
+  val sm : StateMachine = new HelloWorldStateMachine(keepHistory, withGUI, this).getBehavior
+  this.behavior ++= List(sm)
+  val hello = new Port("hello", List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), this).start
+}
+
+case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean, root : Component) extends StateAction {
 
   def getBehavior = sm  
-  val sm : StateMachine = new StateMachine(this, keepHistory)
-  val hello = new Port("hello", List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), sm).start
+  val sm : StateMachine = new StateMachine(this, keepHistory, root)
   //create sub-states
-  val INIT_state = new State(INIT(), sm)
-  val H_state = new State(H(), sm)
-  val E_state = new State(E(), sm)
-  val L1_state = new State(L1(), sm)
-  val L2_state = new State(L2(), sm)
-  val O_state = new State(O(), sm)
-  val STOP_state = new State(STOP(), sm)
+  val INIT_state = new State(INIT(), root)
+  val H_state = new State(H(), root)
+  val E_state = new State(E(), root)
+  val L1_state = new State(L1(), root)
+  val L2_state = new State(L2(), root)
+  val O_state = new State(O(), root)
+  val STOP_state = new State(STOP(), root)
   sm.addSubState(INIT_state)
   sm.addSubState(H_state)
   sm.addSubState(E_state)
@@ -70,17 +75,17 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
   sm.setInitial(INIT_state)
   
   //create transitions among sub-states
-  val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), sm)
+  val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), root)
   INIT_next_H_transition.initEvent(HEvent.getName)
-  val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), sm)
+  val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), root)
   H_next_E_transition.initEvent(EEvent.getName)
-  val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), sm)
+  val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), root)
   E_next_L1_transition.initEvent(LEvent.getName)
-  val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), sm)
+  val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), root)
   L1_next_L2_transition.initEvent(LEvent.getName)
-  val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), sm)
+  val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), root)
   L2_next_O_transition.initEvent(OEvent.getName)
-  val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), sm)
+  val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), root)
   
   sm.addTransition(INIT_next_H_transition)
   sm.addTransition(H_next_E_transition)
@@ -194,16 +199,16 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean) exte
       ae.getSource match {
         case b : JButton =>
           if (b == sendH) {
-            sm.getPort("hello").get.send(new HEvent())
+            root.getPort("hello").get.send(new HEvent())
           }
           else if (b == sendE) {
-            sm.getPort("hello").get.send(new EEvent())
+            root.getPort("hello").get.send(new EEvent())
           }
           else if (b == sendL) {
-            sm.getPort("hello").get.send(new LEvent())
+            root.getPort("hello").get.send(new LEvent())
           }
           else if (b == sendO) {
-            sm.getPort("hello").get.send(new OEvent())
+            root.getPort("hello").get.send(new OEvent())
           }
       }
     }

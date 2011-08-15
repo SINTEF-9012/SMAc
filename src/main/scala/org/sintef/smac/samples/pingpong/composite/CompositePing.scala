@@ -30,22 +30,28 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAction{
+class PingComponent(keepHistory : Boolean, withGUI : Boolean) extends Component {
+  val root : StateMachine = new PingStateMachine(keepHistory, withGUI, this).getBehavior
+  this.behavior ++= List(root)
+  val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), this).start
+}
+
+class PingStateMachine(keepHistory : Boolean, withGUI : Boolean, root : Component) extends StateAction{
 
   def getBehavior = sm
-  val sm : StateMachine = new StateMachine(this, keepHistory)
-  val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
+  val sm : StateMachine = new StateMachine(this, keepHistory, root)
+  
   //create sub-states
-  val fast = Fast(true, sm).getComposite
-  val slow = Slow(true, sm).getComposite
+  val fast = Fast(true, root).getComposite
+  val slow = Slow(true, root).getComposite
   sm.addSubState(fast)
   sm.addSubState(slow)
   sm.setInitial(slow)
     
   //create transitions among sub-states
-  val slowTransition = new Transition(fast, slow, SlowTransition(), sm)
+  val slowTransition = new Transition(fast, slow, SlowTransition(), root)
   slowTransition.initEvent(SlowEvent.getName)
-  val fastTransition = new Transition(slow, fast, FastTransition(), sm)
+  val fastTransition = new Transition(slow, fast, FastTransition(), root)
   fastTransition.initEvent(FastEvent.getName)
   sm.addTransition(slowTransition)
   sm.addTransition(fastTransition)
@@ -193,27 +199,27 @@ class PingStateMachine(keepHistory : Boolean, withGUI : Boolean) extends StateAc
       ae.getSource match {
         case b : JButton =>
           if (b == sendButtonPong) {
-            sm.getPort("ping").get.send(PongEvent())
+            root.getPort("ping").get.send(PongEvent())
           }
           else if (b == sendButtonStop) {
-            sm.getPort("ping").get.send(StopEvent())
+            root.getPort("ping").get.send(StopEvent())
           }
           else if (b == sendButtonStart) {
             println("start button clicked!")
-            sm.getPort("ping").get.send(StartEvent())
+            root.getPort("ping").get.send(StartEvent())
           }
           else if (b == sendButtonSlow) {
-            sm.getPort("ping").get.send(SlowEvent())
+            root.getPort("ping").get.send(SlowEvent())
           }
           else if (b == sendButtonFast) {
-            sm.getPort("ping").get.send(FastEvent())
+            root.getPort("ping").get.send(FastEvent())
           }
       }
     }
   }    
 }
 
-case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction {
+case class Fast(keepHistory : Boolean, root : Component) extends StateAction {
   
   def getComposite : CompositeState = c
   
@@ -232,7 +238,7 @@ case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction 
   stopTransition.initEvent(StopEvent.getName)
   val startTransition = new Transition(stop, ping, StartTransition(), root)
   startTransition.initEvent(StartEvent.getName)
-  c.addInternalTransition(pongTransition)
+  ping.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
     
@@ -245,7 +251,7 @@ case class Fast(keepHistory : Boolean, root : StateMachine) extends StateAction 
   }
 }
 
-case class Slow(keepHistory : Boolean, root : StateMachine) extends StateAction() {
+case class Slow(keepHistory : Boolean, root : Component) extends StateAction() {
   
   def getComposite : CompositeState = c
   
@@ -264,7 +270,7 @@ case class Slow(keepHistory : Boolean, root : StateMachine) extends StateAction(
   stopTransition.initEvent(StopEvent.getName)
   val startTransition = new Transition(stop, ping, StartTransition(), root)
   startTransition.initEvent(StartEvent.getName)
-  c.addInternalTransition(pongTransition)
+  ping.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
   
@@ -285,11 +291,11 @@ case class Ping(delay : Long) extends StateAction {
     println("Ping.onEntry")
     if (count < max){
       //Thread.sleep(delay)
-      handler.getPort("ping").get.send(PingEvent())
+      handler.root.getPort("ping").get.send(PingEvent())
       count += 1
     }
     else {
-      handler.getPort("ping").get.send(StopEvent())
+      handler.root.getPort("ping").get.send(StopEvent())
       count = 0
     }
   }

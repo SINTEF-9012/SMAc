@@ -36,8 +36,8 @@ object Main {
     println("START")
 
     val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
-    val sm = new PingStateMachine(true)
-    selfChannel.connect(sm.getStateMachine.getPort("ping").get, sm.getStateMachine.getPort("ping").get)
-    sm.getBehavior.start
+    val sm = new PingComponent(true)
+    selfChannel.connect(sm.getPort("ping").get, sm.getPort("ping").get)
+    sm.start
   }
 }

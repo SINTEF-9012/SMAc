@@ -30,24 +30,30 @@ import javax.swing.JTextPane
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
-class PingStateMachine(keepHistory : Boolean) extends StateAction{
+class PingComponent(keepHistory : Boolean) extends Component {
+  val root : StateMachine = new PingStateMachine(keepHistory, this).getBehavior
+  this.behavior ++= List(root)
+  new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), this).start
+}
+
+class PingStateMachine(keepHistory : Boolean, root : Component) extends StateAction{
 
   def getBehavior = sm
-  val sm : StateMachine = new StateMachine(this, keepHistory)
-  new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), sm).start
+  val sm : StateMachine = new StateMachine(this, keepHistory, root)
+  
   //create sub-states
-  val ping = new State(Ping(), sm)
-  val stop = new State(Stop(), sm)
+  val ping = new State(Ping(), root)
+  val stop = new State(Stop(), root)
   sm.addSubState(ping)
   sm.addSubState(stop)
   sm.setInitial(stop)
 
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), sm)
+  val pongTransition = new InternalTransition(ping, PongTransition(), root)
   pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), sm)
+  val stopTransition = new Transition(ping, stop, StopTransition(), root)
   stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), sm)
+  val startTransition = new Transition(stop, ping, StartTransition(), root)
   startTransition.initEvent(StartEvent.getName)
   sm.addTransition(startTransition)
   sm.addTransition(stopTransition)
@@ -152,13 +158,13 @@ class PingStateMachine(keepHistory : Boolean) extends StateAction{
       ae.getSource match {
         case b : JButton =>
           if (b == sendButtonPong) {
-            sm.getPort("ping").get.send(new PongEvent())
+            root.getPort("ping").get.send(new PongEvent())
           }
           else if (b == sendButtonStop) {
-            sm.getPort("ping").get.send(new StopEvent())
+            root.getPort("ping").get.send(new StopEvent())
           }
           else if (b == sendButtonStart) {
-            sm.getPort("ping").get.send(new StartEvent())
+            root.getPort("ping").get.send(new StartEvent())
           }
       }
     }

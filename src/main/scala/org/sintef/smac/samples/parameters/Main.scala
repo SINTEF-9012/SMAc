@@ -22,8 +22,8 @@ import org.sintef.smac._
 object Main{
   def main(args: Array[String]): Unit = {       
     val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
-    val sm = new HelloWorld2StateMachine(false, true)
-    selfChannel.connect(sm.getStateMachine.getPort("hello").get, sm.getStateMachine.getPort("hello").get)
-    sm.getBehavior.start
+    val cpt = new HelloWorld2Component(false, true)
+    selfChannel.connect(cpt.getPort("hello").get, cpt.getPort("hello").get)
+    cpt.start
   }
 }
