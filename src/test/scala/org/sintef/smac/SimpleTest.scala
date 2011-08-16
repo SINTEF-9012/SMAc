@@ -28,30 +28,35 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
   
   var channel : Channel = _
   var sm :HelloWorldComponent = _
-  
+
+  var testComponent : FakeComponent = _
+
   @Before def initialize() {
     channel = new Channel
     channel.start
-    sm = new HelloWorldComponent(false, false)    
-    channel.connect(sm.getPort("hello").get, sm.getPort("hello").get)  
+    testComponent = new FakeComponent()
+    val p = new Port("hello", List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), testComponent)
+    sm = new HelloWorldComponent(false, false)
+    channel.connect(p, sm.getPort("hello").get)
     sm.start
+    testComponent.start
   }
   
   @Test def verify() {
-    sm.getPort("hello").get ! new HEvent()
+    testComponent.getPort("hello").get.send(new HEvent())
     Thread.sleep(100)
-    sm.getPort("hello").get ! new EEvent()
+    testComponent.getPort("hello").get.send(new EEvent())
     Thread.sleep(100)
-    sm.getPort("hello").get ! new LEvent()
+    testComponent.getPort("hello").get.send(new LEvent())
     Thread.sleep(100)
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
     //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
     
-    sm.getPort("hello").get ! new LEvent()
+    testComponent.getPort("hello").get.send(new LEvent())
     Thread.sleep(100)
-    sm.getPort("hello").get ! new OEvent()
+    testComponent.getPort("hello").get.send(new OEvent())
     Thread.sleep(100)
     
     //OEvent should trigger on transition from L to O

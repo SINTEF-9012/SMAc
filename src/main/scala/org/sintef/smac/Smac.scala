@@ -69,56 +69,21 @@ abstract class StateAction {
  * These classes define the execution semantics of SMAc.
  * They should not, and cannot (sealed), be extended by user state machines
  */
+class FakeComponent extends Component {
+  
+}
+
 abstract class Component {
   var ports : Map[String, Port] = Map()
   var behavior : List[StateMachine] = List()
   
   def start {
+    ports.values.foreach{p => p.start}
     behavior.foreach{b => b.start}
   }
   
   final def getPort(name : String) : Option[Port] = {
     ports.get(name)
-  }
-}
-
-
-sealed class Port(val name : String, val receive : List[String], val send : List[String], cpt : Component) extends Actor {
-  
-  cpt.ports += (name -> this)
-  
-  protected[smac] var out : List[Channel] = List()
-  
-  override def act() = {
-    loop {
-      react {
-        case e: Event =>
-          if (canReceive(e))
-            //println("Port " + this + " dispatches to state machine")
-          cpt.behavior.foreach{sm => 
-            //println("  "+sm)
-            sm.getActor ! e}
-        case e: Any =>
-          //////println("Orchestrator_Any: " + e)
-      }
-    }
-  }
-  
-  def send(e : Event) {
-    if (canSend(e)) {
-      //println("Port " + this + " sending to channels")
-      out.foreach{c =>
-        c ! e
-      }
-    }
-  }
-  
-  protected[smac] def canSend(e : Event) = {
-    send.exists(p => p.equals(e.name))
-  }
-  
-  protected[smac] def canReceive(e : Event) = {
-    receive.exists(p => p.equals(e.name))
   }
 }
 
@@ -424,7 +389,16 @@ sealed class InternalTransition(self: State, action: InternalTransitionAction, r
 }
 
 
-abstract case class Event(val name : String){}
+abstract class Event(val name : String, val to : Option[Component] = None){
+  private var source : Option[Component] = None
+  def setSender(c : Component) { 
+    source match {
+      case Some(s) => println("Cannot change the sender of a message")
+      case None => source = Option(c)
+    }
+  }
+  def getSender = source
+}
 
 
 
@@ -433,8 +407,58 @@ abstract case class Event(val name : String){}
  * All the events sent by one state machine, will be receive by all 
  * the others managed by the orchestrator
  */
+sealed class Port(val name : String, val receive : List[String], val send : List[String], val cpt : Component) extends Actor {
+  
+  cpt.ports += (name -> this)
+  
+  protected[smac] var out : List[Channel] = List()
+  
+  override def act() = {
+    loop {
+      react {
+        case e: Event =>
+          e.getSender match {
+            case Some(c) => if (canReceive(e))
+              //println("Port " + this + " dispatches to state machine")
+              cpt.behavior.foreach{sm => 
+                //println("  "+sm)
+                sm.getActor ! e}
+            case None =>
+              println("This event does not come from a component")
+          }
+          
+        case e: Any =>
+      }
+    }
+  }
+  
+  def send(e : Event) {
+    if (canSend(e)) {
+      //println("Port " + this + " sending to channels")
+      e.setSender(cpt)
+      out.foreach{c =>
+        //println("Port " + this + " sending to channel "+c)
+        c ! e
+      }
+    }
+  }
+  
+  protected[smac] def canSend(e : Event) = {
+    send.exists(p => p.equals(e.name))
+  }
+  
+  protected[smac] def canReceive(e : Event) = {
+    receive.exists(p => p.equals(e.name))
+  }
+}
+
 sealed class Channel() extends Actor {
 
+  override def start : Actor = {
+    super.start
+    return this
+  }
+  
   protected var out = List[Port]()
   
   def connectIn(p : Port){
@@ -459,13 +483,19 @@ sealed class Channel() extends Actor {
     loop {
       react {
         case e: Event =>
-          out.foreach {
-            p =>
-            ////println("Channel dispatching " + e + " to " + p)
-            p ! e
+          e.to match {
+            case Some(to) => out.filter{p => p.cpt == to}.foreach {
+                p =>
+                ////println("Channel dispatching " + e + " to " + p)
+                p forward e
+              }
+            case None => out.foreach {
+                p =>
+                ////println("Channel dispatching " + e + " to " + p)
+                p forward e
+              }
           }
         case e: Any =>
-          //////println("Orchestrator_Any: " + e)
       }
     }
   }

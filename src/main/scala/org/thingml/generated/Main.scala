@@ -17,8 +17,6 @@
  */
 package org.thingml.generated
 
-import java.util.Timer
-import java.util.TimerTask
 import org.sintef.smac._
 
 // Initialize instance variables and states

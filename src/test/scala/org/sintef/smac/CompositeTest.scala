@@ -19,6 +19,7 @@ package org.sintef.smac.test
 
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong.StartEvent
+import org.sintef.smac.samples.pingpong.StopEvent
 import org.sintef.smac.samples.pingpong.FastEvent
 import org.sintef.smac.samples.pingpong.SlowEvent
 import org.sintef.smac.samples.pingpong.PongEvent
@@ -33,43 +34,48 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   var channel : Channel = _
   var sm :PingComponent = _
   
+  var testComponent : FakeComponent = _
+    
   @Before def initialize() {
-    channel = new Channel
+    channel = new Channel()
     channel.start
+    testComponent = new FakeComponent()
+    val p = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), testComponent)
     sm = new PingComponent(true, false)
-    channel.connect(sm.getPort("ping").get, sm.getPort("ping").get)
+    channel.connect(p, sm.getPort("ping").get)
     sm.start
+    testComponent.start
   }
   
   @Test def verify() {   
     println("1/ master ! StartEvent")
-    sm.getPort("ping").get ! new StartEvent()
+    testComponent.getPort("ping").get.send(new StartEvent())
     Thread.sleep(500)
     println("2/ master ! PongEvent")
-    sm.getPort("ping").get ! new PongEvent()
+    testComponent.getPort("ping").get.send(new PongEvent())
     Thread.sleep(500)
     
     /*val slow : Slow = sm.substates.filter{s => s.isInstanceOf[Slow]}.head.asInstanceOf[Slow]
     
-    println(sm.current)
+     println(sm.current)
     
-    sm.current should equal (slow)
-    slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
+     sm.current should equal (slow)
+     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
     
     println("3/ master ! FastEvent")
-    sm.getPort("ping").get ! new FastEvent()
+    testComponent.getPort("ping").get.send(new FastEvent())
     Thread.sleep(500)
     
     /*println(sm.current)
     
-    val fast : Fast = sm.substates.filter{s => s.isInstanceOf[Fast]}.head.asInstanceOf[Fast]
-    sm.current should equal (fast)
-    fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)*/
+     val fast : Fast = sm.substates.filter{s => s.isInstanceOf[Fast]}.head.asInstanceOf[Fast]
+     sm.current should equal (fast)
+     fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)*/
     
     println("4/ master ! SlowEvent")
-    sm.getPort("ping").get ! new SlowEvent()
+    testComponent.getPort("ping").get.send(new SlowEvent())
     Thread.sleep(500)
     /*sm.current should equal (slow)
-    slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
+     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
   }
 }

@@ -29,29 +29,34 @@ class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
   var channel : Channel = _
   var sm :HelloWorld2Component = _
   
+  var testComponent : FakeComponent = _
+  
   @Before def initialize() {
     channel = new Channel
     channel.start
+    testComponent = new FakeComponent()
+    val p = new Port("hello", List(LetterEvent.getName), List(LetterEvent.getName), testComponent)
     sm = new HelloWorld2Component(false, false)
-    channel.connect(sm.getPort("hello").get, sm.getPort("hello").get)
+    channel.connect(p, sm.getPort("hello").get)
     sm.start
+    testComponent.start
   }
   
   @Test def verify() {   
-    sm.getPort("hello").get ! new LetterEvent("H")
+    testComponent.getPort("hello").get.send(new LetterEvent("H"))
     Thread.sleep(100)
-    sm.getPort("hello").get ! new LetterEvent("E")
+    testComponent.getPort("hello").get.send(new LetterEvent("E"))
     Thread.sleep(100)
-    sm.getPort("hello").get ! new LetterEvent("L")
+    testComponent.getPort("hello").get.send(new LetterEvent("L"))
     Thread.sleep(100)
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
     //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
     
-    sm.getPort("hello").get ! new LetterEvent("L")
+    testComponent.getPort("hello").get.send(new LetterEvent("L"))
     Thread.sleep(100)
-    sm.getPort("hello").get ! new LetterEvent("O")
+    testComponent.getPort("hello").get.send(new LetterEvent("O"))
     Thread.sleep(100)
     
     //OEvent should trigger on transition from L to O
