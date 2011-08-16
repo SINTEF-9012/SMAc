@@ -21,64 +21,115 @@ import java.util.Timer
 import java.util.TimerTask
 import org.sintef.smac._
 
-class PollTask(p : Port) extends TimerTask{
-  override def run {
-    //println("poll")
-    p ! new Poll()
-  }
-}
-
 // Initialize instance variables and states
 object Main {
 
   def main(args: Array[String]): Unit = {
 //Connectors
-    val null_2112927699 = new Channel
-    null_2112927699.start
-    val null_1553324600 = new Channel
-    null_1553324600.start
-    val null_2032298615 = new Channel
-    null_2032298615.start
+    val null_2034408626 = new Channel
+    null_2034408626.start
+    val null_1762380181 = new Channel
+    null_1762380181.start
+    val null_1590114020 = new Channel
+    null_1590114020.start
+    val null_1300857109 = new Channel
+    null_1300857109.start
+    val null_493730314 = new Channel
+    null_493730314.start
+    val null_894261275 = new Channel
+    null_894261275.start
+    val null_13817227 = new Channel
+    null_13817227.start
+    val null_1841438955 = new Channel
+    null_1841438955.start
 //Things
-    val Arduino_1943219781 = new Arduino()
-    val LED_1865707812 = new LED()
-    val SoftTimer_102824579 = new SoftTimer()
-    val Blink_1478354072 = new Blink()
+    val Arduino_701179797 = new Arduino()
+    val LED_1262837020 = new LED()
+    val LED_948129019 = new LED()
+    val SoftTimer_647098590 = new SoftTimer()
+    val SoftTimer_513595611 = new SoftTimer()
+    val Blink2Leds_1440914329 = new Blink2Leds()
 //Bindings
-    null_2112927699.connect(
-      LED_1865707812.getPort("DigitalIO").get,
-      Arduino_1943219781.getPort("DigitalIO").get
+    null_2034408626.connect(
+      LED_1262837020.getPort("DigitalIO").get,
+      Arduino_701179797.getPort("DigitalIO").get
     )
-    null_2112927699.connect(
-      Arduino_1943219781.getPort("DigitalIO").get,
-      LED_1865707812.getPort("DigitalIO").get
-    )
-
-    null_1553324600.connect(
-      Blink_1478354072.getPort("HW").get,
-      LED_1865707812.getPort("LED").get
-    )
-    null_1553324600.connect(
-      LED_1865707812.getPort("LED").get,
-      Blink_1478354072.getPort("HW").get
+    null_2034408626.connect(
+      Arduino_701179797.getPort("DigitalIO").get,
+      LED_1262837020.getPort("DigitalIO").get
     )
 
-    null_2032298615.connect(
-      Blink_1478354072.getPort("HW").get,
-      SoftTimer_102824579.getPort("timer").get
+    null_1762380181.connect(
+      LED_948129019.getPort("DigitalIO").get,
+      Arduino_701179797.getPort("DigitalIO").get
     )
-    null_2032298615.connect(
-      SoftTimer_102824579.getPort("timer").get,
-      Blink_1478354072.getPort("HW").get
+    null_1762380181.connect(
+      Arduino_701179797.getPort("DigitalIO").get,
+      LED_948129019.getPort("DigitalIO").get
+    )
+
+    null_1590114020.connect(
+      SoftTimer_647098590.getPort("Polling").get,
+      Arduino_701179797.getPort("Polling").get
+    )
+    null_1590114020.connect(
+      Arduino_701179797.getPort("Polling").get,
+      SoftTimer_647098590.getPort("Polling").get
+    )
+
+    null_1300857109.connect(
+      SoftTimer_513595611.getPort("Polling").get,
+      Arduino_701179797.getPort("Polling").get
+    )
+    null_1300857109.connect(
+      Arduino_701179797.getPort("Polling").get,
+      SoftTimer_513595611.getPort("Polling").get
+    )
+
+    null_493730314.connect(
+      Blink2Leds_1440914329.getPort("led1").get,
+      LED_1262837020.getPort("LED").get
+    )
+    null_493730314.connect(
+      LED_1262837020.getPort("LED").get,
+      Blink2Leds_1440914329.getPort("led1").get
+    )
+
+    null_894261275.connect(
+      Blink2Leds_1440914329.getPort("timer1").get,
+      SoftTimer_647098590.getPort("timer").get
+    )
+    null_894261275.connect(
+      SoftTimer_647098590.getPort("timer").get,
+      Blink2Leds_1440914329.getPort("timer1").get
+    )
+
+    null_13817227.connect(
+      Blink2Leds_1440914329.getPort("led2").get,
+      LED_948129019.getPort("LED").get
+    )
+    null_13817227.connect(
+      LED_948129019.getPort("LED").get,
+      Blink2Leds_1440914329.getPort("led2").get
+    )
+
+    null_1841438955.connect(
+      Blink2Leds_1440914329.getPort("timer2").get,
+      SoftTimer_513595611.getPort("timer").get
+    )
+    null_1841438955.connect(
+      SoftTimer_513595611.getPort("timer").get,
+      Blink2Leds_1440914329.getPort("timer2").get
     )
 
 //Starting Things
-    Arduino_1943219781.start
-    LED_1865707812.start
-    SoftTimer_102824579.start
-    Blink_1478354072.start
+    Arduino_701179797.start
+    LED_1262837020.start
+    LED_948129019.start
+    SoftTimer_647098590.start
+    SoftTimer_513595611.start
+    Blink2Leds_1440914329.start
     
-    new Timer().scheduleAtFixedRate(new PollTask(SoftTimer_102824579.getPort("Polling").get), 5, 5)
   }
-  
+
 }
