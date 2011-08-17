@@ -31,6 +31,16 @@ import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
 
 class PingComponent(keepHistory : Boolean, withGUI : Boolean) extends Component {
+  
+  object PingComponent {
+    object PingPort {
+      def getName = "Ping"
+      object in {}
+      object out {}
+      val pollMsg = "Poll.getName"
+    }
+  }
+  
   val root : StateMachine = new PingStateMachine(keepHistory, withGUI, this).getBehavior
   this.behavior ++= List(root)
   val ping = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), this).start

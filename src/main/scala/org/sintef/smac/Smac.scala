@@ -48,8 +48,6 @@ abstract class InternalTransitionAction extends HandlerAction {
 
 abstract class StateAction {
   
-  final def getStateMachine = handler.getRoot
-  
   protected[smac] var handler : State = _
     
   def onEntry
@@ -84,6 +82,10 @@ abstract class Component {
 }
 
 sealed class State(action : StateAction, val root : Component) {
+
+  final def getPort(name : String) : Option[Port] = {
+    root.getPort(name) 
+  }
   
   def getEvent(e : String, p : Port) : Option[Event] = {
     parent match {
@@ -127,7 +129,7 @@ sealed class State(action : StateAction, val root : Component) {
 
   //TODO: avoid (almost) duplicating checkForTransition...  
   protected[smac] def checkForAutoTransition: Option[Handler] = {
-     allTransitions.filter(t => { t.isAuto && t.getAction.checkGuard})
+    allTransitions.filter(t => { t.isAuto && t.getAction.checkGuard})
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
@@ -232,11 +234,14 @@ sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Com
   private var currentEvents : Map[Port, Event] = Map()
   
   override def dispatchEvent(e: SignedEvent) : Boolean = {
-    currentEvents +=  (e.port -> e.event)
+    println("dispatchEvent "+e.event.name)
+    currentEvents += (e.port -> e.event)
+    //println("  "+currentEvents.get(e.port).get)
     super.dispatchEvent(e) 
   }
   
   override def getEvent(e : String, p : Port) : Option[Event] = {
+    println("getEvent("+e+", "+p.name+")")
     currentEvents.keys.filter{port => port == p}.headOption match {
       case Some(port) =>
         currentEvents.get(port)
@@ -383,7 +388,9 @@ sealed class Port(val name : String, val receive : List[String], val send : List
             //println("Port " + this + " dispatches to state machine")
           cpt.behavior.foreach{sm => 
             //println("  "+sm)
-            sm.getActor ! new SignedEvent(e.sender, this, e.event, e.to)}
+            //sm.getActor ! new SignedEvent(e.sender, this, e.event, e.to)
+            sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
+          }
         case _ =>
       }
     }
