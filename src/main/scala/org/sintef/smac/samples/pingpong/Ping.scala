@@ -49,12 +49,9 @@ class PingStateMachine(keepHistory : Boolean, root : Component) extends StateAct
   sm.setInitial(stop)
 
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent.getName)
+  val pongTransition = new InternalTransition(ping, PongTransition(), List(("ping", PongEvent.getName)))
+  val stopTransition = new Transition(ping, stop, StopTransition(), List(("ping", StopEvent.getName)))
+  val startTransition = new Transition(stop, ping, StartTransition(), List(("ping", StartEvent.getName)))
   sm.addTransition(startTransition)
   sm.addTransition(stopTransition)
   sm.addInternalTransition(pongTransition)

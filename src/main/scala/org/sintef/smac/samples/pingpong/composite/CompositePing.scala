@@ -49,10 +49,8 @@ class PingStateMachine(keepHistory : Boolean, withGUI : Boolean, root : Componen
   sm.setInitial(slow)
     
   //create transitions among sub-states
-  val slowTransition = new Transition(fast, slow, SlowTransition(), root)
-  slowTransition.initEvent(SlowEvent.getName)
-  val fastTransition = new Transition(slow, fast, FastTransition(), root)
-  fastTransition.initEvent(FastEvent.getName)
+  val slowTransition = new Transition(fast, slow, SlowTransition(), List(("ping", SlowEvent.getName)))
+  val fastTransition = new Transition(slow, fast, FastTransition(), List(("ping", FastEvent.getName)))
   sm.addTransition(slowTransition)
   sm.addTransition(fastTransition)
     
@@ -232,12 +230,9 @@ case class Fast(keepHistory : Boolean, root : Component) extends StateAction {
   c.setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent.getName)
+  val pongTransition = new InternalTransition(ping, PongTransition(), List(("ping", PongEvent.getName)))
+  val stopTransition = new Transition(ping, stop, StopTransition(), List(("ping", StopEvent.getName)))
+  val startTransition = new Transition(stop, ping, StartTransition(), List(("ping", StartEvent.getName)))
   ping.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
@@ -264,12 +259,9 @@ case class Slow(keepHistory : Boolean, root : Component) extends StateAction() {
   c.setInitial(stop)
     
   //create transitions among sub-states
-  val pongTransition = new InternalTransition(ping, PongTransition(), root)
-  pongTransition.initEvent(PongEvent.getName)
-  val stopTransition = new Transition(ping, stop, StopTransition(), root)
-  stopTransition.initEvent(StopEvent.getName)
-  val startTransition = new Transition(stop, ping, StartTransition(), root)
-  startTransition.initEvent(StartEvent.getName)
+  val pongTransition = new InternalTransition(ping, PongTransition(), List(("ping", PongEvent.getName)))
+  val stopTransition = new Transition(ping, stop, StopTransition(), List(("ping", StopEvent.getName)))
+  val startTransition = new Transition(stop, ping, StartTransition(), List(("ping", StartEvent.getName)))
   ping.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)

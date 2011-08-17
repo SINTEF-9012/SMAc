@@ -19,7 +19,7 @@ package org.sintef.smac.samples.pingpong
 
 import org.sintef.smac._
 import org.sintef.smac.samples.pingpong._
-
+/*
 class PongComponent(keepHistory : Boolean) extends Component {
   val root : StateMachine = new PingStateMachine(keepHistory, this).getBehavior
   this.behavior ++= List(root)
@@ -64,3 +64,4 @@ case class PingTransition extends InternalTransitionAction {
     println("PingTransition")
   }
 }
+*/

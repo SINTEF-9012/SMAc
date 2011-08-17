@@ -28,11 +28,7 @@ abstract sealed class HandlerAction {
   
   protected[smac] var handler : Handler = _
   
-  final def getStateMachine = handler.getRoot
-  
-  final def getEvent(e : Event) : Option[Event] = handler.getEvent(e)
-  
-  final def getEvent(e : String) : Option[Event] = handler.getEvent(e)
+  final def getEvent(e : String, p : String) : Option[Event] = handler.getEvent(e, p)
   
   def checkGuard: Boolean = true
   def getScore: Double = 1
@@ -89,11 +85,18 @@ abstract class Component {
 
 sealed class State(action : StateAction, val root : Component) {
   
+  def getEvent(e : String, p : Port) : Option[Event] = {
+    parent match {
+      case Some(parent) => parent.getEvent(e, p)
+      case None => None
+    } 
+  }
+  
   protected[smac] def getRoot = root
   
   action.handler = this
   
-  protected[smac] var parent: Option[CompositeState] = Option(null)
+  protected[smac] var parent: Option[CompositeState] = None
   
   protected[smac] var internal: List[InternalTransition] = List()
   
@@ -109,7 +112,7 @@ sealed class State(action : StateAction, val root : Component) {
       case Some(p) =>
         p match {
           case c : CompositeState =>
-            result = result ::: c.transitions.filter(t => t.getPrevious == this)
+            result = result ::: c.transitions.filter(t => t.source == this)
           case _ =>
         }
         
@@ -120,21 +123,24 @@ sealed class State(action : StateAction, val root : Component) {
     ////println(result.size)
     return result
   }
-  
-  protected[smac] def clearEvents(goBack : Boolean) {
-    allTransitions.foreach{t => t.clearEvents}
-    if (goBack){
-      parent match {
-        case Some(p) =>
-          p.clearEvents(this)
-        case None =>
-      }
+    
+
+  //TODO: avoid (almost) duplicating checkForTransition...  
+  protected[smac] def checkForAutoTransition: Option[Handler] = {
+     allTransitions.filter(t => { t.isAuto && t.getAction.checkGuard})
+    .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
+    .headOption match {
+      case Some(in) => 
+        ////println("  A transition can be triggered: "+in)
+        return Option(in)
+      case None => 
+        return None
     }
   }
-      
-  protected[smac] def checkForTransition: Option[Handler] = {
+  
+  protected[smac] def checkForTransition(e : SignedEvent): Option[Handler] = {
     ////println(this+".checkForTransition: ")  
-    allTransitions.filter(t => { t.evaluateEvents && t.getAction.checkGuard})
+    allTransitions.filter(t => { t.isInterestedIn(e) && t.getAction.checkGuard})
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
@@ -146,13 +152,8 @@ sealed class State(action : StateAction, val root : Component) {
   }
 
 
-  protected[smac] def dispatchEvent(e: Event) : Boolean = {
-    //println(this + "dispatch event "+e)
-    allTransitions().foreach{t => 
-      //println("  "+t)
-      t.addEvent(e)
-    }
-    checkForTransition match {
+  protected[smac] def dispatchEvent(e: SignedEvent) : Boolean = {
+    checkForTransition(e) match {
       case Some(t) => 
         //println("  "+this + ".Transition: " + t)
         t.execute
@@ -169,7 +170,7 @@ sealed class State(action : StateAction, val root : Component) {
       case None =>
     } 
     action.onEntry
-    checkForTransition match {
+    checkForAutoTransition match {//checks if a transition with no event can be triggered
       case Some(t) => {t.execute}
       case None =>
     }
@@ -193,10 +194,10 @@ sealed trait Region {
     override def act() = {
       loop {
         react {
-          case e: Event =>
+          case e: SignedEvent =>
             //println("Region " + this + " dispatching event "+e + " to "+current)
             current.dispatchEvent(e)
-          case e: Any =>
+          case _ =>
         }
       }
     }
@@ -228,7 +229,20 @@ sealed trait Region {
 }
 
 sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
+  private var currentEvents : Map[Port, Event] = Map()
   
+  override def dispatchEvent(e: SignedEvent) : Boolean = {
+    currentEvents +=  (e.port -> e.event)
+    super.dispatchEvent(e) 
+  }
+  
+  override def getEvent(e : String, p : Port) : Option[Event] = {
+    currentEvents.keys.filter{port => port == p}.headOption match {
+      case Some(port) =>
+        currentEvents.get(port)
+      case None => None
+    }
+  }
 }
 
 sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : Component) extends State(action, root) with Region {
@@ -246,7 +260,7 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
     transitions ++= List(t)
   }  
 
-  override def dispatchEvent(e: Event) : Boolean = {
+  override def dispatchEvent(e: SignedEvent) : Boolean = {
     //println(this + ".dispatchEvent "+e)
     var status = false
     regions.foreach{r => //events are dispatched to regions with no condition
@@ -257,9 +271,6 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
       //println("  current has not been activated. Try to activate self")
       status = super.dispatchEvent(e)//if not, they might consume the event
     }
-    /*else {
-     clearEvents
-     }*/
     return status
   }
 
@@ -276,131 +287,82 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
     super.executeOnExit
   }
   
-  protected[smac] def clearEvents(s : State) {
-    substates.filter{sub => sub != s}.foreach{sub => sub.clearEvents(false)}
-    super.clearEvents(true)
-  }
+  /*protected[smac] def clearEvents(s : State) {
+   substates.filter{sub => sub != s}.foreach{sub => sub.clearEvents(false)}
+   super.clearEvents(true)
+   }*/
 }
 
 
 /**
  * Transitions between two states
+ * Transition are interested in event (String corresponding to Event.getName)
+ * coming from specified ports
  */
 
-abstract sealed class Handler(val root : Component) {
+
+//Port -> Event
+abstract sealed class Handler(val source : State, val events : List[Pair[String, String]]) {
   
   final def getPort(name : String) : Option[Port] = {
-    root.ports.get(name)
+    //TODO: check if handler can access the port
+    source.root.getPort(name)
   }
   
-  protected[smac] def isInterestedIn(e : Event) : Boolean = {
-    ////println(this+" is interested in "+e.getClass.toString+"?")
-    events.keys.exists(k => k.equals(e.name))
+  protected[smac] def isInterestedIn(p : String, e : String) : Boolean = {
+    events.exists(k => k._1 == p && k._2 == e)
   }
   
-  protected[smac] def getRoot = root
+  protected[smac] def isInterestedIn(e : SignedEvent) : Boolean = {
+    isInterestedIn(e.port.name, e.event.name)
+  }
+  
+  protected[smac] def isAuto = events.length == 0
+  
+  protected[smac] def getEvent(e : String, p : String) : Option[Event] = {
+    getPort(p) match {
+      case Some(port) => source.getEvent(e, port)
+      case None => None
+    }    
+  }
   
   protected[smac] def getAction: HandlerAction
- 
-  protected[smac] def getEvents = events.keys
-
-  protected[smac] val events = scala.collection.mutable.Map[String, Pair[Event, Boolean]]()
-  
-  final def initEvent(e : String) {
-    ////println(this+" init event "+e)
-    events.put(e, (null, false))
-  }
-  
-  final def initEvent(e : Event) {
-    initEvent(e.name)
-  }
-  
-  final def getEvent(e : Event) : Option[Event] = {
-    getEvent(e.name)
-  }
-  
-  final def getEvent(e : String) : Option[Event] = {
-    events.get(e) match {
-      case Some(p) =>
-        if (p._2) {
-          return Option(p._1)
-        }
-        else {
-          return None
-        }
-      case None =>
-        return None
-    }
-  }
-  
-  protected[smac] def addEvent(e : Event) {
-    if (isInterestedIn(e)){
-      ////println("  "+this+" is interested in "+e.getClass.toString+"!!!")
-      events.put(e.name, (e, true))
-    }
-  }
-
-  protected[smac] def evaluateEvents(): Boolean = {
-    events.size == 0 || events.values.exists(p => p._2)
-  }
-
-  protected[smac] def clearEvents() {
-    //println(this + ".clearEvents")
-    events.keys.foreach {
-      k => events.put(k, (null, false))
-    }
-  }
-
+      
   /**
    * Describe the overall execution of the transition
    */
-  protected[smac] def execute {
-    clearEvents
-  }
+  protected[smac] def execute
 }
 
-sealed class Transition(previous: State, next: State, action: TransitionAction, root : Component) extends Handler(root) {
+sealed class Transition(override val source: State, val target: State, val action: TransitionAction, override val events : List[Pair[String, String]] = List()) extends Handler(source, events) {
 
-  action.handler = this
-  override def getAction = action
+  override protected[smac] def getAction = action
   
-  protected[smac] def getPrevious = previous
+  action.handler = this
 
-  override def execute() = {
+  def execute() = {
     action.executeBeforeActions
-    previous.executeOnExit
+    source.executeOnExit
     action.executeActions()
-    next.executeOnEntry
+    target.executeOnEntry
     action.executeAfterActions
-    previous.clearEvents(true)
   }
 }
 
-sealed class InternalTransition(self: State, action: InternalTransitionAction, root : Component) extends Handler(root) {
+sealed class InternalTransition(override val source: State, val action: InternalTransitionAction, override val events : List[Pair[String, String]] = List()) extends Handler(source, events) {
+  
+  override protected[smac] def getAction = action
   
   action.handler = this
-  override def getAction = action
   
-  override def execute() = {
-    ////println("EXECUTE")
+  def execute() = {
     action.executeActions()
-    self.clearEvents(true)
   }
 }
 
+sealed protected[smac] class SignedEvent(val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None)
 
-abstract class Event(val name : String, val to : Option[Component] = None){
-  private var source : Option[Component] = None
-  def setSender(c : Component) { 
-    source match {
-      case Some(s) => println("Cannot change the sender of a message")
-      case None => source = Option(c)
-    }
-  }
-  def getSender = source
-}
-
-
+abstract class Event(val name : String){}
 
 /**
  * Channel allows connecting different state machines together via ports
@@ -416,18 +378,13 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   override def act() = {
     loop {
       react {
-        case e: Event =>
-          e.getSender match {
-            case Some(c) => if (canReceive(e))
-              //println("Port " + this + " dispatches to state machine")
-              cpt.behavior.foreach{sm => 
-                //println("  "+sm)
-                sm.getActor ! e}
-            case None =>
-              println("This event does not come from a component")
-          }
-          
-        case e: Any =>
+        case e: SignedEvent =>
+          if (canReceive(e))
+            //println("Port " + this + " dispatches to state machine")
+          cpt.behavior.foreach{sm => 
+            //println("  "+sm)
+            sm.getActor ! new SignedEvent(e.sender, this, e.event, e.to)}
+        case _ =>
       }
     }
   }
@@ -435,10 +392,9 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   def send(e : Event) {
     if (canSend(e)) {
       //println("Port " + this + " sending to channels")
-      e.setSender(cpt)
       out.foreach{c =>
         //println("Port " + this + " sending to channel "+c)
-        c ! e
+        c ! new SignedEvent(cpt, this, e)
       }
     }
   }
@@ -447,8 +403,8 @@ sealed class Port(val name : String, val receive : List[String], val send : List
     send.exists(p => p.equals(e.name))
   }
   
-  protected[smac] def canReceive(e : Event) = {
-    receive.exists(p => p.equals(e.name))
+  protected[smac] def canReceive(e : SignedEvent) = {
+    receive.exists(p => p.equals(e.event.name))
   }
 }
 
@@ -482,7 +438,7 @@ sealed class Channel() extends Actor {
   override def act() = {
     loop {
       react {
-        case e: Event =>
+        case e: SignedEvent =>
           e.to match {
             case Some(to) => out.filter{p => p.cpt == to}.foreach {
                 p =>
@@ -499,4 +455,12 @@ sealed class Channel() extends Actor {
       }
     }
   }
+}
+
+/**
+ * Just a naive PoC
+ * TODO: a lot
+ */
+sealed class SessionChannel extends Channel {
+  
 }

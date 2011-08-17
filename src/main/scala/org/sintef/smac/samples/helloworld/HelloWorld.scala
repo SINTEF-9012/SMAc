@@ -75,17 +75,12 @@ case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean, root
   sm.setInitial(INIT_state)
   
   //create transitions among sub-states
-  val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), root)
-  INIT_next_H_transition.initEvent(HEvent.getName)
-  val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), root)
-  H_next_E_transition.initEvent(EEvent.getName)
-  val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), root)
-  E_next_L1_transition.initEvent(LEvent.getName)
-  val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), root)
-  L1_next_L2_transition.initEvent(LEvent.getName)
-  val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), root)
-  L2_next_O_transition.initEvent(OEvent.getName)
-  val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), root)
+  val INIT_next_H_transition = new Transition(INIT_state, H_state, INIT_Next_H(), List(("hello", HEvent.getName)))
+  val H_next_E_transition = new Transition(H_state, E_state, H_Next_E(), List(("hello", EEvent.getName)))  
+  val E_next_L1_transition = new Transition(E_state, L1_state, E_Next_L1(), List(("hello", LEvent.getName)))
+  val L1_next_L2_transition = new Transition(L1_state, L2_state, L1_Next_L2(), List(("hello", LEvent.getName)))
+  val L2_next_O_transition = new Transition(L2_state, O_state, L2_Next_O(), List(("hello", OEvent.getName)))
+  val O_next_STOP_transition = new Transition(O_state, STOP_state, O_Next_STOP(), List())
   
   sm.addTransition(INIT_next_H_transition)
   sm.addTransition(H_next_E_transition)
