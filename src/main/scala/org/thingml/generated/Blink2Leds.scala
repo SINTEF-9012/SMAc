@@ -11,6 +11,14 @@ import java.util.TimerTask
 import java.util.Timer
 import scala.util.Random
 import scala.swing.Dialog
+
+
+import scala.swing.{Graphics2D, Color}
+import java.awt.geom._
+import java.awt.Dimension
+
+
+
 class PollTask(p : Port) extends TimerTask{
   override def run {
     p.send(new Poll())
@@ -400,6 +408,14 @@ class LED extends Component {
 
 // Variables for the properties of the instance
   var LED_pin_var : Byte = _
+  val led : FakeLED = new FakeLED()
+  
+      val frame = new scala.swing.Frame()
+    frame.contents = led
+    frame.preferredSize_=(new Dimension(25,25))
+    frame.pack
+    frame.visible_=(true)
+
 
   new Port("LED", List(LED.LEDPort.in.led_on, LED.LEDPort.in.led_off, LED.LEDPort.in.led_toggle), List(), this).start
   new Port("DigitalIO", List(), List(LED.DigitalIOPort.out.pinMode, LED.DigitalIOPort.out.digitalWrite), this).start
@@ -427,7 +443,9 @@ class LED extends Component {
       override def onEntry() = {
         println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
-          case Some(p) => p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_LOW))
+          case Some(p) => 
+            p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_LOW))
+            led.off
           case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
         }
       }
@@ -445,7 +463,9 @@ class LED extends Component {
       override def onEntry() = {
         println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
-          case Some(p) => p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_HIGH))
+          case Some(p) => 
+            p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_HIGH))
+            led.on
           case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
         }
       }
@@ -742,6 +762,52 @@ class Blink2Leds extends Component {
         }
       }
 
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+class FakeLED extends scala.swing.Component {
+  
+  var status: Boolean = true
+  val c = new Color(Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256))
+  val antiC = new Color(Math.abs((c.getRed+128)%256), Math.abs((c.getBlue+128)%256), Math.abs((c.getGreen+128)%256)) 
+  
+
+  def on() = {
+    status = true
+    repaint
+  }
+  
+  def off() = {
+    status = false
+    repaint
+  }
+    
+  def toggle = { 
+    status = !status
+    repaint
+  }
+  
+  override def paintComponent(g: Graphics2D) = {
+    super.paintComponent(g) 
+    g.setBackground(new Color(192, 192, 192))
+    if (status) {
+      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
+      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
+      g.setPaint(new Color(0,255,0));
+      g.fill(new Ellipse2D.Double(0, 0, 25, 25))
+    } else {
+      g.setPaint(new Color(50,50,50));
+      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
+      g.fill(new Ellipse2D.Double(0, 0, 25, 25))
     }
   }
 }

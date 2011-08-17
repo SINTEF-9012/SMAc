@@ -234,7 +234,7 @@ sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Com
   private var currentEvents : Map[Port, Event] = Map()
   
   override def dispatchEvent(e: SignedEvent) : Boolean = {
-    println("dispatchEvent "+e.event.name)
+    //println("dispatchEvent "+e.event.name)
     currentEvents += (e.port -> e.event)
     //println("  "+currentEvents.get(e.port).get)
     super.dispatchEvent(e) 
