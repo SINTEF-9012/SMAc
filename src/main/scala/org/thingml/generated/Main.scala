@@ -13,109 +13,403 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 //Connectors
-    val null_875761593 = new Channel
-    null_875761593.start
-    val null_928813722 = new Channel
-    null_928813722.start
-    val null_2121904503 = new Channel
-    null_2121904503.start
-    val null_248575390 = new Channel
-    null_248575390.start
-    val null_1758687219 = new Channel
-    null_1758687219.start
-    val null_297900313 = new Channel
-    null_297900313.start
+    val null_81758996 = new Channel
+    null_81758996.start
+    val null_185195573 = new Channel
+    null_185195573.start
+    val null_1397380581 = new Channel
+    null_1397380581.start
     val null_1677679768 = new Channel
     null_1677679768.start
-    val null_557591935 = new Channel
-    null_557591935.start
+    val null_1259215034 = new Channel
+    null_1259215034.start
+    val null_1317923722 = new Channel
+    null_1317923722.start
+    val null_737736904 = new Channel
+    null_737736904.start
+    val null_464554138 = new Channel
+    null_464554138.start
+    val null_1341078050 = new Channel
+    null_1341078050.start
+    val null_1830942291 = new Channel
+    null_1830942291.start
+    val null_509335928 = new Channel
+    null_509335928.start
+    val null_591252775 = new Channel
+    null_591252775.start
+    val null_1179030521 = new Channel
+    null_1179030521.start
+    val null_1069018579 = new Channel
+    null_1069018579.start
+    val null_1664751480 = new Channel
+    null_1664751480.start
+    val null_2098993638 = new Channel
+    null_2098993638.start
+    val null_1853232813 = new Channel
+    null_1853232813.start
+    val null_136565368 = new Channel
+    null_136565368.start
+    val null_1794300449 = new Channel
+    null_1794300449.start
+    val null_646703599 = new Channel
+    null_646703599.start
+    val null_1330327322 = new Channel
+    null_1330327322.start
+    val null_420626096 = new Channel
+    null_420626096.start
+    val null_320803739 = new Channel
+    null_320803739.start
+    val null_1671868783 = new Channel
+    null_1671868783.start
+    val null_1792194126 = new Channel
+    null_1792194126.start
+    val null_891929669 = new Channel
+    null_891929669.start
+    val null_2079663200 = new Channel
+    null_2079663200.start
+    val null_1743223201 = new Channel
+    null_1743223201.start
+    val null_2125082354 = new Channel
+    null_2125082354.start
+    val null_29913235 = new Channel
+    null_29913235.start
+    val null_1230531773 = new Channel
+    null_1230531773.start
+    val null_534956479 = new Channel
+    null_534956479.start
 //Things
-    val Arduino_1762688005 = new Arduino()
-    val LED_782092838 = new LED()
-    val LED_1147380142 = new LED()
-    val SoftTimer_1590114020 = new SoftTimer()
-    val SoftTimer_185195573 = new SoftTimer()
-    val Blink2Leds_99484925 = new Blink2Leds()
+    val Arduino_1505607660 = new Arduino()
+    val LED_875761593 = new LED()
+    val LED_928813722 = new LED()
+    val LED_1735539839 = new LED()
+    val LED_1616586953 = new LED()
+    val LED_557591935 = new LED()
+    val LED_2087463062 = new LED()
+    val LED_1052060200 = new LED()
+    val LED_603629076 = new LED()
+    val SoftTimer_1569062412 = new SoftTimer()
+    val SoftTimer_285747235 = new SoftTimer()
+    val SoftTimer_558185842 = new SoftTimer()
+    val SoftTimer_63374101 = new SoftTimer()
+    val SoftTimer_152689566 = new SoftTimer()
+    val SoftTimer_1684013725 = new SoftTimer()
+    val SoftTimer_1265370845 = new SoftTimer()
+    val SoftTimer_283788351 = new SoftTimer()
+    val Blink2Leds_2128878922 = new Blink2Leds()
+    val Blink2Leds_163450945 = new Blink2Leds()
+    val Blink2Leds_1854861687 = new Blink2Leds()
+    val Blink2Leds_1544213635 = new Blink2Leds()
 //Bindings
-    null_875761593.connect(
-      LED_782092838.getPort("DigitalIO").get,
-      Arduino_1762688005.getPort("DigitalIO").get
+    null_81758996.connect(
+      LED_875761593.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
     )
-    null_875761593.connect(
-      Arduino_1762688005.getPort("DigitalIO").get,
-      LED_782092838.getPort("DigitalIO").get
-    )
-
-    null_928813722.connect(
-      LED_1147380142.getPort("DigitalIO").get,
-      Arduino_1762688005.getPort("DigitalIO").get
-    )
-    null_928813722.connect(
-      Arduino_1762688005.getPort("DigitalIO").get,
-      LED_1147380142.getPort("DigitalIO").get
+    null_81758996.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_875761593.getPort("DigitalIO").get
     )
 
-    null_2121904503.connect(
-      SoftTimer_1590114020.getPort("Polling").get,
-      Arduino_1762688005.getPort("Polling").get
+    null_185195573.connect(
+      LED_928813722.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
     )
-    null_2121904503.connect(
-      Arduino_1762688005.getPort("Polling").get,
-      SoftTimer_1590114020.getPort("Polling").get
-    )
-
-    null_248575390.connect(
-      SoftTimer_185195573.getPort("Polling").get,
-      Arduino_1762688005.getPort("Polling").get
-    )
-    null_248575390.connect(
-      Arduino_1762688005.getPort("Polling").get,
-      SoftTimer_185195573.getPort("Polling").get
+    null_185195573.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_928813722.getPort("DigitalIO").get
     )
 
-    null_1758687219.connect(
-      Blink2Leds_99484925.getPort("led1").get,
-      LED_782092838.getPort("LED").get
+    null_1397380581.connect(
+      LED_1735539839.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
     )
-    null_1758687219.connect(
-      LED_782092838.getPort("LED").get,
-      Blink2Leds_99484925.getPort("led1").get
-    )
-
-    null_297900313.connect(
-      Blink2Leds_99484925.getPort("timer1").get,
-      SoftTimer_1590114020.getPort("timer").get
-    )
-    null_297900313.connect(
-      SoftTimer_1590114020.getPort("timer").get,
-      Blink2Leds_99484925.getPort("timer1").get
+    null_1397380581.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_1735539839.getPort("DigitalIO").get
     )
 
     null_1677679768.connect(
-      Blink2Leds_99484925.getPort("led2").get,
-      LED_1147380142.getPort("LED").get
+      LED_1616586953.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
     )
     null_1677679768.connect(
-      LED_1147380142.getPort("LED").get,
-      Blink2Leds_99484925.getPort("led2").get
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_1616586953.getPort("DigitalIO").get
     )
 
-    null_557591935.connect(
-      Blink2Leds_99484925.getPort("timer2").get,
-      SoftTimer_185195573.getPort("timer").get
+    null_1259215034.connect(
+      LED_557591935.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
     )
-    null_557591935.connect(
-      SoftTimer_185195573.getPort("timer").get,
-      Blink2Leds_99484925.getPort("timer2").get
+    null_1259215034.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_557591935.getPort("DigitalIO").get
+    )
+
+    null_1317923722.connect(
+      LED_2087463062.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
+    )
+    null_1317923722.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_2087463062.getPort("DigitalIO").get
+    )
+
+    null_737736904.connect(
+      LED_1052060200.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
+    )
+    null_737736904.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_1052060200.getPort("DigitalIO").get
+    )
+
+    null_464554138.connect(
+      LED_603629076.getPort("DigitalIO").get,
+      Arduino_1505607660.getPort("DigitalIO").get
+    )
+    null_464554138.connect(
+      Arduino_1505607660.getPort("DigitalIO").get,
+      LED_603629076.getPort("DigitalIO").get
+    )
+
+    null_1341078050.connect(
+      SoftTimer_1569062412.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_1341078050.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_1569062412.getPort("Polling").get
+    )
+
+    null_1830942291.connect(
+      SoftTimer_285747235.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_1830942291.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_285747235.getPort("Polling").get
+    )
+
+    null_509335928.connect(
+      Blink2Leds_2128878922.getPort("led1").get,
+      LED_875761593.getPort("LED").get
+    )
+    null_509335928.connect(
+      LED_875761593.getPort("LED").get,
+      Blink2Leds_2128878922.getPort("led1").get
+    )
+
+    null_591252775.connect(
+      Blink2Leds_2128878922.getPort("timer1").get,
+      SoftTimer_1569062412.getPort("timer").get
+    )
+    null_591252775.connect(
+      SoftTimer_1569062412.getPort("timer").get,
+      Blink2Leds_2128878922.getPort("timer1").get
+    )
+
+    null_1179030521.connect(
+      Blink2Leds_2128878922.getPort("led2").get,
+      LED_928813722.getPort("LED").get
+    )
+    null_1179030521.connect(
+      LED_928813722.getPort("LED").get,
+      Blink2Leds_2128878922.getPort("led2").get
+    )
+
+    null_1069018579.connect(
+      Blink2Leds_2128878922.getPort("timer2").get,
+      SoftTimer_285747235.getPort("timer").get
+    )
+    null_1069018579.connect(
+      SoftTimer_285747235.getPort("timer").get,
+      Blink2Leds_2128878922.getPort("timer2").get
+    )
+
+    null_1664751480.connect(
+      SoftTimer_558185842.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_1664751480.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_558185842.getPort("Polling").get
+    )
+
+    null_2098993638.connect(
+      SoftTimer_63374101.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_2098993638.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_63374101.getPort("Polling").get
+    )
+
+    null_1853232813.connect(
+      Blink2Leds_163450945.getPort("led1").get,
+      LED_1735539839.getPort("LED").get
+    )
+    null_1853232813.connect(
+      LED_1735539839.getPort("LED").get,
+      Blink2Leds_163450945.getPort("led1").get
+    )
+
+    null_136565368.connect(
+      Blink2Leds_163450945.getPort("timer1").get,
+      SoftTimer_558185842.getPort("timer").get
+    )
+    null_136565368.connect(
+      SoftTimer_558185842.getPort("timer").get,
+      Blink2Leds_163450945.getPort("timer1").get
+    )
+
+    null_1794300449.connect(
+      Blink2Leds_163450945.getPort("led2").get,
+      LED_1616586953.getPort("LED").get
+    )
+    null_1794300449.connect(
+      LED_1616586953.getPort("LED").get,
+      Blink2Leds_163450945.getPort("led2").get
+    )
+
+    null_646703599.connect(
+      Blink2Leds_163450945.getPort("timer2").get,
+      SoftTimer_63374101.getPort("timer").get
+    )
+    null_646703599.connect(
+      SoftTimer_63374101.getPort("timer").get,
+      Blink2Leds_163450945.getPort("timer2").get
+    )
+
+    null_1330327322.connect(
+      SoftTimer_152689566.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_1330327322.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_152689566.getPort("Polling").get
+    )
+
+    null_420626096.connect(
+      SoftTimer_1684013725.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_420626096.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_1684013725.getPort("Polling").get
+    )
+
+    null_320803739.connect(
+      Blink2Leds_1854861687.getPort("led1").get,
+      LED_557591935.getPort("LED").get
+    )
+    null_320803739.connect(
+      LED_557591935.getPort("LED").get,
+      Blink2Leds_1854861687.getPort("led1").get
+    )
+
+    null_1671868783.connect(
+      Blink2Leds_1854861687.getPort("timer1").get,
+      SoftTimer_152689566.getPort("timer").get
+    )
+    null_1671868783.connect(
+      SoftTimer_152689566.getPort("timer").get,
+      Blink2Leds_1854861687.getPort("timer1").get
+    )
+
+    null_1792194126.connect(
+      Blink2Leds_1854861687.getPort("led2").get,
+      LED_2087463062.getPort("LED").get
+    )
+    null_1792194126.connect(
+      LED_2087463062.getPort("LED").get,
+      Blink2Leds_1854861687.getPort("led2").get
+    )
+
+    null_891929669.connect(
+      Blink2Leds_1854861687.getPort("timer2").get,
+      SoftTimer_1684013725.getPort("timer").get
+    )
+    null_891929669.connect(
+      SoftTimer_1684013725.getPort("timer").get,
+      Blink2Leds_1854861687.getPort("timer2").get
+    )
+
+    null_2079663200.connect(
+      SoftTimer_1265370845.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_2079663200.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_1265370845.getPort("Polling").get
+    )
+
+    null_1743223201.connect(
+      SoftTimer_283788351.getPort("Polling").get,
+      Arduino_1505607660.getPort("Polling").get
+    )
+    null_1743223201.connect(
+      Arduino_1505607660.getPort("Polling").get,
+      SoftTimer_283788351.getPort("Polling").get
+    )
+
+    null_2125082354.connect(
+      Blink2Leds_1544213635.getPort("led1").get,
+      LED_1052060200.getPort("LED").get
+    )
+    null_2125082354.connect(
+      LED_1052060200.getPort("LED").get,
+      Blink2Leds_1544213635.getPort("led1").get
+    )
+
+    null_29913235.connect(
+      Blink2Leds_1544213635.getPort("timer1").get,
+      SoftTimer_1265370845.getPort("timer").get
+    )
+    null_29913235.connect(
+      SoftTimer_1265370845.getPort("timer").get,
+      Blink2Leds_1544213635.getPort("timer1").get
+    )
+
+    null_1230531773.connect(
+      Blink2Leds_1544213635.getPort("led2").get,
+      LED_603629076.getPort("LED").get
+    )
+    null_1230531773.connect(
+      LED_603629076.getPort("LED").get,
+      Blink2Leds_1544213635.getPort("led2").get
+    )
+
+    null_534956479.connect(
+      Blink2Leds_1544213635.getPort("timer2").get,
+      SoftTimer_283788351.getPort("timer").get
+    )
+    null_534956479.connect(
+      SoftTimer_283788351.getPort("timer").get,
+      Blink2Leds_1544213635.getPort("timer2").get
     )
 
 //Starting Things
-    Arduino_1762688005.start
-    LED_782092838.start
-    LED_1147380142.start
-    SoftTimer_1590114020.start
-    SoftTimer_185195573.start
-    Blink2Leds_99484925.start
+    Arduino_1505607660.start
+    LED_875761593.start
+    LED_928813722.start
+    LED_1735539839.start
+    LED_1616586953.start
+    LED_557591935.start
+    LED_2087463062.start
+    LED_1052060200.start
+    LED_603629076.start
+    SoftTimer_1569062412.start
+    SoftTimer_285747235.start
+    SoftTimer_558185842.start
+    SoftTimer_63374101.start
+    SoftTimer_152689566.start
+    SoftTimer_1684013725.start
+    SoftTimer_1265370845.start
+    SoftTimer_283788351.start
+    Blink2Leds_2128878922.start
+    Blink2Leds_163450945.start
+    Blink2Leds_1854861687.start
+    Blink2Leds_1544213635.start
   }
 
 }
