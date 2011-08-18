@@ -821,4 +821,8 @@ class FakeLED extends scala.swing.Component {
     }
   }
   
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d8fd3987800f4d322cc85d2c4dfd0092fe09472f

@@ -58,7 +58,6 @@ sealed class Port(val name : String, val receive : List[String], val send : List
             sm.getActor ! new SignedEvent(e.sender, this, e.event, e.to)
             //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
           }
-        case _ =>
       }
     }
   }
@@ -125,7 +124,6 @@ sealed class Channel() extends Actor {
                 p forward e
               }
           }
-        case e: Any =>
       }
     }
   }

@@ -125,7 +125,6 @@ sealed trait Region {
         react {
           case e: SignedEvent =>
             dispatchEvent(e)
-          case _ =>
         }
       }
     }
