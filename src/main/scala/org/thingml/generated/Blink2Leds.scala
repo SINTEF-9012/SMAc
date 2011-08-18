@@ -410,12 +410,12 @@ class LED extends Component {
   var LED_pin_var : Byte = _
   val led : FakeLED = new FakeLED()
   
-      val frame = new scala.swing.Frame()
-    frame.contents = led
-    frame.preferredSize_=(new Dimension(25,25))
-    frame.pack
-    frame.visible_=(true)
-    frame.size = new Dimension(50, 90)
+  val frame = new scala.swing.Frame()
+  frame.contents = led
+  frame.preferredSize_=(new Dimension(25,25))
+  frame.pack
+  frame.visible_=(true)
+  frame.size = new Dimension(50, 90)
 
 
   new Port("LED", List(LED.LEDPort.in.led_on, LED.LEDPort.in.led_off, LED.LEDPort.in.led_toggle), List(), this).start
@@ -819,10 +819,5 @@ class FakeLED extends scala.swing.Component {
       g.setPaint(colorOff);
       g.fill(new Ellipse2D.Double(border, border, innerWidth, innerWidth))
     }
-  }
-  
-<<<<<<< HEAD
+  } 
 }
-=======
-}
->>>>>>> d8fd3987800f4d322cc85d2c4dfd0092fe09472f

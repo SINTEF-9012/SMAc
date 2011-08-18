@@ -19,7 +19,7 @@ package org.sintef.smac
 
 import scala.actors.Actor
 
-sealed protected[smac] class SignedEvent(val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None)
+sealed protected[smac] case class SignedEvent(val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None)
 
 abstract class Event(val name : String){}
 
