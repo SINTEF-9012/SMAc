@@ -415,6 +415,7 @@ class LED extends Component {
     frame.preferredSize_=(new Dimension(25,25))
     frame.pack
     frame.visible_=(true)
+    frame.size = new Dimension(50, 90)
 
 
   new Port("LED", List(LED.LEDPort.in.led_on, LED.LEDPort.in.led_off, LED.LEDPort.in.led_toggle), List(), this).start
@@ -776,10 +777,10 @@ class Blink2Leds extends Component {
 
 class FakeLED extends scala.swing.Component {
   
+  val width: Double = 50
   var status: Boolean = true
-  val c = new Color(Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256))
-  val antiC = new Color(Math.abs((c.getRed+128)%256), Math.abs((c.getBlue+128)%256), Math.abs((c.getGreen+128)%256)) 
-  
+  val colorOn = new Color(Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256), Math.abs(Random1024.randomInt % 256))
+  val colorOff = new Color(Math.abs((colorOn.getRed+128)%256), Math.abs((colorOn.getBlue+128)%256), Math.abs((colorOn.getGreen+128)%256)) 
 
   def on() = {
     status = true
@@ -797,17 +798,27 @@ class FakeLED extends scala.swing.Component {
   }
   
   override def paintComponent(g: Graphics2D) = {
-    super.paintComponent(g) 
+    val border = 5
+    val innerWidth = (width - (2 * border))
+
+    super.paintComponent(g)
+    minimumSize = new Dimension(width.toInt, width.toInt)
     g.setBackground(new Color(192, 192, 192))
+
+    // Draw the border of the led
+    g.setPaint(new Color(100, 100, 100));
+    g.fill(new Ellipse2D.Double(0, 0, width, width))
+
     if (status) {
-      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
-      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
-      g.setPaint(new Color(0,255,0));
-      g.fill(new Ellipse2D.Double(0, 0, 25, 25))
+      // Draw a green light
+      g.setPaint(colorOn);
+      g.fill(new Ellipse2D.Double(border, border, innerWidth, innerWidth))
+
     } else {
-      g.setPaint(new Color(50,50,50));
-      g.draw(new Ellipse2D.Double(0, 0, 25, 25))
-      g.fill(new Ellipse2D.Double(0, 0, 25, 25))
+      // Draw a yellow cicle
+      g.setPaint(colorOff);
+      g.fill(new Ellipse2D.Double(border, border, innerWidth, innerWidth))
     }
   }
+  
 }
