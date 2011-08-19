@@ -266,12 +266,12 @@ class Arduino extends Component {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
-      println(this + ".onEntry")
+      //println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
-      println(this + ".onExit")
+      //println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -296,12 +296,12 @@ class Arduino extends Component {
     RunningArduino_state.addInternalTransition(t_self_1571558359)
     case class RunningArduinoState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
         new Timer().scheduleAtFixedRate(new PollTask(getPort("Polling").get), 5, 5)
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -312,63 +312,63 @@ class Arduino extends Component {
 //create transitions among sub-states
     case class InternalTransition549855360 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("pinMode("+getEvent(Arduino.DigitalIOPort.in.pinMode, Arduino.DigitalIOPort.getName).get.asInstanceOf[PinMode].pin+", "+getEvent(Arduino.DigitalIOPort.in.pinMode, Arduino.DigitalIOPort.getName).get.asInstanceOf[PinMode].mode+");")
+        //println(this + ".executeActions")
+        //println("pinMode("+getEvent(Arduino.DigitalIOPort.in.pinMode, Arduino.DigitalIOPort.getName).get.asInstanceOf[PinMode].pin+", "+getEvent(Arduino.DigitalIOPort.in.pinMode, Arduino.DigitalIOPort.getName).get.asInstanceOf[PinMode].mode+");")
       }
 
     }
     case class InternalTransition1147055517 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("digitalWrite("+getEvent(Arduino.DigitalIOPort.in.digitalWrite, Arduino.DigitalIOPort.getName).get.asInstanceOf[DigitalWrite].pin+", "+getEvent(Arduino.DigitalIOPort.in.digitalWrite, Arduino.DigitalIOPort.getName).get.asInstanceOf[DigitalWrite].value+");")
+        //println(this + ".executeActions")
+        //println("digitalWrite("+getEvent(Arduino.DigitalIOPort.in.digitalWrite, Arduino.DigitalIOPort.getName).get.asInstanceOf[DigitalWrite].pin+", "+getEvent(Arduino.DigitalIOPort.in.digitalWrite, Arduino.DigitalIOPort.getName).get.asInstanceOf[DigitalWrite].value+");")
       }
 
     }
     case class InternalTransition1490360916 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         handler.getPort("DigitalIO") match{
           case Some(p) => p.send(new DigitalReadResult(Random1024.randomInt))
-          case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
+          case None => //println("Warning: no port DigitalIO You may consider revising your ThingML model.")
         }
       }
 
     }
     case class InternalTransition584004921 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("analogReference("+getEvent(Arduino.AnalogIOPort.in.analogReference, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogReference].`type`+");")
+        //println(this + ".executeActions")
+        //println("analogReference("+getEvent(Arduino.AnalogIOPort.in.analogReference, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogReference].`type`+");")
       }
 
     }
     case class InternalTransition1774239462 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         handler.getPort("AnalogIO") match{
           case Some(p) => p.send(new AnalogReadResult(Random1024.randomInt))
-          case None => println("Warning: no port AnalogIO You may consider revising your ThingML model.")
+          case None => //println("Warning: no port AnalogIO You may consider revising your ThingML model.")
         }
       }
 
     }
     case class InternalTransition58472846 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("analogWrite("+getEvent(Arduino.AnalogIOPort.in.analogWrite, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogWrite].pin+", "+getEvent(Arduino.AnalogIOPort.in.analogWrite, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogWrite].value+");")
+        //println(this + ".executeActions")
+        //println("analogWrite("+getEvent(Arduino.AnalogIOPort.in.analogWrite, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogWrite].pin+", "+getEvent(Arduino.AnalogIOPort.in.analogWrite, Arduino.AnalogIOPort.getName).get.asInstanceOf[AnalogWrite].value+");")
       }
 
     }
     case class InternalTransition1534516756 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("tone("+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].pin+", "+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].frequency+", "+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].duration+");")
+        //println(this + ".executeActions")
+        //println("tone("+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].pin+", "+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].frequency+", "+getEvent(Arduino.AdvancedIOPort.in.tone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[Tone].duration+");")
       }
 
     }
     case class InternalTransition1571558359 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
-        println("noTone("+getEvent(Arduino.AdvancedIOPort.in.noTone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[NoTone].pin+");")
+        //println(this + ".executeActions")
+        //println("noTone("+getEvent(Arduino.AdvancedIOPort.in.noTone, Arduino.AdvancedIOPort.getName).get.asInstanceOf[NoTone].pin+");")
       }
 
     }
@@ -425,15 +425,15 @@ class LED extends Component {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
-      println(this + ".onEntry")
+      //println(this + ".onEntry")
       handler.getPort("DigitalIO") match{
         case Some(p) => p.send(new PinMode(LED_pin_var, PinMode_ENUM.PINMODE_OUTPUT))
-        case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
+        case None => //println("Warning: no port DigitalIO You may consider revising your ThingML model.")
       }
     }
 
     override def onExit() = {
-      println(this + ".onExit")
+      //println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -442,17 +442,17 @@ class LED extends Component {
     parent.addSubState(LED_OFF_state)
     case class LED_OFFState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
           case Some(p) => 
             p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_LOW))
             led.off
-          case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
+          case None => //println("Warning: no port DigitalIO You may consider revising your ThingML model.")
         }
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -462,17 +462,17 @@ class LED extends Component {
     parent.addSubState(LED_ON_state)
     case class LED_ONState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
         handler.getPort("DigitalIO") match{
           case Some(p) => 
             p.send(new DigitalWrite(LED_pin_var, DigitalState_ENUM.DIGITALSTATE_HIGH))
             led.on
-          case None => println("Warning: no port DigitalIO You may consider revising your ThingML model.")
+          case None => //println("Warning: no port DigitalIO You may consider revising your ThingML model.")
         }
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -487,14 +487,14 @@ class LED extends Component {
     parent.addTransition(t_LED_ON2LED_OFF_283788351)
     case class TransitionLED_OFF2LED_ON_1686365681 extends TransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
     case class TransitionLED_ON2LED_OFF_283788351 extends TransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
 //No action defined for this transition
       }
 
@@ -542,12 +542,12 @@ class SoftTimer extends Component {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
-      println(this + ".onEntry")
+      //println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
-      println(this + ".onExit")
+      //println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -556,12 +556,12 @@ class SoftTimer extends Component {
     parent.addSubState(Idle_state)
     case class IdleState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -573,12 +573,12 @@ class SoftTimer extends Component {
     Counting_state.addInternalTransition(t_self_2046274478)
     case class CountingState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -598,7 +598,7 @@ class SoftTimer extends Component {
         getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay > 0
       }
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         SoftTimer_SoftTimer_target_var = System.currentTimeMillis() + getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay
       }
 
@@ -608,7 +608,7 @@ class SoftTimer extends Component {
         getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay > 0
       }
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         SoftTimer_SoftTimer_target_var = System.currentTimeMillis() + getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay
       }
 
@@ -618,22 +618,22 @@ class SoftTimer extends Component {
         !(System.currentTimeMillis() < SoftTimer_SoftTimer_target_var)
       }
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
 //No action defined for this transition
       }
 
       override def executeAfterActions() = {
-        println(this + ".executeAfterActions")
+        //println(this + ".executeAfterActions")
         handler.getPort("timer") match{
           case Some(p) => p.send(new Timer_timeout())
-          case None => println("Warning: no port timer You may consider revising your ThingML model.")
+          case None => //println("Warning: no port timer You may consider revising your ThingML model.")
         }
       }
 
     }
     case class TransitionCounting2Idle_1244375180 extends TransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
 //No action defined for this transition
       }
 
@@ -697,12 +697,12 @@ class Blink2Leds extends Component {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
-      println(this + ".onEntry")
+      //println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
-      println(this + ".onExit")
+      //println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -715,19 +715,19 @@ class Blink2Leds extends Component {
     Blinking_state.addInternalTransition(t_self_833041663)
     case class BlinkingState extends StateAction {
       override def onEntry() = {
-        println(this + ".onEntry")
+        //println(this + ".onEntry")
         handler.getPort("timer1") match{
           case Some(p) => p.send(new Timer_start(1000))
-          case None => println("Warning: no port timer1 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port timer1 You may consider revising your ThingML model.")
         }
         handler.getPort("timer2") match{
           case Some(p) => p.send(new Timer_start(333))
-          case None => println("Warning: no port timer2 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port timer2 You may consider revising your ThingML model.")
         }
       }
 
       override def onExit() = {
-        println(this + ".onExit")
+        //println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -738,28 +738,28 @@ class Blink2Leds extends Component {
 //create transitions among sub-states
     case class InternalTransition312759349 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         handler.getPort("led1") match{
           case Some(p) => p.send(new Led_toggle())
-          case None => println("Warning: no port led1 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port led1 You may consider revising your ThingML model.")
         }
         handler.getPort("timer1") match{
           case Some(p) => p.send(new Timer_start(1000))
-          case None => println("Warning: no port timer1 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port timer1 You may consider revising your ThingML model.")
         }
       }
 
     }
     case class InternalTransition833041663 extends InternalTransitionAction {
       override def executeActions() = {
-        println(this + ".executeActions")
+        //println(this + ".executeActions")
         handler.getPort("led2") match{
           case Some(p) => p.send(new Led_toggle())
-          case None => println("Warning: no port led2 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port led2 You may consider revising your ThingML model.")
         }
         handler.getPort("timer2") match{
           case Some(p) => p.send(new Timer_start(333))
-          case None => println("Warning: no port timer2 You may consider revising your ThingML model.")
+          case None => //println("Warning: no port timer2 You may consider revising your ThingML model.")
         }
       }
 

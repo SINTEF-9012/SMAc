@@ -47,17 +47,26 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   
   protected[smac] var out : List[Channel] = List()
   
-  override def act() = {
-    loop {
+  class In(p : Port) extends Actor {
+    override def act() = {
       react {
         case e: SignedEvent =>
           if (canReceive(e))
             //println("Port " + this + " dispatches to state machine")
           cpt.behavior.foreach{sm => 
             //println("  "+sm)
-            sm.getActor ! new SignedEvent(e.sender, this, e.event, e.to)
+            sm.getActor ! new SignedEvent(e.sender, p, e.event, e.to)
             //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
           }
+      }
+    }
+  }
+  
+  override def act() = {
+    loop {
+      react {
+        case e: SignedEvent =>
+          new In(this).start ! e
       }
     }
   }
@@ -107,9 +116,9 @@ sealed class Channel() extends Actor {
     p.out - this
     out - p
   }
-
-  override def act() = {
-    loop {
+  
+  class Dispatcher extends Actor {
+    override def act() = {
       react {
         case e: SignedEvent =>
           e.to match {
@@ -124,6 +133,15 @@ sealed class Channel() extends Actor {
                 p forward e
               }
           }
+      }   
+    }
+  }
+
+  override def act() = {
+    loop {
+      react {
+        case e: SignedEvent =>
+          new Dispatcher().start ! e
       }
     }
   }

@@ -119,16 +119,30 @@ sealed trait Region {
   
   def dispatchEvent(e: SignedEvent) : Boolean
   
+  class Dispatcher extends Actor {
+    override def act() = {
+     react {
+       case e: SignedEvent =>
+         if (dispatchEvent(e)) {
+           //println("Event " + e.event + " consumed by")
+         } else {
+           //println("Event " + e.event + " NOT consumed by " + this)
+         }
+     } 
+    }
+  }
+  
   val actor = new Actor{
     override def act() = {
       loop {
         react {
           case e: SignedEvent =>
-            dispatchEvent(e)
+            new Dispatcher().start ! e
         }
       }
     }
   }
+
   
   def getActor = actor
   
@@ -166,7 +180,7 @@ sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Com
   }
   
   override def getEvent(e : String, p : Port) : Option[Event] = {
-    println("getEvent("+e+", "+p.name+")")
+    //println("getEvent("+e+", "+p.name+")")
     currentEvents.keys.filter{port => port == p}.headOption match {
       case Some(port) =>
         currentEvents.get(port)
