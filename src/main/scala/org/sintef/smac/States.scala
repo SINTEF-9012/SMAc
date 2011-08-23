@@ -92,6 +92,7 @@ sealed class State(action : StateAction, val root : Component) {
   }
 
   protected[smac] def executeOnEntry() {
+    println("State.executeOnEntry")
     parent match {
       case Some(p) => p.current = this
       case None =>
@@ -164,7 +165,6 @@ sealed trait Region {
   
   def start { 
     actor.start
-    current.executeOnEntry 
   }
   
 }
@@ -195,6 +195,11 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
   
   protected[smac] var transitions: List[Transition] = List()
 
+  
+  override def start { 
+    super.start
+    executeOnEntry
+  }
   
   def addRegion(r : Region) {
     regions ++= List(r)
@@ -240,6 +245,7 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
   }
 
   override def executeOnEntry() {
+    println("Composite.executeOnEntry")
     super.executeOnEntry
     current.executeOnEntry
   }
