@@ -43,20 +43,28 @@ abstract class Component {
 
 sealed class Port(val name : String, val receive : List[String], val send : List[String], val cpt : Component) extends Actor {
   
+  var lastEvents : Map[String, Event] = Map()
+  
   cpt.ports += (name -> this)
   
   protected[smac] var out : List[Channel] = List()
+  
+  def getEvent(e : String) : Option[Event] = {
+    return lastEvents.get(e)
+  }
   
   class In(p : Port) extends Actor {
     override def act() = {
       react {
         case e: SignedEvent =>
-          if (canReceive(e))
+          if (canReceive(e)) {
+            lastEvents += (e.event.name -> e.event)
             //println("Port " + this + " dispatches to state machine")
-          cpt.behavior.foreach{sm => 
-            //println("  "+sm)
-            sm.getActor ! new SignedEvent(e.sender, p, e.event, e.to)
-            //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
+            cpt.behavior.foreach{sm => 
+              //println("  "+sm)
+              sm.getActor ! new SignedEvent(e.sender, p, e.event, e.to)
+              //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
+            }
           }
       }
     }

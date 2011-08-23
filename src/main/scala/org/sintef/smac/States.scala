@@ -92,7 +92,7 @@ sealed class State(action : StateAction, val root : Component) {
   }
 
   protected[smac] def executeOnEntry() {
-    println("State.executeOnEntry")
+    //println("State.executeOnEntry")
     parent match {
       case Some(p) => p.current = this
       case None =>
@@ -124,11 +124,7 @@ sealed trait Region {
     override def act() = {
      react {
        case e: SignedEvent =>
-         if (dispatchEvent(e)) {
-           //println("Event " + e.event + " consumed by")
-         } else {
-           //println("Event " + e.event + " NOT consumed by " + this)
-         }
+         dispatchEvent(e)
      } 
     }
   }
@@ -170,20 +166,13 @@ sealed trait Region {
 }
 
 sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
-  private var currentEvents : Map[Port, Event] = Map()
-  
-  override def dispatchEvent(e: SignedEvent) : Boolean = {
-    //println("dispatchEvent "+e.event.name)
-    currentEvents += (e.port -> e.event)
-    //println("  "+currentEvents.get(e.port).get)
-    super.dispatchEvent(e) 
-  }
   
   override def getEvent(e : String, p : Port) : Option[Event] = {
     //println("getEvent("+e+", "+p.name+")")
-    currentEvents.keys.filter{port => port == p}.headOption match {
+    root.getPort(p.name) match {
       case Some(port) =>
-        currentEvents.get(port)
+        //println("  "+port)
+        port.getEvent(e)
       case None => None
     }
   }
@@ -214,12 +203,7 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
       case Some(t) => 
         return Option(t)
       case None =>
-        super.checkForTransition(e) match {
-          case Some(t) =>
-            return Option(t)
-          case None =>
-            return None
-        }
+        return super.checkForTransition(e)
     }
   }
 
@@ -245,7 +229,7 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
   }
 
   override def executeOnEntry() {
-    println("Composite.executeOnEntry")
+    //println("Composite.executeOnEntry")
     super.executeOnEntry
     current.executeOnEntry
   }
