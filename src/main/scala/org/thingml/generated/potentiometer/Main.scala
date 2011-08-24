@@ -11,7 +11,6 @@ import org.sintef.smac._
 
 
 
-
 // Initialize instance variables and states
 object Main {
 
@@ -23,6 +22,8 @@ object Main {
     null_1.start
     val null_2 = new Channel
     null_2.start
+    val null_3 = new Channel
+    null_3.start
 //Things
     val Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer = new Potentiometer()
     val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer()
@@ -30,28 +31,37 @@ object Main {
     val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed()
 //Bindings
     null_0.connect(
+      Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Sensor").get,
+      Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("SensorMockUp").get
+    )
+    null_0.connect(
+      Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("SensorMockUp").get,
+      Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Sensor").get
+    )
+
+    null_1.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get,
       SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get
     )
-    null_0.connect(
+    null_1.connect(
       SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get
     )
 
-    null_1.connect(
+    null_2.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get,
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get
     )
-    null_1.connect(
+    null_2.connect(
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get
     )
 
-    null_2.connect(
+    null_3.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get,
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get
     )
-    null_2.connect(
+    null_3.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get
     )
@@ -64,5 +74,3 @@ object Main {
   }
 
 }
-
-

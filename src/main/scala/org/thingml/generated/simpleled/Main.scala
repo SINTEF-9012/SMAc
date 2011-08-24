@@ -8,6 +8,7 @@
 package org.thingml.generated.simpleled
 import org.sintef.smac._
 
+
 // Initialize instance variables and states
 object Main {
 
@@ -45,4 +46,5 @@ object Main {
     Led_ScalaSimpleLedSimulator_led.asInstanceOf[Component].start
     SoftTimer_ScalaSimpleLedSimulator_timer.asInstanceOf[Component].start
   }
+
 }
