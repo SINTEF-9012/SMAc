@@ -23,57 +23,46 @@ object Main {
     null_1.start
     val null_2 = new Channel
     null_2.start
-    val null_3 = new Channel
-    null_3.start
 //Things
-    val ThingMLScheduler_ScalaChangingFrequencyLedSimulator_scheduler = new ThingMLScheduler()
-    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed()
-    val Led_ScalaChangingFrequencyLedSimulator_led = new Led()
-    val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer()
     val Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer = new Potentiometer()
+    val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer()
+    val Led_ScalaChangingFrequencyLedSimulator_led = new Led()
+    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed()
 //Bindings
     null_0.connect(
-      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("Polling").get,
-      ThingMLScheduler_ScalaChangingFrequencyLedSimulator_scheduler.getPort("Polling").get
-    )
-    null_0.connect(
-      ThingMLScheduler_ScalaChangingFrequencyLedSimulator_scheduler.getPort("Polling").get,
-      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("Polling").get
-    )
-
-    null_1.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get,
       SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get
     )
-    null_1.connect(
+    null_0.connect(
       SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get
     )
 
-    null_2.connect(
+    null_1.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get,
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get
     )
-    null_2.connect(
+    null_1.connect(
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get
     )
 
-    null_3.connect(
+    null_2.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get,
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get
     )
-    null_3.connect(
+    null_2.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get
     )
 
 //Starting Things
-    ThingMLScheduler_ScalaChangingFrequencyLedSimulator_scheduler.start
-    ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.start
-    Led_ScalaChangingFrequencyLedSimulator_led.start
-    SoftTimer_ScalaChangingFrequencyLedSimulator_timer.start
-    Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.start
+    Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.asInstanceOf[Component].start
+    SoftTimer_ScalaChangingFrequencyLedSimulator_timer.asInstanceOf[Component].start
+    Led_ScalaChangingFrequencyLedSimulator_led.asInstanceOf[Component].start
+    ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.asInstanceOf[Component].start
   }
 
 }
+
+

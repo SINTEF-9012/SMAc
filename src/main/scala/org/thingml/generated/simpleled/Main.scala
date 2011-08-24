@@ -7,6 +7,8 @@
 
 package org.thingml.generated.simpleled
 import org.sintef.smac._
+
+// Initialize instance variables and states
 object Main {
 
   def main(args: Array[String]): Unit = {
@@ -15,47 +17,32 @@ object Main {
     null_0.start
     val null_1 = new Channel
     null_1.start
-    val null_2 = new Channel
-    null_2.start
 //Things
     val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed()
     val Led_ScalaSimpleLedSimulator_led = new Led()
-    val ThingMLScheduler_ScalaSimpleLedSimulator_scheduler = new ThingMLScheduler()
     val SoftTimer_ScalaSimpleLedSimulator_timer = new SoftTimer()
 //Bindings
     null_0.connect(
-      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("Polling").get,
-      ThingMLScheduler_ScalaSimpleLedSimulator_scheduler.getPort("Polling").get
-    )
-    null_0.connect(
-      ThingMLScheduler_ScalaSimpleLedSimulator_scheduler.getPort("Polling").get,
-      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("Polling").get
-    )
-
-    null_1.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get,
       Led_ScalaSimpleLedSimulator_led.getPort("Led").get
     )
-    null_1.connect(
+    null_0.connect(
       Led_ScalaSimpleLedSimulator_led.getPort("Led").get,
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get
     )
 
-    null_2.connect(
+    null_1.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get,
       SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get
     )
-    null_2.connect(
+    null_1.connect(
       SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get,
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get
     )
 
 //Starting Things
-    SimpleLed_ScalaSimpleLedSimulator_simple_led.start
-    Led_ScalaSimpleLedSimulator_led.start
-    ThingMLScheduler_ScalaSimpleLedSimulator_scheduler.start
-    SoftTimer_ScalaSimpleLedSimulator_timer.start
+    SimpleLed_ScalaSimpleLedSimulator_simple_led.asInstanceOf[Component].start
+    Led_ScalaSimpleLedSimulator_led.asInstanceOf[Component].start
+    SoftTimer_ScalaSimpleLedSimulator_timer.asInstanceOf[Component].start
   }
-
 }
-

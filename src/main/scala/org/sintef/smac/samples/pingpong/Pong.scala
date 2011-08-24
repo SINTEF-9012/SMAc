@@ -38,7 +38,7 @@ class PongStateMachine(keepHistory : Boolean, root : Component) extends StateAct
   //create transitions among sub-states
   val pingTransition = new InternalTransition(pong, PingTransition(), root)
   pingTransition.initEvent(PingEvent.getName)
-  sm.addInternalTransition(pingTransition)
+  //sm.addInternalTransition(pingTransition)
   
   def onEntry() = {}
   

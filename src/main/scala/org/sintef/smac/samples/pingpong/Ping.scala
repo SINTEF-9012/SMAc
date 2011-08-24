@@ -54,7 +54,7 @@ class PingStateMachine(keepHistory : Boolean, root : Component) extends StateAct
   val startTransition = new Transition(stop, ping, StartTransition(), List(("ping", StartEvent.getName)))
   sm.addTransition(startTransition)
   sm.addTransition(stopTransition)
-  sm.addInternalTransition(pongTransition)
+  //sm.addInternalTransition(pongTransition)
   
   /*override def startState() = {
    super.startState*/

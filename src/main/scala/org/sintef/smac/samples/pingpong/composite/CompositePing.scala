@@ -243,7 +243,7 @@ case class Fast(keepHistory : Boolean, root : Component) extends StateAction {
   val pongTransition = new InternalTransition(ping, PongTransition(), List(("ping", PongEvent.getName)))
   val stopTransition = new Transition(ping, stop, StopTransition(), List(("ping", StopEvent.getName)))
   val startTransition = new Transition(stop, ping, StartTransition(), List(("ping", StartEvent.getName)))
-  ping.addInternalTransition(pongTransition)
+  //ping.addInternalTransition(pongTransition)
   c.addTransition(stopTransition)
   c.addTransition(startTransition)
     

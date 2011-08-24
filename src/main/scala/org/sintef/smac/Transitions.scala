@@ -72,6 +72,8 @@ sealed class Transition(override val source: State, val target: State, val actio
 
 sealed class InternalTransition(override val source: State, val action: InternalTransitionAction, override val events : List[Pair[String, String]] = List()) extends Handler(source, events) {
   
+  source.addInternalTransition(this)
+  
   override protected[smac] def getAction = action
   
   action.handler = this
