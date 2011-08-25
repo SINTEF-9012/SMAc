@@ -9,6 +9,7 @@ package org.thingml.generated.simpleled
 import org.sintef.smac._
 
 
+
 // Initialize instance variables and states
 object Main {
 
@@ -18,32 +19,56 @@ object Main {
     null_0.start
     val null_1 = new Channel
     null_1.start
+    val null_2 = new Channel
+    null_2.start
+    val null_3 = new Channel
+    null_3.start
 //Things
     val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed(SimpleLed_frequency_var = 800)
     val Led_ScalaSimpleLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val Button_ScalaSimpleLedSimulator_button = new Button(BrickSensor_lastValue_var = 0, Brick_device_var = new org.thingml.devices.ButtonDemo())
     val SoftTimer_ScalaSimpleLedSimulator_timer = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
 //Bindings
     null_0.connect(
+      Button_ScalaSimpleLedSimulator_button.getPort("Sensor").get,
+      Button_ScalaSimpleLedSimulator_button.getPort("SensorMockUp").get
+    )
+    null_0.connect(
+      Button_ScalaSimpleLedSimulator_button.getPort("SensorMockUp").get,
+      Button_ScalaSimpleLedSimulator_button.getPort("Sensor").get
+    )
+
+    null_1.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get,
       Led_ScalaSimpleLedSimulator_led.getPort("Led").get
     )
-    null_0.connect(
+    null_1.connect(
       Led_ScalaSimpleLedSimulator_led.getPort("Led").get,
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get
     )
 
-    null_1.connect(
+    null_2.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get,
       SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get
     )
-    null_1.connect(
+    null_2.connect(
       SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get,
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get
+    )
+
+    null_3.connect(
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Button").get,
+      Button_ScalaSimpleLedSimulator_button.getPort("Button").get
+    )
+    null_3.connect(
+      Button_ScalaSimpleLedSimulator_button.getPort("Button").get,
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Button").get
     )
 
 //Starting Things
     SimpleLed_ScalaSimpleLedSimulator_simple_led.asInstanceOf[Component].start
     Led_ScalaSimpleLedSimulator_led.asInstanceOf[Component].start
+    Button_ScalaSimpleLedSimulator_button.asInstanceOf[Component].start
     SoftTimer_ScalaSimpleLedSimulator_timer.asInstanceOf[Component].start
   }
 

@@ -10,26 +10,30 @@ import org.sintef.smac._
 import org.thingml.devices._
 object Poll{ def getName = "poll" }
 case class Poll(override val name : String = Poll.getName) extends Event(name)
-object Led_on{ def getName = "led_on" }
-case class Led_on(override val name : String = Led_on.getName) extends Event(name)
-object TestOut{ def getName = "testOut" }
-case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
-object Led_toggle{ def getName = "led_toggle" }
-case class Led_toggle(override val name : String = Led_toggle.getName) extends Event(name)
-object Timer_start{ def getName = "timer_start" }
-case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
-object Timer_cancel{ def getName = "timer_cancel" }
-case class Timer_cancel(override val name : String = Timer_cancel.getName) extends Event(name)
-object Timer_timeout{ def getName = "timer_timeout" }
-case class Timer_timeout(override val name : String = Timer_timeout.getName) extends Event(name)
-object Led_off{ def getName = "led_off" }
-case class Led_off(override val name : String = Led_off.getName) extends Event(name)
+object Released{ def getName = "released" }
+case class Released(override val name : String = Released.getName) extends Event(name)
 object TestIn{ def getName = "testIn" }
 case class TestIn(c : Char, override val name : String = TestIn.getName) extends Event(name)
-object Update{ def getName = "update" }
-case class Update(override val name : String = Update.getName) extends Event(name)
+object Timer_cancel{ def getName = "timer_cancel" }
+case class Timer_cancel(override val name : String = Timer_cancel.getName) extends Event(name)
+object Pressed{ def getName = "pressed" }
+case class Pressed(override val name : String = Pressed.getName) extends Event(name)
+object Timer_start{ def getName = "timer_start" }
+case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
 object TestFailure{ def getName = "testFailure" }
 case class TestFailure(override val name : String = TestFailure.getName) extends Event(name)
+object Led_toggle{ def getName = "led_toggle" }
+case class Led_toggle(override val name : String = Led_toggle.getName) extends Event(name)
+object TestOut{ def getName = "testOut" }
+case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
+object Timer_timeout{ def getName = "timer_timeout" }
+case class Timer_timeout(override val name : String = Timer_timeout.getName) extends Event(name)
+object Update{ def getName = "update" }
+case class Update(override val name : String = Update.getName) extends Event(name)
+object Led_on{ def getName = "led_on" }
+case class Led_on(override val name : String = Led_on.getName) extends Event(name)
+object Led_off{ def getName = "led_off" }
+case class Led_off(override val name : String = Led_off.getName) extends Event(name)
 
 /**
  * Definitions for type : SimpleLed
@@ -54,30 +58,60 @@ class SimpleLed(val SimpleLed_frequency_var : Int) extends Component {
       }
       object out {
         val timer_start = Timer_start.getName
+        val timer_cancel = Timer_cancel.getName
+      }
+    }
+
+    object ButtonPort{
+      def getName = "Button"
+      object in {
+        val pressed = Pressed.getName
+        val released = Released.getName
+      }
+      object out {
       }
     }
 
   }
 
   new Port(SimpleLed.LedPort.getName, List(), List(SimpleLed.LedPort.out.led_toggle), this).start
-  new Port(SimpleLed.TimerPort.getName, List(SimpleLed.TimerPort.in.timer_timeout), List(SimpleLed.TimerPort.out.timer_start), this).start
+  new Port(SimpleLed.TimerPort.getName, List(SimpleLed.TimerPort.in.timer_timeout), List(SimpleLed.TimerPort.out.timer_start, SimpleLed.TimerPort.out.timer_cancel), this).start
+  new Port(SimpleLed.ButtonPort.getName, List(SimpleLed.ButtonPort.in.pressed, SimpleLed.ButtonPort.in.released), List(), this).start
   this.behavior ++= List(new SimpleLedImplStateMachine(false, this).getBehavior)
   case class SimpleLedImplStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
 //create sub-states
+    val Idle_state = new State(IdleState(), root)
+    parent.addSubState(Idle_state)
+    case class IdleState extends StateAction {
+      override def onEntry() = {
+        println(this + ".onEntry")
+//No entry action defined for this state
+      }
+
+      override def onExit() = {
+        println(this + ".onExit")
+//No exit action defined for this state
+      }
+
+    }
+
     val Running_state = new State(RunningState(), root)
     parent.addSubState(Running_state)
     case class RunningState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         handler.getPort("Timer") match{
           case Some(p) => p.send(new Timer_start(SimpleLed_frequency_var))
           case None => println("Warning: no port Timer You may consider revising your ThingML model.")
@@ -85,21 +119,44 @@ class SimpleLed(val SimpleLed_frequency_var : Int) extends Component {
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
     }
 
-    parent.setInitial(Running_state)
+    parent.setInitial(Idle_state)
 
 //create transitions among sub-states
-    val t_Running2Running_112764309 = new Transition(Running_state, Running_state, TransitionRunning2Running_112764309(), List((SimpleLed.TimerPort.getName, SimpleLed.TimerPort.in.timer_timeout)))
-    parent.addTransition(t_Running2Running_112764309)
-    case class TransitionRunning2Running_112764309 extends TransitionAction {
+    val t_Idle2Running_1683296453 = new Transition(Idle_state, Running_state, TransitionIdle2Running_1683296453(), List((SimpleLed.ButtonPort.getName, SimpleLed.ButtonPort.in.released)))
+    parent.addTransition(t_Idle2Running_1683296453)
+    val t_Running2Running_1625240478 = new Transition(Running_state, Running_state, TransitionRunning2Running_1625240478(), List((SimpleLed.TimerPort.getName, SimpleLed.TimerPort.in.timer_timeout)))
+    parent.addTransition(t_Running2Running_1625240478)
+    val t_Running2Idle_2019496532 = new Transition(Running_state, Idle_state, TransitionRunning2Idle_2019496532(), List((SimpleLed.ButtonPort.getName, SimpleLed.ButtonPort.in.released)))
+    parent.addTransition(t_Running2Idle_2019496532)
+    case class TransitionIdle2Running_1683296453 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
+//No action defined for this transition
+      }
+
+    }
+    case class TransitionRunning2Running_1625240478 extends TransitionAction {
+      override def executeActions() = {
+        println(this + ".executeActions")
         handler.getPort("Led") match{
           case Some(p) => p.send(new Led_toggle())
           case None => println("Warning: no port Led You may consider revising your ThingML model.")
+        }
+      }
+
+    }
+    case class TransitionRunning2Idle_2019496532 extends TransitionAction {
+      override def executeActions() = {
+        println(this + ".executeActions")
+        handler.getPort("Timer") match{
+          case Some(p) => p.send(new Timer_cancel())
+          case None => println("Warning: no port Timer You may consider revising your ThingML model.")
         }
       }
 
@@ -133,10 +190,12 @@ class Led(val Brick_device_var : org.thingml.devices.Device) extends Component {
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
@@ -145,10 +204,12 @@ class Led(val Brick_device_var : org.thingml.devices.Device) extends Component {
     parent.addSubState(LedOff_state)
     case class LedOffState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         Brick_device_var.asInstanceOf[org.thingml.devices.LedDemo].off()
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -158,10 +219,12 @@ class Led(val Brick_device_var : org.thingml.devices.Device) extends Component {
     parent.addSubState(LedOn_state)
     case class LedOnState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
         Brick_device_var.asInstanceOf[org.thingml.devices.LedDemo].on()
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
@@ -170,22 +233,131 @@ class Led(val Brick_device_var : org.thingml.devices.Device) extends Component {
     parent.setInitial(LedOff_state)
 
 //create transitions among sub-states
-    val t_LedOff2LedOn_299295663 = new Transition(LedOff_state, LedOn_state, TransitionLedOff2LedOn_299295663(), List((Led.LedPort.getName, Led.LedPort.in.led_on), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
-    parent.addTransition(t_LedOff2LedOn_299295663)
-    val t_LedOn2LedOff_418168568 = new Transition(LedOn_state, LedOff_state, TransitionLedOn2LedOff_418168568(), List((Led.LedPort.getName, Led.LedPort.in.led_off), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
-    parent.addTransition(t_LedOn2LedOff_418168568)
-    case class TransitionLedOff2LedOn_299295663 extends TransitionAction {
+    val t_LedOff2LedOn_581309822 = new Transition(LedOff_state, LedOn_state, TransitionLedOff2LedOn_581309822(), List((Led.LedPort.getName, Led.LedPort.in.led_on), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
+    parent.addTransition(t_LedOff2LedOn_581309822)
+    val t_LedOn2LedOff_937908325 = new Transition(LedOn_state, LedOff_state, TransitionLedOn2LedOff_937908325(), List((Led.LedPort.getName, Led.LedPort.in.led_off), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
+    parent.addTransition(t_LedOn2LedOff_937908325)
+    case class TransitionLedOff2LedOn_581309822 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
-    case class TransitionLedOn2LedOff_418168568 extends TransitionAction {
+    case class TransitionLedOn2LedOff_937908325 extends TransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
 //No action defined for this transition
       }
 
     }
+  }
+}
+
+/**
+ * Definitions for type : Button
+ **/
+class Button(var BrickSensor_lastValue_var : Int, val Brick_device_var : org.thingml.devices.Device) extends Component with org.thingml.devices.Observer{
+
+//Companion object
+  object Button{
+    object ButtonPort{
+      def getName = "Button"
+      object in {
+      }
+      object out {
+        val pressed = Pressed.getName
+        val released = Released.getName
+      }
+    }
+
+    object SensorMockUpPort{
+      def getName = "SensorMockUp"
+      object in {
+      }
+      object out {
+        val update = Update.getName
+      }
+    }
+
+    object SensorPort{
+      def getName = "Sensor"
+      object in {
+        val update = Update.getName
+      }
+      object out {
+      }
+    }
+
+  }
+
+  new Port(Button.ButtonPort.getName, List(), List(Button.ButtonPort.out.pressed, Button.ButtonPort.out.released), this).start
+  new Port(Button.SensorMockUpPort.getName, List(), List(Button.SensorMockUpPort.out.update), this).start
+  new Port(Button.SensorPort.getName, List(Button.SensorPort.in.update), List(), this).start
+  override def newValue(BrickSensor_newValue_v_var : Int) : Unit = {
+    val handler = this
+    BrickSensor_lastValue_var = BrickSensor_newValue_v_var
+    handler.getPort("SensorMockUp") match{
+      case Some(p) => p.send(new Update())
+      case None => println("Warning: no port SensorMockUp You may consider revising your ThingML model.")
+    }
+  }
+  def register() : Unit = {
+    val handler = this
+    Brick_device_var.asInstanceOf[org.thingml.devices.Observable].register(this)
+  }
+  this.behavior ++= List(new BehaviorStateMachine(false, this).getBehavior)
+  case class BehaviorStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
+    def getBehavior = parent
+    val parent : StateMachine = new StateMachine(this, keepHistory, root)
+    override def onEntry() = {
+      println(this + ".onEntry")
+      register()
+    }
+
+    override def onExit() = {
+      println(this + ".onExit")
+//No exit action defined for this state
+    }
+
+    val t_self_843023412 = new InternalTransition(getBehavior, new InternalTransition843023412(), List((Button.SensorPort.getName, Button.SensorPort.in.update)))
+    case class InternalTransition843023412 extends InternalTransitionAction {
+      override def executeActions() = {
+        println(this + ".executeActions")
+        if(BrickSensor_lastValue_var == 0) {
+          handler.getPort("Button") match{
+            case Some(p) => p.send(new Pressed())
+            case None => println("Warning: no port Button You may consider revising your ThingML model.")
+          }
+        }
+        if(BrickSensor_lastValue_var == 1) {
+          handler.getPort("Button") match{
+            case Some(p) => p.send(new Released())
+            case None => println("Warning: no port Button You may consider revising your ThingML model.")
+          }
+        }
+      }
+
+    }
+//create sub-states
+    val Ready_state = new State(ReadyState(), root)
+    parent.addSubState(Ready_state)
+    case class ReadyState extends StateAction {
+      override def onEntry() = {
+        println(this + ".onEntry")
+//No entry action defined for this state
+      }
+
+      override def onExit() = {
+        println(this + ".onExit")
+//No exit action defined for this state
+      }
+
+    }
+
+    parent.setInitial(Ready_state)
+
+//create transitions among sub-states
   }
 }
 
@@ -254,16 +426,18 @@ class SoftTimer(var SoftTimer_javaTimer_var : java.util.Timer, var SoftTimer_las
     def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
+      println(this + ".onEntry")
 //No entry action defined for this state
     }
 
     override def onExit() = {
+      println(this + ".onExit")
 //No exit action defined for this state
     }
 
-    val t_self_1606950188 = new InternalTransition(getBehavior, new InternalTransition1606950188(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_start)))
-    val t_self_1042790508 = new InternalTransition(getBehavior, new InternalTransition1042790508(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_cancel)))
-    case class InternalTransition1606950188 extends InternalTransitionAction {
+    val t_self_1599590891 = new InternalTransition(getBehavior, new InternalTransition1599590891(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_start)))
+    val t_self_934561049 = new InternalTransition(getBehavior, new InternalTransition934561049(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_cancel)))
+    case class InternalTransition1599590891 extends InternalTransitionAction {
       override def checkGuard() : Boolean = {
         try {
           getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay > 0}
@@ -274,12 +448,14 @@ class SoftTimer(var SoftTimer_javaTimer_var : java.util.Timer, var SoftTimer_las
 
       }
       override def executeActions() = {
+        println(this + ".executeActions")
         start(getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay)
       }
 
     }
-    case class InternalTransition1042790508 extends InternalTransitionAction {
+    case class InternalTransition934561049 extends InternalTransitionAction {
       override def executeActions() = {
+        println(this + ".executeActions")
         cancel()
       }
 
@@ -289,10 +465,12 @@ class SoftTimer(var SoftTimer_javaTimer_var : java.util.Timer, var SoftTimer_las
     parent.addSubState(default_state)
     case class DefaultState extends StateAction {
       override def onEntry() = {
+        println(this + ".onEntry")
 //No entry action defined for this state
       }
 
       override def onExit() = {
+        println(this + ".onExit")
 //No exit action defined for this state
       }
 
