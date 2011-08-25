@@ -20,6 +20,19 @@ package org.sintef.smac
 import scala.actors.Actor
 
 sealed class State(action : StateAction, val root : Component) {
+  
+  def dispatchEventSync(e: SignedEvent) : Boolean = {
+    //println(this + ".dispatchEventSync")
+    checkForTransition(e) match {
+      case Some(t) => 
+        //println("  "+this + "Transition " + t + "will be executed")
+        t.execute
+        return true
+      case None =>
+        //println("  "+this + "No Transition")
+        return false  
+    }
+  }
 
   final def getPort(name : String) : Option[Port] = {
     root.getPort(name) 
@@ -47,7 +60,7 @@ sealed class State(action : StateAction, val root : Component) {
   protected[smac] def allTransitions(): List[Handler] = {
     var result : List[Handler] = List()
     result = result ::: internal
-    ////println(result.size)
+    //////println(result.size)
     parent match {
       case Some(p) =>
         p match {
@@ -56,11 +69,11 @@ sealed class State(action : StateAction, val root : Component) {
           case _ =>
         }
         
-        ////println(result.size)
+        //////println(result.size)
       case None =>
         result
     }
-    ////println(result.size)
+    //////println(result.size)
     return result
   }
     
@@ -71,7 +84,7 @@ sealed class State(action : StateAction, val root : Component) {
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
-        ////println("  A transition can be triggered: "+in)
+        //////println("  A transition can be triggered: "+in)
         return Option(in)
       case None => 
         return None
@@ -79,12 +92,12 @@ sealed class State(action : StateAction, val root : Component) {
   }
   
   protected[smac] def checkForTransition(e : SignedEvent): Option[Handler] = {
-    ////println(this+".checkForTransition: ")  
+    //////println(this+".checkForTransition: ")  
     allTransitions.filter(t => { t.isInterestedIn(e) && t.getAction.checkGuard})
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
-        ////println("  A transition can be triggered: "+in)
+        //////println("  A transition can be triggered: "+in)
         return Option(in)
       case None => 
         return None
@@ -92,7 +105,7 @@ sealed class State(action : StateAction, val root : Component) {
   }
 
   protected[smac] def executeOnEntry() {
-    //println("State.executeOnEntry")
+    ////println("State.executeOnEntry")
     parent match {
       case Some(p) => p.current = this
       case None =>
@@ -122,18 +135,19 @@ sealed trait Region {
   
   class Dispatcher extends Actor {
     override def act() = {
-     react {
-       case e: SignedEvent =>
-         dispatchEvent(e)
-     } 
+      react {
+        case e: SignedEvent =>
+          dispatchEvent(e)
+      } 
     }
   }
   
-  val actor = new Actor{
+  lazy val actor = new Actor{
     override def act() = {
       loop {
         react {
           case e: SignedEvent =>
+            //println("DEBUG: " + this + ".dispatchEvent(" + e + ")")
             new Dispatcher().start ! e
         }
       }
@@ -161,6 +175,7 @@ sealed trait Region {
   
   def start { 
     actor.start
+    current.executeOnEntry
   }
   
 }
@@ -168,17 +183,17 @@ sealed trait Region {
 sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
   
   override def getEvent(e : String, p : Port) : Option[Event] = {
-    //println("getEvent("+e+", "+p.name+")")
+    ////println("getEvent("+e+", "+p.name+")")
     root.getPort(p.name) match {
       case Some(port) =>
-        //println("  "+port)
+        ////println("  "+port)
         port.getEvent(e)
       case None => None
     }
   }
 }
 
-sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : Component) extends State(action, root) with Region {
+sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepHistory: Boolean, root : Component) extends State(action, root) with Region {
   
   protected[smac] var regions : List[Region] = List()
   
@@ -188,6 +203,9 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
   override def start { 
     super.start
     executeOnEntry
+    regions.foreach{r =>
+      r.start
+    }
   }
   
   def addRegion(r : Region) {
@@ -208,28 +226,24 @@ sealed class CompositeState(action : StateAction, keepHistory: Boolean, root : C
   }
 
   override def dispatchEvent(e: SignedEvent) : Boolean = {
-    //println(this + ".dispatchEvent "+e)
+    ////println(this + ".dispatchEvent "+e)
     var status = false
     regions.foreach{r => //events are dispatched to regions with no condition
-      //println("  to region "+r)
+      ////println("  to region "+r)
       r.getActor ! e
     }
     
-    checkForTransition(e) match {
-      case Some(t) => 
-        //println("  "+this + ".Transition: " + t)
-        t.execute
-        status = true
-      case None =>
-        //println("  "+this + "No Transition")
-        status = false
+    status = current.dispatchEventSync(e)
+    
+    if (!status) {
+      super.dispatchEventSync(e)
     }
     
     return status
   }
 
   override def executeOnEntry() {
-    //println("Composite.executeOnEntry")
+    ////println("Composite.executeOnEntry")
     super.executeOnEntry
     current.executeOnEntry
   }

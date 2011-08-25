@@ -23,53 +23,79 @@ object Main {
     null_2.start
     val null_3 = new Channel
     null_3.start
+    val null_4 = new Channel
+    null_4.start
+    val null_5 = new Channel
+    null_5.start
 //Things
-    val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed(SimpleLed_frequency_var = 800)
-    val Led_ScalaSimpleLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
-    val Button_ScalaSimpleLedSimulator_button = new Button(BrickSensor_lastValue_var = 0, Brick_device_var = new org.thingml.devices.ButtonDemo())
     val SoftTimer_ScalaSimpleLedSimulator_timer = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed(SimpleLed_frequency_var = 800)
+    val Button_ScalaSimpleLedSimulator_button = new Button(BrickSensor_lastValue_var = 0, Brick_device_var = new org.thingml.devices.ButtonDemo())
+    val SoftTimer_ScalaSimpleLedSimulator_timer2 = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val Led_ScalaSimpleLedSimulator_led2 = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val Led_ScalaSimpleLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
 //Bindings
     null_0.connect(
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led2").get,
+      Led_ScalaSimpleLedSimulator_led2.getPort("Led").get
+    )
+    null_0.connect(
+      Led_ScalaSimpleLedSimulator_led2.getPort("Led").get,
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led2").get
+    )
+
+    null_1.connect(
       Button_ScalaSimpleLedSimulator_button.getPort("Sensor").get,
       Button_ScalaSimpleLedSimulator_button.getPort("SensorMockUp").get
     )
-    null_0.connect(
+    null_1.connect(
       Button_ScalaSimpleLedSimulator_button.getPort("SensorMockUp").get,
       Button_ScalaSimpleLedSimulator_button.getPort("Sensor").get
     )
 
-    null_1.connect(
-      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get,
-      Led_ScalaSimpleLedSimulator_led.getPort("Led").get
-    )
-    null_1.connect(
-      Led_ScalaSimpleLedSimulator_led.getPort("Led").get,
-      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get
-    )
-
     null_2.connect(
-      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get,
-      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get
-    )
-    null_2.connect(
-      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get,
-      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get
-    )
-
-    null_3.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Button").get,
       Button_ScalaSimpleLedSimulator_button.getPort("Button").get
     )
-    null_3.connect(
+    null_2.connect(
       Button_ScalaSimpleLedSimulator_button.getPort("Button").get,
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Button").get
     )
 
+    null_3.connect(
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get,
+      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get
+    )
+    null_3.connect(
+      SoftTimer_ScalaSimpleLedSimulator_timer.getPort("timer").get,
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer").get
+    )
+
+    null_4.connect(
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get,
+      Led_ScalaSimpleLedSimulator_led.getPort("Led").get
+    )
+    null_4.connect(
+      Led_ScalaSimpleLedSimulator_led.getPort("Led").get,
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get
+    )
+
+    null_5.connect(
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer2").get,
+      SoftTimer_ScalaSimpleLedSimulator_timer2.getPort("timer").get
+    )
+    null_5.connect(
+      SoftTimer_ScalaSimpleLedSimulator_timer2.getPort("timer").get,
+      SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Timer2").get
+    )
+
 //Starting Things
-    SimpleLed_ScalaSimpleLedSimulator_simple_led.asInstanceOf[Component].start
-    Led_ScalaSimpleLedSimulator_led.asInstanceOf[Component].start
-    Button_ScalaSimpleLedSimulator_button.asInstanceOf[Component].start
     SoftTimer_ScalaSimpleLedSimulator_timer.asInstanceOf[Component].start
+    SimpleLed_ScalaSimpleLedSimulator_simple_led.asInstanceOf[Component].start
+    Button_ScalaSimpleLedSimulator_button.asInstanceOf[Component].start
+    SoftTimer_ScalaSimpleLedSimulator_timer2.asInstanceOf[Component].start
+    Led_ScalaSimpleLedSimulator_led2.asInstanceOf[Component].start
+    Led_ScalaSimpleLedSimulator_led.asInstanceOf[Component].start
   }
 
 }

@@ -21,6 +21,15 @@ package org.sintef.smac
  * These classes should be extended to define the actions of the state
  * and the transitions of a given state machine
  */
+class EmptyHandlerAction extends HandlerAction{
+  final override def executeActions {}
+}
+
+class EmptyStateAction extends StateAction{
+  final override def onEntry {}
+  final override def onExit {}
+}
+
 abstract sealed class HandlerAction {
   
   protected[smac] var handler : Handler = _
