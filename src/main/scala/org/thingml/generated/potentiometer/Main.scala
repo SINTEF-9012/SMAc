@@ -10,7 +10,6 @@ import org.thingml.devices._
 import org.sintef.smac._
 
 
-
 // Initialize instance variables and states
 object Main {
 
@@ -25,10 +24,10 @@ object Main {
     val null_3 = new Channel
     null_3.start
 //Things
-    val Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer = new Potentiometer()
-    val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer()
-    val Led_ScalaChangingFrequencyLedSimulator_led = new Led()
-    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed()
+    val Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer = new Potentiometer(BrickSensor_lastValue_var = 0, Brick_device_var = new org.thingml.devices.PotentiometerDemo(0, 1023))
+    val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val Led_ScalaChangingFrequencyLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed(ChangingFrequencyLed_frequency_var = 500)
 //Bindings
     null_0.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Sensor").get,

@@ -8,31 +8,33 @@
 package org.thingml.generated.simpleled
 import org.sintef.smac._
 import org.thingml.devices._
+object Poll{ def getName = "poll" }
+case class Poll(override val name : String = Poll.getName) extends Event(name)
 object Led_on{ def getName = "led_on" }
 case class Led_on(override val name : String = Led_on.getName) extends Event(name)
+object TestOut{ def getName = "testOut" }
+case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
 object Led_toggle{ def getName = "led_toggle" }
 case class Led_toggle(override val name : String = Led_toggle.getName) extends Event(name)
+object Timer_start{ def getName = "timer_start" }
+case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
+object Timer_cancel{ def getName = "timer_cancel" }
+case class Timer_cancel(override val name : String = Timer_cancel.getName) extends Event(name)
 object Timer_timeout{ def getName = "timer_timeout" }
 case class Timer_timeout(override val name : String = Timer_timeout.getName) extends Event(name)
 object Led_off{ def getName = "led_off" }
 case class Led_off(override val name : String = Led_off.getName) extends Event(name)
-object Timer_cancel{ def getName = "timer_cancel" }
-case class Timer_cancel(override val name : String = Timer_cancel.getName) extends Event(name)
 object TestIn{ def getName = "testIn" }
 case class TestIn(c : Char, override val name : String = TestIn.getName) extends Event(name)
-object TestOut{ def getName = "testOut" }
-case class TestOut(c : Char, override val name : String = TestOut.getName) extends Event(name)
-object Timer_start{ def getName = "timer_start" }
-case class Timer_start(delay : Int, override val name : String = Timer_start.getName) extends Event(name)
-object Poll{ def getName = "poll" }
-case class Poll(override val name : String = Poll.getName) extends Event(name)
+object Update{ def getName = "update" }
+case class Update(override val name : String = Update.getName) extends Event(name)
 object TestFailure{ def getName = "testFailure" }
 case class TestFailure(override val name : String = TestFailure.getName) extends Event(name)
 
 /**
  * Definitions for type : SimpleLed
  **/
-class SimpleLed extends Component {
+class SimpleLed(val SimpleLed_frequency_var : Int) extends Component {
 
 //Companion object
   object SimpleLed{
@@ -56,10 +58,6 @@ class SimpleLed extends Component {
     }
 
   }
-
-
-// Variables for the properties of the instance
-  var SimpleLed_frequency_var : Int = 1000
 
   new Port(SimpleLed.LedPort.getName, List(), List(SimpleLed.LedPort.out.led_toggle), this).start
   new Port(SimpleLed.TimerPort.getName, List(SimpleLed.TimerPort.in.timer_timeout), List(SimpleLed.TimerPort.out.timer_start), this).start
@@ -95,9 +93,9 @@ class SimpleLed extends Component {
     parent.setInitial(Running_state)
 
 //create transitions among sub-states
-    val t_Running2Running_135475669 = new Transition(Running_state, Running_state, TransitionRunning2Running_135475669(), List((SimpleLed.TimerPort.getName, SimpleLed.TimerPort.in.timer_timeout)))
-    parent.addTransition(t_Running2Running_135475669)
-    case class TransitionRunning2Running_135475669 extends TransitionAction {
+    val t_Running2Running_112764309 = new Transition(Running_state, Running_state, TransitionRunning2Running_112764309(), List((SimpleLed.TimerPort.getName, SimpleLed.TimerPort.in.timer_timeout)))
+    parent.addTransition(t_Running2Running_112764309)
+    case class TransitionRunning2Running_112764309 extends TransitionAction {
       override def executeActions() = {
         handler.getPort("Led") match{
           case Some(p) => p.send(new Led_toggle())
@@ -112,7 +110,7 @@ class SimpleLed extends Component {
 /**
  * Definitions for type : Led
  **/
-class Led extends Component {
+class Led(val Brick_device_var : org.thingml.devices.Device) extends Component {
 
 //Companion object
   object Led{
@@ -128,10 +126,6 @@ class Led extends Component {
     }
 
   }
-
-
-// Variables for the properties of the instance
-  var Led_device_var : org.thingml.devices.LedDemo = new org.thingml.devices.LedDemo()
 
   new Port(Led.LedPort.getName, List(Led.LedPort.in.led_on, Led.LedPort.in.led_off, Led.LedPort.in.led_toggle), List(), this).start
   this.behavior ++= List(new LedImplStateMachine(false, this).getBehavior)
@@ -151,7 +145,7 @@ class Led extends Component {
     parent.addSubState(LedOff_state)
     case class LedOffState extends StateAction {
       override def onEntry() = {
-        Led_device_var.off()
+        Brick_device_var.asInstanceOf[org.thingml.devices.LedDemo].off()
       }
 
       override def onExit() = {
@@ -164,7 +158,7 @@ class Led extends Component {
     parent.addSubState(LedOn_state)
     case class LedOnState extends StateAction {
       override def onEntry() = {
-        Led_device_var.on()
+        Brick_device_var.asInstanceOf[org.thingml.devices.LedDemo].on()
       }
 
       override def onExit() = {
@@ -176,17 +170,17 @@ class Led extends Component {
     parent.setInitial(LedOff_state)
 
 //create transitions among sub-states
-    val t_LedOff2LedOn_793719732 = new Transition(LedOff_state, LedOn_state, TransitionLedOff2LedOn_793719732(), List((Led.LedPort.getName, Led.LedPort.in.led_on), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
-    parent.addTransition(t_LedOff2LedOn_793719732)
-    val t_LedOn2LedOff_1755769767 = new Transition(LedOn_state, LedOff_state, TransitionLedOn2LedOff_1755769767(), List((Led.LedPort.getName, Led.LedPort.in.led_off), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
-    parent.addTransition(t_LedOn2LedOff_1755769767)
-    case class TransitionLedOff2LedOn_793719732 extends TransitionAction {
+    val t_LedOff2LedOn_299295663 = new Transition(LedOff_state, LedOn_state, TransitionLedOff2LedOn_299295663(), List((Led.LedPort.getName, Led.LedPort.in.led_on), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
+    parent.addTransition(t_LedOff2LedOn_299295663)
+    val t_LedOn2LedOff_418168568 = new Transition(LedOn_state, LedOff_state, TransitionLedOn2LedOff_418168568(), List((Led.LedPort.getName, Led.LedPort.in.led_off), (Led.LedPort.getName, Led.LedPort.in.led_toggle)))
+    parent.addTransition(t_LedOn2LedOff_418168568)
+    case class TransitionLedOff2LedOn_299295663 extends TransitionAction {
       override def executeActions() = {
 //No action defined for this transition
       }
 
     }
-    case class TransitionLedOn2LedOff_1755769767 extends TransitionAction {
+    case class TransitionLedOn2LedOff_418168568 extends TransitionAction {
       override def executeActions() = {
 //No action defined for this transition
       }
@@ -198,7 +192,7 @@ class Led extends Component {
 /**
  * Definitions for type : SoftTimer
  **/
-class SoftTimer extends Component with org.thingml.utils.TimerTaskTrait{
+class SoftTimer(var SoftTimer_javaTimer_var : java.util.Timer, var SoftTimer_lastTask_var : java.util.TimerTask) extends Component with org.thingml.utils.TimerTaskTrait{
 
 //Companion object
   object SoftTimer{
@@ -223,11 +217,6 @@ class SoftTimer extends Component with org.thingml.utils.TimerTaskTrait{
     }
 
   }
-
-
-// Variables for the properties of the instance
-  var SoftTimer_javaTimer_var : java.util.Timer = new java.util.Timer()
-  var SoftTimer_lastTask_var : java.util.TimerTask = _
 
   new Port(SoftTimer.PollingPort.getName, List(SoftTimer.PollingPort.in.poll), List(), this).start
   new Port(SoftTimer.timerPort.getName, List(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.in.timer_cancel), List(SoftTimer.timerPort.out.timer_timeout), this).start
@@ -272,9 +261,9 @@ class SoftTimer extends Component with org.thingml.utils.TimerTaskTrait{
 //No exit action defined for this state
     }
 
-    val t_self_73111693 = new InternalTransition(getBehavior, new InternalTransition73111693(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_start)))
-    val t_self_1392972501 = new InternalTransition(getBehavior, new InternalTransition1392972501(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_cancel)))
-    case class InternalTransition73111693 extends InternalTransitionAction {
+    val t_self_1606950188 = new InternalTransition(getBehavior, new InternalTransition1606950188(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_start)))
+    val t_self_1042790508 = new InternalTransition(getBehavior, new InternalTransition1042790508(), List((SoftTimer.timerPort.getName, SoftTimer.timerPort.in.timer_cancel)))
+    case class InternalTransition1606950188 extends InternalTransitionAction {
       override def checkGuard() : Boolean = {
         try {
           getEvent(SoftTimer.timerPort.in.timer_start, SoftTimer.timerPort.getName).get.asInstanceOf[Timer_start].delay > 0}
@@ -289,7 +278,7 @@ class SoftTimer extends Component with org.thingml.utils.TimerTaskTrait{
       }
 
     }
-    case class InternalTransition1392972501 extends InternalTransitionAction {
+    case class InternalTransition1042790508 extends InternalTransitionAction {
       override def executeActions() = {
         cancel()
       }

@@ -19,9 +19,9 @@ object Main {
     val null_1 = new Channel
     null_1.start
 //Things
-    val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed()
-    val Led_ScalaSimpleLedSimulator_led = new Led()
-    val SoftTimer_ScalaSimpleLedSimulator_timer = new SoftTimer()
+    val SimpleLed_ScalaSimpleLedSimulator_simple_led = new SimpleLed(SimpleLed_frequency_var = 800)
+    val Led_ScalaSimpleLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val SoftTimer_ScalaSimpleLedSimulator_timer = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
 //Bindings
     null_0.connect(
       SimpleLed_ScalaSimpleLedSimulator_simple_led.getPort("Led").get,
