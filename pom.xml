@@ -4,12 +4,30 @@
     <groupId>org.sintef</groupId>
     <artifactId>org.sintef.smac</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>0.6.0-SNAPSHOT</version>
     <repositories>
         <repository>
             <id>ScalaToolsMaven2Repository</id>
             <name>Scala-Tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases/</url>
+        </repository>
+        
+        <repository>
+            <id>thingml-snapshot</id>
+            <name>thingml-snapshot</name>
+            <url>http://maven.thingml.org/thingml-snapshot/</url>
+        </repository>
+        
+        <repository>
+            <id>thingml-release</id>
+            <name>thingml-release</name>
+            <url>http://maven.thingml.org/thingml-release/</url>
+        </repository>
+        
+        <repository>
+            <id>thirdparty</id>
+            <name>thingml-snapshot</name>
+            <url>http://maven.thingml.org/thirdparty/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -93,6 +111,24 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-   
+  
+  
+    <distributionManagement>
+        
+        <repository>
+            <id>thingml-release</id>
+            <name>thingml-release</name>
+            <url>http://maven.thingml.org/archiva/repository/thingml-release/</url>
+        </repository>
+        
+        <snapshotRepository>
+            <id>thingml-snapshot</id>
+            <name>thingml-snapshot</name>
+            <url>http://maven.thingml.org/archiva/repository/thingml-snapshot/</url>
+        </snapshotRepository>
+        
+    </distributionManagement>
+    
+    
     
 </project>
