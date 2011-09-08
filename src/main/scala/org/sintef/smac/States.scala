@@ -39,10 +39,7 @@ sealed class State(action : StateAction, val root : Component) {
   }
   
   def getEvent(e : String, p : Port) : Option[Event] = {
-    parent match {
-      case Some(parent) => parent.getEvent(e, p)
-      case None => None
-    } 
+    p.getEvent(e)
   }
   
   protected[smac] def getRoot = root
@@ -180,18 +177,7 @@ sealed trait Region {
   
 }
 
-sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
-  
-  override def getEvent(e : String, p : Port) : Option[Event] = {
-    ////println("getEvent("+e+", "+p.name+")")
-    root.getPort(p.name) match {
-      case Some(port) =>
-        ////println("  "+port)
-        port.getEvent(e)
-      case None => None
-    }
-  }
-}
+sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {}
 
 sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepHistory: Boolean, root : Component) extends State(action, root) with Region {
   
@@ -203,7 +189,7 @@ sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepH
   override def start { 
     super.start
     executeOnEntry
-    regions.foreach{r =>
+    regions.par.foreach{r =>
       r.start
     }
   }
@@ -228,8 +214,8 @@ sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepH
   override def dispatchEvent(e: SignedEvent) : Boolean = {
     ////println(this + ".dispatchEvent "+e)
     var status = false
-    regions.foreach{r => //events are dispatched to regions with no condition
-      ////println("  to region "+r)
+    regions.par.foreach{r => //events are dispatched to regions with no condition
+      //println("dispatch  to region "+r)
       r.getActor ! e
     }
     

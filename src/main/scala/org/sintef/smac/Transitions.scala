@@ -42,8 +42,10 @@ abstract sealed class Handler(val source : State, val events : List[Pair[String,
   
   protected[smac] def getEvent(e : String, p : String) : Option[Event] = {
     getPort(p) match {
-      case Some(port) => source.getEvent(e, port)
-      case None => None
+      case Some(port) => 
+        port.getEvent(e)
+      case None => 
+        None
     }    
   }
   

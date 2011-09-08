@@ -19,6 +19,8 @@ package org.sintef.smac
 
 import scala.actors.Actor
 
+import scala.collection.mutable.{Map, HashMap, SynchronizedMap}
+
 sealed protected[smac] case class SignedEvent(val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None)
 
 abstract class Event(val name : String){}
@@ -32,8 +34,8 @@ abstract class Component {
   var behavior : List[StateMachine] = List()
   
   def start {
-    ports.values.foreach{p => p.start}
-    behavior.foreach{b => b.start}
+    ports.values.par.foreach{p => p.start}
+    behavior.par.foreach{b => b.start}
   }
   
   final def getPort(name : String) : Option[Port] = {
@@ -43,14 +45,16 @@ abstract class Component {
 
 sealed class Port(val name : String, val receive : List[String], val send : List[String], val cpt : Component) extends Actor {
   
-  var lastEvents : Map[String, Event] = Map()
+  var lastEvents : Map[String, Event] = new HashMap[String, Event]() with SynchronizedMap[String, Event]
   
   cpt.ports += (name -> this)
   
   protected[smac] var out : List[Channel] = List()
   
   def getEvent(e : String) : Option[Event] = {
-    return lastEvents.get(e)
+    synchronized {
+      return lastEvents.get(e)
+    }
   }
   
   class In(p : Port) extends Actor {
@@ -58,9 +62,11 @@ sealed class Port(val name : String, val receive : List[String], val send : List
       react {
         case e: SignedEvent =>
           if (canReceive(e)) {
-            lastEvents += (e.event.name -> e.event)
+            synchronized {
+              lastEvents += (e.event.name -> e.event)
+            }
             //println("Port " + this + " dispatches to state machine")
-            cpt.behavior.foreach{sm => 
+            cpt.behavior.par.foreach{sm => 
               //println("  "+sm)
               sm.getActor ! new SignedEvent(e.sender, p, e.event, e.to)
               //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
@@ -82,7 +88,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   def send(e : Event) {
     if (canSend(e)) {
       //println("Port " + this + " sending to channels")
-      out.foreach{c =>
+      out.par.foreach{c =>
         //println("Port " + this + " sending to channel "+c)
         c ! new SignedEvent(cpt, this, e)
       }
@@ -130,15 +136,15 @@ sealed class Channel() extends Actor {
       react {
         case e: SignedEvent =>
           e.to match {
-            case Some(to) => out.filter{p => p.cpt == to}.foreach {
+            case Some(to) => out.filter{p => p.cpt == to}.par.foreach {
                 p =>
                 ////println("Channel dispatching " + e + " to " + p)
-                p forward e
+                p ! e
               }
-            case None => out.foreach {
+            case None => out.par.foreach {
                 p =>
                 ////println("Channel dispatching " + e + " to " + p)
-                p forward e
+                p ! e
               }
           }
       }   
