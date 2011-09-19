@@ -35,7 +35,9 @@ abstract class Component {
   
   def start {
     ports.values.par.foreach{p => p.start}
-    behavior.par.foreach{b => b.start}
+    behavior.par.foreach{b => 
+      b.start
+    }
   }
   
   final def getPort(name : String) : Option[Port] = {

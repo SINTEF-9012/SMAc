@@ -13,76 +13,76 @@ import org.sintef.smac._
 // Initialize instance variables and states
 object Main {
 
-  def main(args: Array[String]): Unit = {    
-//Connectors
-    val null_0 = new Channel
-    null_0.start
-    val null_1 = new Channel
-    null_1.start
-    val null_2 = new Channel
-    null_2.start
-    val null_3 = new Channel
-    null_3.start
-    val null_4 = new Channel
-    null_4.start
+  def main(args: Array[String]): Unit = {
+//Channels
+    val c_534260713 = new Channel
+    c_534260713.start
+    val c_1071521492 = new Channel
+    c_1071521492.start
+    val c_1030386153 = new Channel
+    c_1030386153.start
+    val c_690675284 = new Channel
+    c_690675284.start
+    val c_391944063 = new Channel
+    c_391944063.start
 //Things
+    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed(ChangingFrequencyLed_frequency_var = 500)
     val SoftTimer_ScalaChangingFrequencyLedSimulator_timer = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
-    val Servo_ScalaChangingFrequencyLedSimulator_servo = new Servo(Brick_device_var = new org.thingml.devices.ServoDemo)
     val Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer = new Potentiometer(BrickSensor_lastValue_var = 0, Brick_device_var = new org.thingml.devices.PotentiometerDemo(0, 1023))
     val Led_ScalaChangingFrequencyLedSimulator_led = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
-    val ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller = new ChangingFrequencyLed(ChangingFrequencyLed_frequency_var = 500)
+    val Servo_ScalaChangingFrequencyLedSimulator_servo = new Servo(Brick_device_var = new org.thingml.devices.ServoDemo)
 //Bindings
-    null_0.connect(
-      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get,
-      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get
-    )
-    null_0.connect(
-      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get,
-      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get
-    )
-
-    null_1.connect(
-      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Servo").get,
-      Servo_ScalaChangingFrequencyLedSimulator_servo.getPort("Servo").get
-    )
-    null_1.connect(
-      Servo_ScalaChangingFrequencyLedSimulator_servo.getPort("Servo").get,
-      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Servo").get
-    )
-
-    null_2.connect(
+    c_534260713.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Sensor").get,
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("SensorMockUp").get
     )
-    null_2.connect(
+    c_534260713.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("SensorMockUp").get,
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Sensor").get
     )
 
-    null_3.connect(
+    c_1071521492.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get,
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get
     )
-    null_3.connect(
+    c_1071521492.connect(
       Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.getPort("Potentiometer").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Potentiometer").get
     )
 
-    null_4.connect(
+    c_1030386153.connect(
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get,
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get
     )
-    null_4.connect(
+    c_1030386153.connect(
       Led_ScalaChangingFrequencyLedSimulator_led.getPort("Led").get,
       ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Led").get
     )
 
+    c_690675284.connect(
+      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get,
+      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get
+    )
+    c_690675284.connect(
+      SoftTimer_ScalaChangingFrequencyLedSimulator_timer.getPort("timer").get,
+      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Timer").get
+    )
+
+    c_391944063.connect(
+      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Servo").get,
+      Servo_ScalaChangingFrequencyLedSimulator_servo.getPort("Servo").get
+    )
+    c_391944063.connect(
+      Servo_ScalaChangingFrequencyLedSimulator_servo.getPort("Servo").get,
+      ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.getPort("Servo").get
+    )
+
 //Starting Things
+    ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.asInstanceOf[Component].start
     SoftTimer_ScalaChangingFrequencyLedSimulator_timer.asInstanceOf[Component].start
-    Servo_ScalaChangingFrequencyLedSimulator_servo.asInstanceOf[Component].start
     Potentiometer_ScalaChangingFrequencyLedSimulator_potentiometer.asInstanceOf[Component].start
     Led_ScalaChangingFrequencyLedSimulator_led.asInstanceOf[Component].start
-    ChangingFrequencyLed_ScalaChangingFrequencyLedSimulator_controller.asInstanceOf[Component].start
+    Servo_ScalaChangingFrequencyLedSimulator_servo.asInstanceOf[Component].start
   }
 
 }

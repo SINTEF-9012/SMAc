@@ -9,93 +9,96 @@ package org.thingml.generated.blink2leds
 import org.sintef.smac._
 
 
-
 // Initialize instance variables and states
 object Main {
 
   def main(args: Array[String]): Unit = {
-//Connectors
-    val null_0 = new Channel
-    null_0.start
-    val null_1 = new Channel
-    null_1.start
-    val null_2 = new Channel
-    null_2.start
-    val null_3 = new Channel
-    null_3.start
-    val null_4 = new Channel
-    null_4.start
-    val null_5 = new Channel
-    null_5.start
+//Channels
+    val c_140667122 = new Channel
+    c_140667122.start
+    val c_134415158 = new Channel
+    c_134415158.start
+    val c_198309204 = new Channel
+    c_198309204.start
+    val c_1960307754 = new Channel
+    c_1960307754.start
+    val c_88171484 = new Channel
+    c_88171484.start
+    val c_2110247509 = new Channel
+    c_2110247509.start
+//Initializing arrays
+    val Blink2Leds_periods_var = new Array[Int](2)
+    Blink2Leds_periods_var(1) = 333
+    Blink2Leds_periods_var(0) = 1000
 //Things
-    val ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler = new ThingMLScheduler()
-    val SoftTimer_ScalaBlink2LedsSimulator_timer2 = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
-    val Blink2Leds_ScalaBlink2LedsSimulator_app = new Blink2Leds()
-    val Led_ScalaBlink2LedsSimulator_led2 = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
-    val SoftTimer_ScalaBlink2LedsSimulator_timer1 = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val Blink2Leds_ScalaBlink2LedsSimulator_app = new Blink2Leds(Blink2Leds_periods_var = Blink2Leds_periods_var)
     val Led_ScalaBlink2LedsSimulator_led1 = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val SoftTimer_ScalaBlink2LedsSimulator_timer2 = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val SoftTimer_ScalaBlink2LedsSimulator_timer1 = new SoftTimer(SoftTimer_javaTimer_var = new java.util.Timer(), SoftTimer_lastTask_var = null.asInstanceOf[java.util.TimerTask])
+    val Led_ScalaBlink2LedsSimulator_led2 = new Led(Brick_device_var = new org.thingml.devices.LedDemo)
+    val ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler = new ThingMLScheduler()
 //Bindings
-    null_0.connect(
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led2").get,
-      Led_ScalaBlink2LedsSimulator_led2.getPort("Led").get
-    )
-    null_0.connect(
-      Led_ScalaBlink2LedsSimulator_led2.getPort("Led").get,
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led2").get
-    )
-
-    null_1.connect(
+    c_140667122.connect(
       SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("Polling").get,
       ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.getPort("Polling").get
     )
-    null_1.connect(
+    c_140667122.connect(
       ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.getPort("Polling").get,
       SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("Polling").get
     )
 
-    null_2.connect(
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer2").get,
-      SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("timer").get
+    c_134415158.connect(
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led2").get,
+      Led_ScalaBlink2LedsSimulator_led2.getPort("Led").get
     )
-    null_2.connect(
-      SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("timer").get,
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer2").get
-    )
-
-    null_3.connect(
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer1").get,
-      SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("timer").get
-    )
-    null_3.connect(
-      SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("timer").get,
-      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer1").get
+    c_134415158.connect(
+      Led_ScalaBlink2LedsSimulator_led2.getPort("Led").get,
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led2").get
     )
 
-    null_4.connect(
+    c_198309204.connect(
       Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led1").get,
       Led_ScalaBlink2LedsSimulator_led1.getPort("Led").get
     )
-    null_4.connect(
+    c_198309204.connect(
       Led_ScalaBlink2LedsSimulator_led1.getPort("Led").get,
       Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("led1").get
     )
 
-    null_5.connect(
+    c_1960307754.connect(
       SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("Polling").get,
       ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.getPort("Polling").get
     )
-    null_5.connect(
+    c_1960307754.connect(
       ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.getPort("Polling").get,
       SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("Polling").get
     )
 
+    c_88171484.connect(
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer1").get,
+      SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("timer").get
+    )
+    c_88171484.connect(
+      SoftTimer_ScalaBlink2LedsSimulator_timer1.getPort("timer").get,
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer1").get
+    )
+
+    c_2110247509.connect(
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer2").get,
+      SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("timer").get
+    )
+    c_2110247509.connect(
+      SoftTimer_ScalaBlink2LedsSimulator_timer2.getPort("timer").get,
+      Blink2Leds_ScalaBlink2LedsSimulator_app.getPort("timer2").get
+    )
+
 //Starting Things
-    ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.asInstanceOf[Component].start
-    SoftTimer_ScalaBlink2LedsSimulator_timer2.asInstanceOf[Component].start
     Blink2Leds_ScalaBlink2LedsSimulator_app.asInstanceOf[Component].start
-    Led_ScalaBlink2LedsSimulator_led2.asInstanceOf[Component].start
-    SoftTimer_ScalaBlink2LedsSimulator_timer1.asInstanceOf[Component].start
     Led_ScalaBlink2LedsSimulator_led1.asInstanceOf[Component].start
+    SoftTimer_ScalaBlink2LedsSimulator_timer2.asInstanceOf[Component].start
+    SoftTimer_ScalaBlink2LedsSimulator_timer1.asInstanceOf[Component].start
+    Led_ScalaBlink2LedsSimulator_led2.asInstanceOf[Component].start
+    ThingMLScheduler_ScalaBlink2LedsSimulator_scheduler.asInstanceOf[Component].start
   }
 
 }

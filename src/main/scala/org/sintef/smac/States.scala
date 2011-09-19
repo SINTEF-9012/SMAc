@@ -149,7 +149,7 @@ sealed trait Region {
         }
       }
     }
-  }
+  }.start
 
   
   def getActor = actor
@@ -170,14 +170,18 @@ sealed trait Region {
     
   }
   
-  def start { 
-    actor.start
+  def startRegion { 
     current.executeOnEntry
   }
   
 }
 
-sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {}
+sealed class StateMachine(action : StateAction, keepHistory: Boolean, root : Component) extends CompositeState(action, keepHistory, root) {
+  override def start { 
+    executeOnEntry
+    super.start
+  }
+}
 
 sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepHistory: Boolean, root : Component) extends State(action, root) with Region {
   
@@ -186,11 +190,9 @@ sealed class CompositeState(action : StateAction = new EmptyStateAction(), keepH
   protected[smac] var transitions: List[Transition] = List()
 
   
-  override def start { 
-    super.start
-    executeOnEntry
+  def start { 
     regions.par.foreach{r =>
-      r.start
+      r.startRegion
     }
   }
   

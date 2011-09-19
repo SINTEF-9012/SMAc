@@ -116,7 +116,7 @@ class LedDemo(color: LedColor) extends LedModel with Device {
   frame.pack
   frame.size_=(new Dimension(90, 90))
   frame.location_=(new Point(Helper.randomX, Helper.randomY))
-  frame.visible_=(true)
+  frame.visible = true
   
   // Default constructor, which builds a red LED
   def this() =
