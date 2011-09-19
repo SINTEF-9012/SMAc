@@ -9,36 +9,34 @@ package eu.remics.modernized.updated
 import org.sintef.smac._
 
 
-
-
 // Initialize instance variables and states
 object Main {
 
   def main(args: Array[String]): Unit = {
 //Channels
-    val c_1358546848 = new Channel
-    c_1358546848.start
-    val c_1050739432 = new Channel
-    c_1050739432.start
+    val c_1628186119 = new Channel
+    c_1628186119.start
+    val c_1687471959 = new Channel
+    c_1687471959.start
 //Things
-    val Client_RemicsMediator_client = new Client(Client_login_var = "toto", Client_pwd_var = "pouet")
+    val Client_RemicsMediator_client = new Client(Client_login_var = "bmorin", Client_pwd_var = "clio")
     val SubstituteServer_RemicsMediator_substitute = new SubstituteServer(SubstituteServer_username_var = "bmorin", SubstituteServer_password_var = "clio")
     val Mediator_RemicsMediator_mediator = new Mediator(Mediator_password_var = null.asInstanceOf[String])
 //Bindings
-    c_1358546848.connect(
+    c_1628186119.connect(
       Client_RemicsMediator_client.getPort("LoginServer").get,
       Mediator_RemicsMediator_mediator.getPort("Client").get
     )
-    c_1358546848.connect(
+    c_1628186119.connect(
       Mediator_RemicsMediator_mediator.getPort("Client").get,
       Client_RemicsMediator_client.getPort("LoginServer").get
     )
 
-    c_1050739432.connect(
+    c_1687471959.connect(
       SubstituteServer_RemicsMediator_substitute.getPort("LoginClient").get,
       Mediator_RemicsMediator_mediator.getPort("Server").get
     )
-    c_1050739432.connect(
+    c_1687471959.connect(
       Mediator_RemicsMediator_mediator.getPort("Server").get,
       SubstituteServer_RemicsMediator_substitute.getPort("LoginClient").get
     )
