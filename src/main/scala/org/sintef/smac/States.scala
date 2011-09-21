@@ -18,6 +18,7 @@
 package org.sintef.smac
 
 import scala.actors.Actor
+import scala.actors.Actor._
 
 sealed class State(action : StateAction, val root : Component) {
   
@@ -74,10 +75,8 @@ sealed class State(action : StateAction, val root : Component) {
     return result
   }
     
-
-  //TODO: avoid (almost) duplicating checkForTransition...  
-  protected[smac] def checkForAutoTransition: Option[Handler] = {
-    allTransitions.filter(t => { t.isAuto && t.getAction.checkGuard})
+  protected[smac] def checkForTransition(check : Handler => Boolean) : Option[Handler]= {
+    allTransitions.filter(t => check(t))
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
     .headOption match {
       case Some(in) => 
@@ -87,18 +86,13 @@ sealed class State(action : StateAction, val root : Component) {
         return None
     }
   }
+
+  protected[smac] def checkForAutoTransition: Option[Handler] = {
+    checkForTransition(t => {t.isAuto && t.getAction.checkGuard})
+  }
   
   protected[smac] def checkForTransition(e : SignedEvent): Option[Handler] = {
-    //////println(this+".checkForTransition: ")  
-    allTransitions.filter(t => { t.isInterestedIn(e) && t.getAction.checkGuard})
-    .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
-    .headOption match {
-      case Some(in) => 
-        //////println("  A transition can be triggered: "+in)
-        return Option(in)
-      case None => 
-        return None
-    }
+    checkForTransition(t => {t.isInterestedIn(e) && t.getAction.checkGuard})
   }
 
   protected[smac] def executeOnEntry() {
@@ -139,8 +133,7 @@ sealed trait Region {
     }
   }
   
-  lazy val actor = new Actor{
-    override def act() = {
+  lazy val getActor = actor {
       loop {
         react {
           case e: SignedEvent =>
@@ -148,11 +141,7 @@ sealed trait Region {
             new Dispatcher().start ! e
         }
       }
-    }
-  }.start
-
-  
-  def getActor = actor
+  }
   
   def setHistory(h : Boolean) {keepsHistory = h}
   

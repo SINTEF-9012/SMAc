@@ -18,12 +18,19 @@
 package org.sintef.smac
 
 import scala.actors.Actor
+import scala.actors.Actor._
 
 import scala.collection.mutable.{Map, HashMap, SynchronizedMap}
 
-sealed protected[smac] case class SignedEvent(val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None)
+sealed protected[smac] case class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name)
 
 abstract class Event(val name : String){}
+
+//This should be sub-classed to provide proper serialization of events
+class RemoteEventManager {
+  def fromBytes(bytes : Array[Byte]) : Option[Event] = None
+  def toBytes(event : Event) : Option[Array[Byte]] = None
+}
 
 class FakeComponent extends Component {
   
@@ -59,30 +66,26 @@ sealed class Port(val name : String, val receive : List[String], val send : List
     }
   }
   
-  class In(p : Port) extends Actor {
-    override def act() = {
-      react {
-        case e: SignedEvent =>
-          if (canReceive(e)) {
-            synchronized {
-              lastEvents += (e.event.name -> e.event)
-            }
-            //println("Port " + this + " dispatches to state machine")
-            cpt.behavior.par.foreach{sm => 
-              //println("  "+sm)
-              sm.getActor ! new SignedEvent(e.sender, p, e.event, e.to)
-              //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
-            }
-          }
+  def in(e: SignedEvent) {
+    if (canReceive(e)) {
+      synchronized {
+        lastEvents += (e.event.name -> e.event)
+      }
+      //println("Port " + this + " dispatches to state machine")
+      cpt.behavior.par.foreach{sm => 
+        //println("  "+sm)
+        sm.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
+        //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
       }
     }
+  
   }
   
   override def act() = {
     loop {
       react {
         case e: SignedEvent =>
-          new In(this).start ! e
+          actor{in(e)}
       }
     }
   }
@@ -92,7 +95,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
       //println("Port " + this + " sending to channels")
       out.par.foreach{c =>
         //println("Port " + this + " sending to channel "+c)
-        c ! new SignedEvent(cpt, this, e)
+        c ! new SignedEvent(sender = cpt, port = this, event = e)
       }
     }
   }
@@ -133,40 +136,50 @@ sealed class Channel() extends Actor {
     out - p
   }
   
-  class Dispatcher extends Actor {
-    override def act() = {
-      react {
-        case e: SignedEvent =>
-          e.to match {
-            case Some(to) => out.filter{p => p.cpt == to}.par.foreach {
-                p =>
-                ////println("Channel dispatching " + e + " to " + p)
-                p ! e
-              }
-            case None => out.par.foreach {
-                p =>
-                ////println("Channel dispatching " + e + " to " + p)
-                p ! e
-              }
-          }
-      }   
+  def dispatch(e: Event) = 
+    e match {
+      case s : SignedEvent =>
+        s.to match {
+          case Some(to) => out.filter{p => p.cpt == to}.par.foreach { p =>
+              p ! s
+            }
+          case None => out.par.foreach { p =>
+              p ! s
+            }
+        }
+      case ev : Event => out.par.foreach { p =>
+          p ! ev
+        }
     }
-  }
 
   override def act() = {
     loop {
       react {
-        case e: SignedEvent =>
-          new Dispatcher().start ! e
+        case e: Event =>
+          actor{dispatch(e)}
       }
     }
   }
+  
 }
 
-/**
- * Just a naive PoC
- * TODO: a lot
- */
-sealed class SessionChannel extends Channel {
+sealed class RemoteChannel(remoteManager : RemoteEventManager) extends Channel {
+
+  override def act() = {
+    loop {
+      react {
+        case e: Event =>
+          actor{dispatch(e)}
+        case b: Array[Byte] =>
+          actor{
+            remoteManager.fromBytes(b) match {
+              case Some(e) =>
+                dispatch(e)
+              case None =>
+            }
+          }
+      }
+    }
+  }
   
 }
