@@ -32,8 +32,14 @@ class RemoteEventManager {
   def toBytes(event : Event) : Option[Array[Byte]] = None
 }
 
-class FakeComponent extends Component {
-  
+class FakeComponent extends Component {}
+
+abstract class ReactiveComponent extends Component {
+  def onIncomingMessage(e : SignedEvent)
+  override protected[smac] def incomingMessage(e : SignedEvent) {
+    //super.incomingMessage(e)
+    onIncomingMessage(e)
+  }
 }
 
 abstract class Component {
@@ -45,6 +51,14 @@ abstract class Component {
     behavior.par.foreach{b => 
       b.start
     }
+  }
+    
+  protected[smac] def incomingMessage(e : SignedEvent) {
+    behavior.par.foreach{sm => 
+      //println("  "+sm)
+      sm.getActor ! e
+      //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
+    }    
   }
   
   final def getPort(name : String) : Option[Port] = {
@@ -71,12 +85,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
       synchronized {
         lastEvents += (e.event.name -> e.event)
       }
-      //println("Port " + this + " dispatches to state machine")
-      cpt.behavior.par.foreach{sm => 
-        //println("  "+sm)
-        sm.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
-        //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
-      }
+      cpt.incomingMessage(new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to))
     }
   
   }
@@ -140,36 +149,31 @@ sealed class Channel() extends Actor {
     e match {
       case s : SignedEvent =>
         s.to match {
-          case Some(to) => out.filter{p => p.cpt == to}.par.foreach { p =>
-              p ! s
-            }
-          case None => out.par.foreach { p =>
-              p ! s
-            }
+          case Some(to) => out.filter{p => p.cpt == to}.par.foreach { p => p ! s }
+          case None => out.par.foreach { p => p ! s }
         }
-      case ev : Event => out.par.foreach { p =>
-          p ! ev
-        }
+      case ev : Event => out.par.foreach { p => p ! ev }
     }
 
   override def act() = {
     loop {
       react {
-        case e: Event =>
-          actor{dispatch(e)}
+        case e: Event => actor{dispatch(e)}
       }
     }
   }
   
 }
 
-sealed class RemoteChannel(remoteManager : RemoteEventManager) extends Channel {
+sealed abstract class RemoteChannel(remoteManager : RemoteEventManager = new RemoteEventManager) extends Channel {
 
+  def remoteDispatch(e : Event)
+  
   override def act() = {
     loop {
       react {
         case e: Event =>
-          actor{dispatch(e)}
+          actor{remoteDispatch(e)}
         case b: Array[Byte] =>
           actor{
             remoteManager.fromBytes(b) match {
@@ -182,4 +186,10 @@ sealed class RemoteChannel(remoteManager : RemoteEventManager) extends Channel {
     }
   }
   
+}
+
+//TODO: create an actor that manages the serial port. It should send incoming arrays of bytes to this channel and 
+//sends the arrays it receives from this channel
+sealed class RxTxChannel(remoteManager : RemoteEventManager = new RemoteEventManager) extends RemoteChannel {
+  override def remoteDispatch(e : Event){} 
 }
