@@ -22,7 +22,7 @@ import scala.actors.Actor._
 
 import scala.collection.mutable.{Map, HashMap, SynchronizedMap}
 
-sealed case class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name)
+sealed class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name)
 
 abstract class Event(val name : String){}
 
