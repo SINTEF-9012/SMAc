@@ -75,7 +75,13 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main</sourceDirectory>
+       
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
+        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -88,7 +94,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                            <outputDirectory>${basedir}</outputDirectory>
                             <includeArtifacIds>org.thingml.samples.resources</includeArtifacIds>
                             <includeGroupIds>org.thingml</includeGroupIds>
                             <excludeTransitive>true</excludeTransitive>
@@ -97,6 +103,7 @@
                     </execution>
                 </executions>
             </plugin>
+   
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>

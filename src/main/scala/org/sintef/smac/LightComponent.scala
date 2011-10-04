@@ -56,7 +56,7 @@ abstract class Component {
   protected[smac] def incomingMessage(e : SignedEvent) {
     behavior.par.foreach{sm => 
       //println("  "+sm)
-      sm.getActor ! e
+      sm.getActor ! new SignedEvent(sender = e.sender, port = e.port, event = e.event, to = e.to)
       //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
     }    
   }
