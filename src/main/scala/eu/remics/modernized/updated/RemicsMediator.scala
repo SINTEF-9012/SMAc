@@ -7,7 +7,6 @@
 
 package eu.remics.modernized.updated
 import org.sintef.smac._
-import org.thingml.devices._
 object Login{ def getName = "login" }
 case class Login(login : String, override val name : String = Login.getName) extends Event(name)
 object Log{ def getName = "log" }
