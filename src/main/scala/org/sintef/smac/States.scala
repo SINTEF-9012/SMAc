@@ -123,22 +123,12 @@ sealed trait Region {
   protected[smac] var substates: List[State] = List()
   
   def dispatchEvent(e: SignedEvent) : Boolean
-  
-  class Dispatcher extends Actor {
-    override def act() = {
-      react {
-        case e: SignedEvent =>
-          dispatchEvent(e)
-      } 
-    }
-  }
-  
+    
   lazy val getActor = actor {
       loop {
         react {
           case e: SignedEvent =>
-            //println("DEBUG: " + this + ".dispatchEvent(" + e + ")")
-            new Dispatcher().start ! e
+            actor{dispatchEvent(e)}
         }
       }
   }
