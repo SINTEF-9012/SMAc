@@ -187,9 +187,3 @@ sealed abstract class RemoteChannel(remoteManager : RemoteEventManager = new Rem
   }
   
 }
-
-//TODO: create an actor that manages the serial port. It should send incoming arrays of bytes to this channel and 
-//sends the arrays it receives from this channel
-sealed class RxTxChannel(remoteManager : RemoteEventManager = new RemoteEventManager) extends RemoteChannel {
-  override def remoteDispatch(e : Event){} 
-}
