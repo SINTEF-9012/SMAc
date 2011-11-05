@@ -20,6 +20,9 @@ package org.sintef.smac
 import scala.actors.Actor
 import scala.actors.Actor._
 
+import scala.actors.Future
+import scala.actors.Futures._
+
 import scala.collection.mutable.{Map, HashMap, SynchronizedMap}
 
 sealed class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name)
@@ -36,15 +39,27 @@ class FakeComponent extends Component {}
 
 abstract class ReactiveComponent extends Component {
   def onIncomingMessage(e : SignedEvent)
-  override protected[smac] def incomingMessage(e : SignedEvent) {
+  override protected[smac] def incomingMessage(e : SignedEvent) : Boolean = {
     //super.incomingMessage(e)
     onIncomingMessage(e)
+    return true
   }
 }
 
 abstract class Component {
+  
+  lazy val getActor = actor {
+    loop {
+      react {
+        case e: SignedEvent =>
+          incomingMessage(e)
+      }
+    }
+  }
+  
   var ports : Map[String, Port] = Map()
   var behavior : List[StateMachine] = List()
+  var lastEvents : Map[String, Map[String, Event]] = new HashMap[String, Map[String, Event]]() with SynchronizedMap[String, Map[String, Event]]
   
   def start {
     ports.values.par.foreach{p => p.start}
@@ -53,41 +68,55 @@ abstract class Component {
     }
   }
     
-  protected[smac] def incomingMessage(e : SignedEvent) {
+  protected[smac] def incomingMessage(e : SignedEvent) : Boolean = {
+    synchronized {
+      lastEvents.get(e.port.name) match {
+        case Some(map) => 
+          map += (e.event.name -> e.event)
+        case None => 
+          val map = Map[String, Event]() 
+          map += (e.event.name -> e.event)
+          lastEvents += (e.port.name -> map)
+      } 
+    }
+    
+    
+    var results = List[Future[Boolean]]()
     behavior.par.foreach{sm => 
-      //println("  "+sm)
-      sm.getActor ! new SignedEvent(sender = e.sender, port = e.port, event = e.event, to = e.to)
-      //sm.dispatchEvent(new SignedEvent(e.sender, this, e.event, e.to))
-    }    
+      println("dispatching to " + sm)
+      val f : Future[Boolean] = future{sm.dispatchEvent(new SignedEvent(sender = e.sender, port = e.port, event = e.event, to = e.to))}
+      results = results ::: List(f)
+    }
+
+    val status = !results.filter{f => f()}.isEmpty
+    return status
   }
   
   final def getPort(name : String) : Option[Port] = {
     ports.get(name)
   }
+  
+  final def getEvent(p : String, e : String) : Option[Event] = {
+    synchronized {
+      lastEvents.get(p) match {
+        case Some(map) =>
+          return map.get(e)
+        case None =>
+          return None
+      }
+    }
+  }
 }
 
 sealed class Port(val name : String, val receive : List[String], val send : List[String], val cpt : Component) extends Actor {
-  
-  var lastEvents : Map[String, Event] = new HashMap[String, Event]() with SynchronizedMap[String, Event]
-  
   cpt.ports += (name -> this)
   
   protected[smac] var out : List[Channel] = List()
-  
-  def getEvent(e : String) : Option[Event] = {
-    synchronized {
-      return lastEvents.get(e)
-    }
-  }
-  
+    
   def in(e: SignedEvent) {
     if (canReceive(e)) {
-      synchronized {
-        lastEvents += (e.event.name -> e.event)
-      }
-      cpt.incomingMessage(new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to))
-    }
-  
+      cpt.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
+    }  
   }
   
   override def act() = {

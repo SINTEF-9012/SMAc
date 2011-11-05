@@ -40,7 +40,7 @@ sealed class State(action : StateAction, val root : Component) {
   }
   
   def getEvent(e : String, p : Port) : Option[Event] = {
-    p.getEvent(e)
+    root.getEvent(p.name, e)
   }
   
   protected[smac] def getRoot = root
@@ -78,13 +78,7 @@ sealed class State(action : StateAction, val root : Component) {
   protected[smac] def checkForTransition(check : Handler => Boolean) : Option[Handler]= {
     allTransitions.filter(t => check(t))
     .sortWith((t, r) => (t.isInstanceOf[InternalTransition] && r.isInstanceOf[Transition]) || (t.getAction.getScore > r.getAction.getScore))
-    .headOption match {
-      case Some(in) => 
-        //////println("  A transition can be triggered: "+in)
-        return Option(in)
-      case None => 
-        return None
-    }
+    .headOption
   }
 
   protected[smac] def checkForAutoTransition: Option[Handler] = {
