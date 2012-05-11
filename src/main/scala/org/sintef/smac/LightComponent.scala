@@ -98,12 +98,12 @@ abstract class Component {
   
   final def getEvent(p : String, e : String) : Option[Event] = {
     synchronized {
-      lastEvents.get(p) match {
+      lastEvents.get(p).flatMap(_.get(e))/* match {
         case Some(map) =>
           return map.get(e)
         case None =>
           return None
-      }
+      }*/
     }
   }
 }
@@ -205,11 +205,11 @@ sealed abstract class RemoteChannel(remoteManager : RemoteEventManager = new Rem
           actor{remoteDispatch(e)}
         case b: Array[Byte] =>
           actor{
-            remoteManager.fromBytes(b) match {
+            remoteManager.fromBytes(b).foreach(dispatch(_)) /*match {
               case Some(e) =>
                 dispatch(e)
               case None =>
-            }
+            }*/
           }
       }
     }
