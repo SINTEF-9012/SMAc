@@ -40,7 +40,7 @@ class Client(val Client_login_var : String, val Client_pwd_var : String) extends
   new Port(Client.LoginServerPort.getName, List(Client.LoginServerPort.in.ack), List(Client.LoginServerPort.out.log), this).start
   this.behavior ++= List(new AuthenticationStateMachine(false, this).getBehavior)
   case class AuthenticationStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
-    def getBehavior = parent
+    override def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
 //No entry action defined for this state
@@ -120,7 +120,7 @@ class SubstituteServer(var SubstituteServer_username_var : String, var Substitut
   new Port(SubstituteServer.LoginClientPort.getName, List(SubstituteServer.LoginClientPort.in.login, SubstituteServer.LoginClientPort.in.password), List(SubstituteServer.LoginClientPort.out.access), this).start
   this.behavior ++= List(new AuthenticationStateMachine(false, this).getBehavior)
   case class AuthenticationStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
-    def getBehavior = parent
+    override def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
 //No entry action defined for this state
@@ -252,7 +252,7 @@ class Mediator(var Mediator_password_var : String) extends Component {
   new Port(Mediator.ServerPort.getName, List(Mediator.ServerPort.in.access), List(Mediator.ServerPort.out.login, Mediator.ServerPort.out.password), this).start
   this.behavior ++= List(new AuthenticationStateMachine(false, this).getBehavior)
   case class AuthenticationStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
-    def getBehavior = parent
+    override def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
 //No entry action defined for this state

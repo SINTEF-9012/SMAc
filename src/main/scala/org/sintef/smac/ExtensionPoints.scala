@@ -55,6 +55,8 @@ abstract class InternalTransitionAction extends HandlerAction {
 abstract class StateAction {
   
   protected[smac] var handler : State = _
+  
+  def getBehavior = handler
     
   def onEntry
   def onExit

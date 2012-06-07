@@ -40,7 +40,7 @@ class Server(val Server_login_var : String, val Server_password_var : String) ex
   new Port(Server.LoginClientPort.getName, List(Server.LoginClientPort.in.log), List(Server.LoginClientPort.out.ack), this).start
   this.behavior ++= List(new AuthenticationStateMachine(false, this).getBehavior)
   case class AuthenticationStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
-    def getBehavior = parent
+    override def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
 //No entry action defined for this state
@@ -133,7 +133,7 @@ class Client(val Client_login_var : String, val Client_pwd_var : String) extends
   new Port(Client.LoginServerPort.getName, List(Client.LoginServerPort.in.ack), List(Client.LoginServerPort.out.log), this).start
   this.behavior ++= List(new AuthenticationStateMachine(false, this).getBehavior)
   case class AuthenticationStateMachine(keepHistory : Boolean, root : Component) extends StateAction {
-    def getBehavior = parent
+    override def getBehavior = parent
     val parent : StateMachine = new StateMachine(this, keepHistory, root)
     override def onEntry() = {
 //No entry action defined for this state

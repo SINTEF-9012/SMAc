@@ -55,7 +55,7 @@ class HelloWorldComponent(keepHistory : Boolean, withGUI : Boolean) extends Comp
 
 case class HelloWorldStateMachine(keepHistory : Boolean, withGUI : Boolean, root : Component) extends StateAction {
 
-  def getBehavior = sm  
+  override def getBehavior = sm  
   val sm : StateMachine = new StateMachine(this, keepHistory, root)
   //create sub-states
   val INIT_state = new State(INIT(), root)

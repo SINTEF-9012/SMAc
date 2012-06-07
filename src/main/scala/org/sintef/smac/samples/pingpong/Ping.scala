@@ -38,7 +38,7 @@ class PingComponent(keepHistory : Boolean) extends Component {
 
 class PingStateMachine(keepHistory : Boolean, root : Component) extends StateAction{
 
-  def getBehavior = sm
+  override def getBehavior = sm
   val sm : StateMachine = new StateMachine(this, keepHistory, root)
   
   //create sub-states

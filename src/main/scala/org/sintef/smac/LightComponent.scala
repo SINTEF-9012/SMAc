@@ -46,7 +46,7 @@ abstract class ReactiveComponent extends Component {
   }
 }
 
-abstract class Component {
+abstract trait Component {
   
   lazy val getActor = actor {
     loop {
@@ -114,9 +114,9 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   protected[smac] var out : List[Channel] = List()
     
   def in(e: SignedEvent) {
-    if (canReceive(e)) {
-      cpt.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
-    }  
+      if (canReceive(e)) {
+        cpt.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
+      }  
   }
   
   override def act() = {
