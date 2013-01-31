@@ -77,5 +77,6 @@ sealed class InternalTransition(override val source: State, val action: Internal
   
   def execute() = {
     action.executeActions()
+    source.checkForAutoTransition.foreach{t => t.execute}//The action of this internal transition may have changed the status of some variables, enabling the guard of an auto-transition...
   }
 }
