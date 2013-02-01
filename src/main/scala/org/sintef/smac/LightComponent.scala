@@ -25,7 +25,9 @@ import scala.actors.Futures._
 
 import scala.collection.mutable.{Map, HashMap, SynchronizedMap}
 
-sealed class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name)
+sealed class SignedEvent(override val name : String = "SignedEvent", val sender : Component, val port : Port, val event : Event, val to : Option[Component] = None) extends Event(name) {
+  override def toString() = "Signed Event [ " + event.name + "] via [" + port.name + "]"
+}
 
 abstract class Event(val name : String){}
 
