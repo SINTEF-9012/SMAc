@@ -29,7 +29,7 @@ sealed class SignedEvent(override val name : String = "SignedEvent", val sender 
   override def toString() = "Signed Event [ " + event.name + "] via [" + port.name + "]"
 }
 
-abstract class Event(val name : String){}
+abstract class Event(val name : String) extends java.io.Serializable {}
 
 //This should be sub-classed to provide proper serialization of events
 class RemoteEventManager {
