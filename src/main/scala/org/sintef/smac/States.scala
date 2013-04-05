@@ -91,15 +91,9 @@ sealed class State(action : StateAction, val root : Component) {
 
   protected[smac] def executeOnEntry() {
     ////println("State.executeOnEntry")
-    parent.foreach(_.current = this) /*match {
-      case Some(p) => p.current = this
-      case None =>
-    }*/ 
+    parent.foreach(_.current = this) 
     action.onEntry
-    checkForAutoTransition.foreach{_.execute}/* match {//checks if a transition with no event can be triggered
-      case Some(t) => {t.execute}
-      case None =>
-    }*/
+    checkForAutoTransition.foreach{_.execute}
   }
 
   protected[smac] def executeOnExit() {

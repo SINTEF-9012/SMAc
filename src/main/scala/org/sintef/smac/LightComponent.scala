@@ -31,12 +31,6 @@ sealed class SignedEvent(override val name : String = "SignedEvent", val sender 
 
 abstract class Event(val name : String) extends java.io.Serializable {}
 
-//This should be sub-classed to provide proper serialization of events
-class RemoteEventManager {
-  def fromBytes(bytes : Array[Byte]) : Option[Event] = None
-  def toBytes(event : Event) : Option[Array[Byte]] = None
-}
-
 class FakeComponent extends Component {}
 
 abstract class ReactiveComponent extends Component {
@@ -100,12 +94,7 @@ abstract trait Component {
   
   final def getEvent(p : String, e : String) : Option[Event] = {
     synchronized {
-      lastEvents.get(p).flatMap(_.get(e))/* match {
-        case Some(map) =>
-          return map.get(e)
-        case None =>
-          return None
-      }*/
+      lastEvents.get(p).flatMap(_.get(e))
     }
   }
 }
@@ -190,29 +179,6 @@ sealed class Channel() extends Actor {
     loop {
       react {
         case e: Event => actor{dispatch(e)}
-      }
-    }
-  }
-  
-}
-
-sealed abstract class RemoteChannel(remoteManager : RemoteEventManager = new RemoteEventManager) extends Channel {
-
-  def remoteDispatch(e : Event)
-  
-  override def act() = {
-    loop {
-      react {
-        case e: Event =>
-          actor{remoteDispatch(e)}
-        case b: Array[Byte] =>
-          actor{
-            remoteManager.fromBytes(b).foreach(dispatch(_)) /*match {
-              case Some(e) =>
-                dispatch(e)
-              case None =>
-            }*/
-          }
       }
     }
   }
