@@ -2,4 +2,6 @@ SMAc is a Scala framework (based on Actors) which allows you to define and execu
 
 
 ## Build status
-![Build status](http://build.thingml.org/job/Build%20SMAc/lastBuild/buildStatus)
+
+<a href="http://build.thingml.org/job/Build%20SMAc/lastBuild" target="_blank"><img src="http://build.thingml.org/job/Build%20SMAc/lastBuild/buildStatus" 
+alt="Build status" width="40" height="40" border="10" /></a>
