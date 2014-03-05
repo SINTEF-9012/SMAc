@@ -115,7 +115,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
       react {
         case e: SignedEvent =>
           //println("Port " + this + " receiving " + e)
-          actor{in(e)}
+          in(e)
       }
     }
   }
