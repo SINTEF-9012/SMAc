@@ -33,10 +33,9 @@ object Main {
    *    the 10 000 ping pong exchanges are done... or send the stop event at any
    *    moment. To enable this mode, just uncomment the 3 commented lines.
    */
-  def main(args: Array[String]): Unit = {       
-    val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
+  def main(args: Array[String]): Unit = {
     val sm = new PingComponent(true, true)
-    selfChannel.connect(sm.getPort("ping").get, sm.getPort("ping").get)
+    val selfChannel : Channel = new Channel(sm.getPort("ping").get, sm.getPort("ping").get)
     sm.start
   }
 }

@@ -34,10 +34,8 @@ object Main {
    */
   def main(args: Array[String]): Unit = {   
     println("START")
-
-    val selfChannel : Channel = new Channel().start.asInstanceOf[Channel]
     val sm = new PingComponent(true)
-    selfChannel.connect(sm.getPort("ping").get, sm.getPort("ping").get)
+    val selfChannel : Channel = new Channel(sm.getPort("ping").get, sm.getPort("ping").get)
     sm.start
   }
 }

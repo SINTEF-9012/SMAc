@@ -32,12 +32,11 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
   var testComponent : FakeComponent = _
 
   @Before def initialize() {
-    channel = new Channel
-    channel.start
+
     testComponent = new FakeComponent()
     val p = new Port("hello", List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), List(HEvent.getName, EEvent.getName, LEvent.getName, OEvent.getName), testComponent)
     sm = new HelloWorldComponent(false, false)
-    channel.connect(p, sm.getPort("hello").get)
+    channel = new Channel(p, sm.getPort("hello").get)
     sm.start
     testComponent.start
   }

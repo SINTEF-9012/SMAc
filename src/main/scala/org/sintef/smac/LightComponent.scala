@@ -124,7 +124,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
       //println("Port " + this + " sending to channels")
       out.par.foreach{c =>
         //println("Port " + this + " sending to channel "+c)
-        c ! new SignedEvent(sender = cpt, port = this, event = e)
+        c.dispatch(new SignedEvent(sender = cpt, port = this, event = e), this)
       }
     }
   }
@@ -138,49 +138,25 @@ sealed class Port(val name : String, val receive : List[String], val send : List
   }
 }
 
-sealed class Channel() extends Actor {
+sealed class Channel(p1 : Port, p2 : Port) {
 
-  override def start : Actor = {
-    super.start
-    return this
-  }
-  
-  protected var out = List[Port]()
-  
-  def connectIn(p : Port){
-    p.out ::= this
-  }
-  
-  def connectOut(p : Port){
-    out ::= p
-  }
+  connect(p1, p2)
 
   def connect(p: Port, p2: Port) = {
-    p.out ::= this
-    out ::= p2
+    this.p1.out ::= this
+    this.p2.out ::= this
   }
   
-  def disconnect(p : Port) {
-    p.out - this
-    out - p
+  def disconnect() {
+    p1.out - this
+    p2.out - this
   }
   
-  def dispatch(e: Event) = 
-    e match {
-      case s : SignedEvent =>
-        s.to match {
-          case Some(to) => out.filter{p => p.cpt == to}.par.foreach { p => p ! s }
-          case None => out.par.foreach { p => p ! s }
-        }
-      case ev : Event => out.par.foreach { p => p ! ev }
-    }
-
-  override def act() = {
-    loop {
-      react {
-        case e: Event => actor{dispatch(e)}
-      }
-    }
+  def dispatch(e: Event, p : Port) {
+    if (p == p1)
+      p2 ! e
+    else if (p == p2)
+      p1 ! e
   }
   
 }

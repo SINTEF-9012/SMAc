@@ -37,12 +37,10 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
   var testComponent : FakeComponent = _
     
   @Before def initialize() {
-    channel = new Channel()
-    channel.start
     testComponent = new FakeComponent()
     val p = new Port("ping", List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), List(PongEvent.getName, StartEvent.getName, StopEvent.getName, FastEvent.getName, SlowEvent.getName), testComponent)
     sm = new PingComponent(true, false)
-    channel.connect(p, sm.getPort("ping").get)
+    channel = new Channel(p, sm.getPort("ping").get)
     sm.start
     testComponent.start
   }
