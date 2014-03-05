@@ -44,14 +44,14 @@ abstract class ReactiveComponent extends Component {
 
 abstract trait Component {
   
-  lazy val getActor = actor {
+  /*lazy val getActor = actor {
     loop {
       react {
         case e: SignedEvent =>
           incomingMessage(e)
       }
     }
-  }
+  }*/
   
   var ports : Map[String, Port] = Map()
   var behavior : List[StateMachine] = List()
@@ -106,7 +106,7 @@ sealed class Port(val name : String, val receive : List[String], val send : List
     
   def in(e: SignedEvent) {
       if (canReceive(e)) {
-        cpt.getActor ! new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to)
+        cpt.incomingMessage(new SignedEvent(sender = e.sender, port = this, event = e.event, to = e.to))
       }  
   }
   
@@ -114,12 +114,14 @@ sealed class Port(val name : String, val receive : List[String], val send : List
     loop {
       react {
         case e: SignedEvent =>
+          //println("Port " + this + " receiving " + e)
           actor{in(e)}
       }
     }
   }
   
   def send(e : Event) {
+    //println("Port " + this + " trying to send " + e)
     if (canSend(e)) {
       //println("Port " + this + " sending to channels")
       out.par.foreach{c =>
