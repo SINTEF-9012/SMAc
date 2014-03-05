@@ -51,11 +51,6 @@ class SimpleTest extends JUnitSuite with ShouldMatchersForJUnit {
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
-    println("sm: " + sm)
-    println("sm.behavior.size: " + sm.behavior.size)
-    println("sm.behavior.head: " + sm.behavior.head)
-    println("sm.behavior.head.current: " + sm.behavior.head.current)
-    println("sm.behavior.head.substates.size: " + sm.behavior.head.substates.size)
     sm.behavior.head.current should equal ( sm.behavior.head.substates.filter{s : State => s.action.isInstanceOf[L1]}.head)
     
     testComponent.getPort("hello").get.send(new LEvent())
