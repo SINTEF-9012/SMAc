@@ -50,7 +50,7 @@ class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
     
     //LEvent should only trigger one transition
     //i.e., we should be in L1 state, not in L2 state
-    //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[L1]}.head)
+    sm.behavior.head.current should equal (sm.behavior.head.substates.filter{s : State => s.action.isInstanceOf[L1]}.head)
     
     testComponent.getPort("hello").get.send(new LetterEvent("L"))
     Thread.sleep(100)
@@ -60,7 +60,7 @@ class ParameterTest extends JUnitSuite with ShouldMatchersForJUnit {
     //OEvent should trigger on transition from L to O
     //since stop transition has no associated event, it should also be triggered
     //so that we should end in the STOP state
-    //sm.current should equal (sm.substates.filter{s => s.isInstanceOf[STOP]}.head)
+    sm.behavior.head.current should equal (sm.behavior.head.substates.filter{s => s.action.isInstanceOf[STOP]}.head)
     
   }
 }

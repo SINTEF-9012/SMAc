@@ -53,27 +53,28 @@ class CompositeTest extends JUnitSuite with ShouldMatchersForJUnit {
     testComponent.getPort("ping").get.send(new PongEvent())
     Thread.sleep(500)
     
-    /*val slow : Slow = sm.substates.filter{s => s.isInstanceOf[Slow]}.head.asInstanceOf[Slow]
+    val slow : Slow = sm.behavior.head.substates.filter{s => s.action.isInstanceOf[Slow]}.head.action.asInstanceOf[Slow]
     
-     println(sm.current)
-    
-     sm.current should equal (slow)
-     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
+     println(sm.behavior.head.current)
+
+    sm.behavior.head.current.action should equal (slow)
+     slow.getComposite.current should equal (slow.getComposite.substates.filter{s : State=> s.action.isInstanceOf[Ping]}.head)
     
     println("3/ master ! FastEvent")
     testComponent.getPort("ping").get.send(new FastEvent())
     Thread.sleep(500)
     
-    /*println(sm.current)
+    println(sm.behavior.head.current)
     
-     val fast : Fast = sm.substates.filter{s => s.isInstanceOf[Fast]}.head.asInstanceOf[Fast]
-     sm.current should equal (fast)
-     fast.current should equal (fast.substates.filter{s => s.isInstanceOf[Stop]}.head)*/
+     val fast : Fast = sm.behavior.head.substates.filter{s => s.action.isInstanceOf[Fast]}.head.action.asInstanceOf[Fast]
+     sm.behavior.head.current.action should equal (fast)
+     fast.getComposite.current should equal (fast.getComposite.substates.filter{s : State => s.action.isInstanceOf[Stop]}.head)
     
     println("4/ master ! SlowEvent")
     testComponent.getPort("ping").get.send(new SlowEvent())
     Thread.sleep(500)
-    /*sm.current should equal (slow)
-     slow.current should equal (slow.substates.filter{s => s.isInstanceOf[Ping]}.head)*/
+
+    sm.behavior.head.current.action should equal (slow)
+     slow.getComposite.current should equal (slow.getComposite.substates.filter{s => s.action.isInstanceOf[Ping]}.head)
   }
 }

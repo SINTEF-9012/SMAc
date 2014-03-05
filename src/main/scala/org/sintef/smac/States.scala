@@ -20,7 +20,7 @@ package org.sintef.smac
 import scala.actors.Actor
 import scala.actors.Actor._
 
-sealed class State(action : StateAction, val root : Component) {
+sealed class State(val action : StateAction, val root : Component) {
   
   def dispatchEventSync(e: SignedEvent) : Boolean = {
     //println(this + ".dispatchEventSync")
