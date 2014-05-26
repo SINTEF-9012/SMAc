@@ -79,7 +79,7 @@ abstract trait Component {
     
     var results = List[Future[Boolean]]()
     behavior.par.foreach{sm => 
-      println("dispatching to " + sm)
+      //println("dispatching to " + sm)
       val f : Future[Boolean] = future{sm.dispatchEvent(new SignedEvent(sender = e.sender, port = e.port, event = e.event, to = e.to))}
       results = results ::: List(f)
     }
